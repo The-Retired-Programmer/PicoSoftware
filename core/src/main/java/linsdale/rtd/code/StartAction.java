@@ -22,13 +22,19 @@ import linsdale.nbpcg.supportlib.Log;
 import org.openide.util.ImageUtilities;
 
 /**
- *
+ * The Start Action.
+ * 
  * @author Richard Linsdale (richard.linsdale at blueyonder.co.uk)
  */
 public final class StartAction extends AbstractAction {
 
     private final ScenarioSimulationElement element;
 
+    /**
+     * Constructor
+     * 
+     * @param element the simulation element into which the action icon is to be placed
+     */
     public StartAction(ScenarioSimulationElement element) {
         super("Start Simulation", ImageUtilities.loadImageIcon("com/famfamfam/www/silkicons/control_play_blue.png", false));
         this.element = element;
@@ -36,7 +42,7 @@ public final class StartAction extends AbstractAction {
 
     @Override
     public void actionPerformed(ActionEvent ev) {
-        Log.get("linsdale.rta").finer("Start button pressed");
+        Log.get("linsdale.rtd").finer("Start button pressed");
         element.start();
     }
 }

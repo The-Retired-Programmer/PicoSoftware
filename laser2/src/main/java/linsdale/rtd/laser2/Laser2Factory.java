@@ -16,20 +16,20 @@
  */
 package linsdale.rtd.laser2;
 
-import linsdale.rtd.core.api.RTAObjectFactory;
+import linsdale.rtd.core.api.RtdFactory;
 import linsdale.rtd.code.DefFileModel;
-import linsdale.nbpcg.supportlib.OutputReporter;
 import org.openide.util.lookup.ServiceProvider;
 
 /**
- *
+ * The Laser2 factory.
+ * 
  * @author Richard Linsdale (richard.linsdale at blueyonder.co.uk)
  */
 @ServiceProvider(service = Laser2Factory.class)
-public class Laser2Factory implements RTAObjectFactory<Laser2> {
+public class Laser2Factory implements RtdFactory<Laser2> {
 
     @Override
-    public Laser2 newInstance(String name, OutputReporter reporter, DefFileModel dfm) {
-        return new Laser2(name, reporter, dfm);
+    public Laser2 newInstance(String name, DefFileModel dfm) {
+        return new Laser2(name, dfm);
     }
 }

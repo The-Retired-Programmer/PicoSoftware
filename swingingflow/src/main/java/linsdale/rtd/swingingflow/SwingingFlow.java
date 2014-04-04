@@ -17,18 +17,25 @@
 package linsdale.rtd.swingingflow;
 
 import linsdale.rtd.code.DefFileModel;
-import linsdale.nbpcg.supportlib.OutputReporter;
 import linsdale.rtd.code.Scenario;
 import linsdale.rtd.complexflow.ComplexFlow;
 
 /**
+ * The SwingingFlow Class - represents a flow which oscillates about a mean
+ * direction.
  *
  * @author Richard Linsdale (richard.linsdale at blueyonder.co.uk)
  */
 public class SwingingFlow extends ComplexFlow {
 
-    public SwingingFlow(String name, OutputReporter reporter, DefFileModel dfm) {
-        super(name, reporter, dfm);
+    /**
+     * Constructor
+     *
+     * @param name the name
+     * @param dfm the definition file data model
+     */
+    public SwingingFlow(String name, DefFileModel dfm) {
+        super(name, dfm);
         Scenario scenario = dfm.getScenario();
         double x = scenario.getWest();
         double y = scenario.getSouth();

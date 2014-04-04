@@ -17,20 +17,20 @@
 package linsdale.rtd.northsouthgradientflow;
 
 import linsdale.rtd.core.api.FlowModel;
-import linsdale.rtd.core.api.RTAObjectFactory;
+import linsdale.rtd.core.api.RtdFactory;
 import linsdale.rtd.code.DefFileModel;
-import linsdale.nbpcg.supportlib.OutputReporter;
 import org.openide.util.lookup.ServiceProvider;
 
 /**
+ * A Factory to create NorthSouthGradientFlow Objects
  *
  * @author Richard Linsdale (richard.linsdale at blueyonder.co.uk)
  */
 @ServiceProvider(service = NorthSouthGradientFlowFactory.class)
-public class NorthSouthGradientFlowFactory implements RTAObjectFactory<FlowModel> {
+public class NorthSouthGradientFlowFactory implements RtdFactory<FlowModel> {
 
     @Override
-    public FlowModel newInstance(String name, OutputReporter reporter, DefFileModel dfm) {
-        return new NorthSouthGradientFlow(name, reporter, dfm);
+    public FlowModel newInstance(String name, DefFileModel dfm) {
+        return new NorthSouthGradientFlow(name, dfm);
     }
 }

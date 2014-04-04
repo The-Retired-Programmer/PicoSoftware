@@ -20,6 +20,7 @@ import linsdale.rtd.code.FactoryManager;
 import org.openide.modules.OnStart;
 
 /**
+ * On Startup - a setup handler which registers the necessary factory class.
  *
  * @author Richard Linsdale (richard.linsdale at blueyonder.co.uk)
  */

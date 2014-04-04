@@ -26,25 +26,24 @@ import java.awt.geom.Line2D;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import linsdale.nbpcg.annotations.RegisterLog;
 import linsdale.nbpcg.supportlib.LogicException;
-import linsdale.rtd.core.api.RTAObject;
+import linsdale.rtd.core.api.Rtd;
 import linsdale.rtd.core.api.Direction;
 import linsdale.rtd.core.api.Flow;
 import linsdale.rtd.core.api.Location;
 import linsdale.rtd.core.api.Polar;
 import linsdale.rtd.code.DefFileModel;
-import linsdale.nbpcg.supportlib.OutputReporter;
 import linsdale.rtd.code.Scenario;
 import linsdale.rtd.core.api.FlowModel;
 import linsdale.rtd.mark.Mark;
 
 /**
- *
+ * The Abstract Boat class - implements the core capabilities of a boat.  Subclass to generate the 
+ * concrete classes for particular boats.
+ * 
  * @author Richard Linsdale (richard.linsdale at blueyonder.co.uk)
  */
-@RegisterLog("linsdale.rtd.boat")
-public abstract class Boat extends RTAObject {
+public abstract class Boat extends Rtd {
     // parameters - can be set via the definition file
 
     private Color colour = Color.black;
@@ -122,11 +121,27 @@ public abstract class Boat extends RTAObject {
     //
     private final List<Location> track = Collections.synchronizedList(new ArrayList<Location>());
 
-    public Boat(String name, OutputReporter reporter, DefFileModel dfm) {
-        super(name, reporter, dfm);
+    /**
+     * Constructor.
+     * 
+     * @param name the name 
+     * @param dfm the definition file datamodel
+     */
+    public Boat(String name, DefFileModel dfm) {
+        super(name, dfm);
         initNextMarkVariables();
     }
 
+    /**
+     * Set teh metrics for the boat.
+     * 
+     * @param length boat length
+     * @param width boat width
+     * @param inertia inertia - defines rate of change of boat speed relative to target speed; range of 0 to 1 - where 1 is immediate change and 0 is never change
+     * @param maxTurningAnglePerSecond the maximum angular rate of turn
+     * @param upwindrelative the target performance angle upwind
+     * @param downwindrelative the target performance angle downwind
+     */
     public void metrics(double length, double width, double inertia, int maxTurningAnglePerSecond,
             int upwindrelative, int downwindrelative) {
         this.length = length;
@@ -141,12 +156,22 @@ public abstract class Boat extends RTAObject {
         this.downwindrelative = downwindrelative;
     }
 
+    /**
+     * Set the performance metrics for this boat.
+     * 
+     * @param boatSpeedData boat speeds over a range of wind angles and speed (the speed polars)
+     * @param windAngleData the set of wind angles
+     * @param windSpeedData the set of wind speed
+     */
     public void performance(double boatSpeedData[][], int windAngleData[], double windSpeedData[]) {
         this.boatSpeedData = boatSpeedData;
         this.windAngleData = windAngleData;
         this.windSpeedData = windSpeedData;
     }
 
+    /**
+     * Finish the simulation
+     */
     @Override
     public void finish() {
         nextMark = null;
@@ -154,6 +179,10 @@ public abstract class Boat extends RTAObject {
         super.finish();
     }
 
+    /**
+     * Advance time.  Recalculate the boat position and other parameters.
+     * @param time the new time
+     */
     @Override
     public void timerAdvance(int time) {
         calculateAllEnvironmentVariables();
@@ -198,7 +227,7 @@ public abstract class Boat extends RTAObject {
             downwindchannelvalue = currentTack == STARBOARD ? downwindchannelleft : downwindchannelright;
             upwindchannelvalue = currentTack == STARBOARD ? upwindchannelleft : upwindchannelright;
         }
-        windAngleToMeanWind = winddirection.angleDiff(windmodel.getMeanFlow(pos).getDirection());
+        windAngleToMeanWind = winddirection.angleDiff(windmodel.getMeanFlow().getDirection());
         boatAngleToWind = direction.absAngleDiff(winddirection);
     }
 
@@ -417,6 +446,11 @@ public abstract class Boat extends RTAObject {
         }
     }
 
+    /**
+     * Move the boat in the required direction.
+     * 
+     * @param requiredDirection teh required direction
+     */
     public void moveBoat(Direction requiredDirection) {
         Flow wind = dfm.getWind().getFlow(pos);
         Flow water = dfm.getWater().getFlow(pos);
@@ -476,6 +510,13 @@ public abstract class Boat extends RTAObject {
         return boatspeedlower + ratio * (boatspeedupper - boatspeedlower);
     }
 
+    /**
+     * Set the parameter value for a particular key
+     * 
+     * @param key the parameter key
+     * @param value the parameter value
+     * @return success code
+     */
     @Override
     public int setParameter(String key, String value) {
         try {
@@ -560,6 +601,13 @@ public abstract class Boat extends RTAObject {
         }
     }
 
+    /**
+     *Check the legality of a particular Parameter value
+     * 
+     * @param key the parameter key
+     * @param value the parameter value
+     * @return success code
+     */
     @Override
     public int checkParameter(String key, String value) {
         try {
@@ -630,6 +678,12 @@ public abstract class Boat extends RTAObject {
         }
     }
 
+    /**
+     * Draw the Boat on the display canvas.
+     * 
+     * @param g2D the 2D graphics object
+     * @param pixelsPerMetre the scale factor
+     */
     @Override
     public void draw(Graphics2D g2D, double pixelsPerMetre) {
         int relative = direction.angleDiff(dfm.getWind().getFlow(pos).getDirection());

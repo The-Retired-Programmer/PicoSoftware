@@ -26,7 +26,8 @@ import javax.swing.JPanel;
 import javax.swing.Scrollable;
 
 /**
- *
+ * The display canvas for the simulation.
+ * 
  * @author Richard Linsdale (richard.linsdale at blueyonder.co.uk)
  */
 public final class DisplayPanel extends JPanel implements Scrollable {
@@ -34,6 +35,11 @@ public final class DisplayPanel extends JPanel implements Scrollable {
     private final DefFileModel dfm;
     private final Dimension preferredsize;
 
+    /**
+     * Constructor
+     * 
+     * @param dfm the definition file datamodel
+     */
     public DisplayPanel(DefFileModel dfm) {
         this.dfm = dfm;
         Scenario scenario = dfm.getScenario();
@@ -43,6 +49,9 @@ public final class DisplayPanel extends JPanel implements Scrollable {
         preferredsize = new Dimension((int) (width * scale), (int) (depth * scale));
     }
 
+    /**
+     * Update the display
+     */
     public void updateDisplay() {
         this.repaint();
     }

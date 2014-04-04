@@ -22,13 +22,19 @@ import linsdale.nbpcg.supportlib.Log;
 import org.openide.util.ImageUtilities;
 
 /**
- *
+ * The Reset Action
+ * 
  * @author Richard Linsdale (richard.linsdale at blueyonder.co.uk)
  */
 public final class ResetAction extends AbstractAction {
 
     private final ScenarioSimulationElement element;
 
+    /**
+     * Constructor
+     * 
+     * @param element the simulation element into which the action icon is to be placed
+     */
     public ResetAction(ScenarioSimulationElement element) {
         super("Reset Simulation", ImageUtilities.loadImageIcon("com/famfamfam/www/silkicons/control_start_blue.png", false));
         this.element = element;
@@ -36,7 +42,7 @@ public final class ResetAction extends AbstractAction {
 
     @Override
     public void actionPerformed(ActionEvent ev) {
-        Log.get("linsdale.rta").finer("Reset button pressed");
+        Log.get("linsdale.rtd").finer("Reset button pressed");
         element.reset();
     }
 }

@@ -17,18 +17,26 @@
 package linsdale.rtd.eastwestgradientflow;
 
 import linsdale.rtd.code.DefFileModel;
-import linsdale.nbpcg.supportlib.OutputReporter;
 import linsdale.rtd.code.Scenario;
 import linsdale.rtd.complexflow.ComplexFlow;
 
 /**
+ * The EastWestGradientFlow Class - represents a flow with differing parameters
+ * (direction and speed) in a east-west direction. Intermediate positions are
+ * interpolated to provide the changing flow.
  *
  * @author Richard Linsdale (richard.linsdale at blueyonder.co.uk)
  */
 public class EastWestGradientFlow extends ComplexFlow {
 
-    public EastWestGradientFlow(String name, OutputReporter reporter, DefFileModel dfm) {
-        super(name, reporter, dfm);
+    /**
+     * Constructor
+     *
+     * @param name the name
+     * @param dfm the definition file data model
+     */
+    public EastWestGradientFlow(String name, DefFileModel dfm) {
+        super(name, dfm);
         Scenario scenario = dfm.getScenario();
         double x = scenario.getWest();
         double y = scenario.getSouth();

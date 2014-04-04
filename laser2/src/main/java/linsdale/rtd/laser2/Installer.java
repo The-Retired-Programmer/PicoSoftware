@@ -20,7 +20,8 @@ import linsdale.rtd.code.FactoryManager;
 import org.openide.modules.OnStart;
 
 /**
- *
+ * Register the Laser2 Factory.
+ * 
  * @author Richard Linsdale (richard.linsdale at blueyonder.co.uk)
  */
 @OnStart

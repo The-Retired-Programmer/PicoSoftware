@@ -22,17 +22,17 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import linsdale.nbpcg.supportlib.LogicException;
 import linsdale.rtd.core.api.FlowModel;
-import linsdale.rtd.core.api.RTABaseObject;
-import linsdale.rtd.core.api.RTAObject;
-import linsdale.nbpcg.supportlib.OutputReporter;
+import linsdale.rtd.core.api.RtdCore;
+import linsdale.rtd.core.api.Rtd;
 
 /**
+ * The model representing the definition file.
  *
  * @author Richard Linsdale (richard.linsdale at blueyonder.co.uk)
  */
 public class DefFileModel {
 
-    private final ArrayList<RTAObject> rtaobjects = new ArrayList<>();
+    private final ArrayList<Rtd> rtaobjects = new ArrayList<>();
     private final HashMap<String, DefFileComponentModel> commands = new HashMap<>();
     private final HashMap<String, DefFileComponentModel> keyDefinitions = new HashMap<>();
     private final HashMap<Integer, DefFileComponentModel> futureDefinitions = new HashMap<>();
@@ -40,6 +40,9 @@ public class DefFileModel {
     private FlowModel water;
     private FlowModel wind;
 
+    /**
+     * Finish the simulation.
+     */
     public void finish() {
         water.finish();
         wind.finish();
@@ -48,19 +51,40 @@ public class DefFileModel {
         });
     }
 
+    /**
+     * Get the Scenario
+     *
+     * @return the scenario
+     */
     public Scenario getScenario() {
         return sc;
     }
 
+    /**
+     * Get the Wind Flowmodel
+     *
+     * @return the flowmodel for the wind
+     */
     public FlowModel getWind() {
         return wind;
     }
 
+    /**
+     * Get the Water Flowmodel
+     *
+     * @return the flowmodel for the water
+     */
     public FlowModel getWater() {
         return water;
     }
 
-    public void load(OutputReporter reporter, InputStream in, StringBuffer errors) {
+    /**
+     * load data into the definition file model
+     *
+     * @param in the inputstream from which the file is read
+     * @param errors a string buffer to which error messages can be appended
+     */
+    public void load(InputStream in, StringBuffer errors) {
         Parser parser = new Parser();
         parser.parse(in, this, errors);
         // set up the scenario object
@@ -74,16 +98,16 @@ public class DefFileModel {
         if (watercommand == null) {
             watercommand = new DefFileComponentModel("water", "constantflow"); // null flow is OK
         }
-        createWaterInstance(reporter, watercommand, errors);
+        createWaterInstance(watercommand, errors);
         // set up the wind object
         DefFileComponentModel windcommand = commands.remove("wind");
         if (windcommand == null) {
             windcommand = new DefFileComponentModel("wind", "constantflow");
             windcommand.addparameter("speed", "10");// need some default wind speed
         }
-        createWindInstance(reporter, windcommand, errors);
+        createWindInstance(windcommand, errors);
         // setup all the rest of the instances required
-        createInstances(reporter, errors);
+        createInstances(errors);
         // now go through all the future time objects - checking syntax of parameters
         checkAllFutureDefs(errors);
         // now go through all the function key objects - checking syntax of parameters
@@ -96,19 +120,19 @@ public class DefFileModel {
         sc.setParameters(def.getParameters(), errors);
     }
 
-    private void createWindInstance(OutputReporter reporter, DefFileComponentModel def, StringBuffer errors) {
-        wind = (FlowModel) FactoryManager.newInstance(def.getClassname(), def.getInstancename(), reporter, this);
+    private void createWindInstance(DefFileComponentModel def, StringBuffer errors) {
+        wind = (FlowModel) FactoryManager.newInstance(def.getClassname(), def.getInstancename(), this);
         wind.setParameters(def.getParameters(), errors);
     }
 
-    private void createWaterInstance(OutputReporter reporter, DefFileComponentModel def, StringBuffer errors) {
-        water = (FlowModel) FactoryManager.newInstance(def.getClassname(), def.getInstancename(), reporter, this);
+    private void createWaterInstance(DefFileComponentModel def, StringBuffer errors) {
+        water = (FlowModel) FactoryManager.newInstance(def.getClassname(), def.getInstancename(), this);
         water.setParameters(def.getParameters(), errors);
     }
 
-    private void createInstances(OutputReporter reporter, StringBuffer errors) {
+    private void createInstances(StringBuffer errors) {
         commands.keySet().stream().map((key) -> commands.get(key)).forEach((def) -> {
-            RTAObject instance = FactoryManager.newInstance(def.getClassname(), def.getInstancename(), reporter, this);
+            Rtd instance = FactoryManager.newInstance(def.getClassname(), def.getInstancename(), this);
             rtaobjects.add(instance);
             instance.setParameters(def.getParameters(), errors);
         });
@@ -116,7 +140,7 @@ public class DefFileModel {
 
     private void setParameters(DefFileComponentModel def, StringBuffer errors) {
         String name = def.getInstancename();
-        RTABaseObject instance = getNamedInstance(name);
+        RtdCore instance = getNamedInstance(name);
         if (instance == null) {
             errors.append("instance does not exist (").append(name).append(")\n");
         } else {
@@ -126,7 +150,7 @@ public class DefFileModel {
 
     private void checkParameters(DefFileComponentModel def, StringBuffer errors) {
         String name = def.getInstancename();
-        RTABaseObject instance = getNamedInstance(name);
+        RtdCore instance = getNamedInstance(name);
         if (instance == null) {
             errors.append("instance does not exist (").append(name).append(")\n");
         } else {
@@ -134,14 +158,20 @@ public class DefFileModel {
         }
     }
 
-    public RTAObject getNamedInstance(String name) {
+    /**
+     * Get a named instance (flow, boat, mark etc)
+     *
+     * @param name the required name
+     * @return the instance
+     */
+    public Rtd getNamedInstance(String name) {
         if (name.equals("wind")) {
             return wind;
         }
         if (name.equals("water")) {
             return water;
         }
-        for (RTAObject instance : rtaobjects) {
+        for (Rtd instance : rtaobjects) {
             if (instance.getName().equals(name)) {
                 return instance;
             }
@@ -149,6 +179,11 @@ public class DefFileModel {
         return null;
     }
 
+    /**
+     * Advance time.
+     *
+     * @param time the new time
+     */
     public void executeAllTimeAdvance(int time) {
         water.timerAdvance(time);
         wind.timerAdvance(time);
@@ -157,6 +192,11 @@ public class DefFileModel {
         });
     }
 
+    /**
+     * Draw the simulation on the display canvas.
+     *
+     * @param g2D the 2D graphics object
+     */
     public void executeAllDraw(Graphics2D g2D) {
         Double pixelsPerMetre = sc.draw(g2D);
         water.draw(g2D, pixelsPerMetre);
@@ -167,11 +207,23 @@ public class DefFileModel {
     }
 
     // the instance definitions - used to create the executable model at time zero
+    /**
+     * Add a new instance definition
+     *
+     * @param instancename the name
+     * @param def the component definition model
+     */
     public void addInstanceDefinition(String instancename, DefFileComponentModel def) {
         commands.put(instancename, def);
     }
 
     // the key definitions data model - used to change parameters in the executable data model
+    /**
+     * Add a keystoke definition - this is a mapping of a keystroke to a component model
+     *
+     * @param keystring the keystroke
+     * @param def the component definition model
+     */
     public void addkeyDefinition(String keystring, DefFileComponentModel def) {
         keyDefinitions.put(keystring, def);
     }
@@ -182,6 +234,11 @@ public class DefFileModel {
         });
     }
 
+    /**
+     * Taken action on keystroke
+     * 
+     * @param key the keystroke
+     */
     public void processKey(String key) {
         DefFileComponentModel def = keyDefinitions.get(key);
         if (def != null) {
@@ -194,6 +251,12 @@ public class DefFileModel {
     }
 
     // the future definitions data model - used to change parameters in the executable data model
+    /**
+     * Add a future update to the parameter value(s) at some time
+     * 
+     * @param time the time
+     * @param def the revised component definition model
+     */
     public void addFutureDefinition(int time, DefFileComponentModel def) {
         futureDefinitions.put(time, def);
     }
@@ -204,6 +267,11 @@ public class DefFileModel {
         });
     }
 
+    /**
+     * Process any future updates of parameter values which have to be made at this particular time.
+     * 
+     * @param time the time
+     */
     public void processDefinitions(int time) {
         DefFileComponentModel def = futureDefinitions.remove(time);
         if (def != null) {

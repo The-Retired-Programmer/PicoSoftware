@@ -22,7 +22,8 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 
 /**
- *
+ * Parse the definition file.
+ * 
  * @author Richard Linsdale (richard.linsdale at blueyonder.co.uk)
  */
 public class Parser {
@@ -40,6 +41,13 @@ public class Parser {
     private String value;
     private String keystring;
 
+    /**
+     * Parse the definition file and load into definition data model.
+     * 
+     * @param in1 input stream used to read the file definitions
+     * @param dm the definition data model
+     * @param errors a stringbuffer to append errors messages
+     */
     public void parse(InputStream in1, DefFileModel dm, StringBuffer errors) {
         int currenttime = 0;
         BufferedReader in = new BufferedReader(new InputStreamReader(in1));

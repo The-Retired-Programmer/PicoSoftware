@@ -16,20 +16,24 @@
  */
 package linsdale.rtd.laser2;
 
-import linsdale.nbpcg.annotations.RegisterLog;
 import linsdale.rtd.code.DefFileModel;
-import linsdale.nbpcg.supportlib.OutputReporter;
 import linsdale.rtd.boat.Boat;
 
 /**
- *
+ * The Laser 2 Dinghy.
+ * 
  * @author Richard Linsdale (richard.linsdale at blueyonder.co.uk)
  */
-@RegisterLog("linsdale.rtd.boat.laser2")
 public class Laser2 extends Boat {
 
-    public Laser2(String name, OutputReporter reporter, DefFileModel dfm) {
-        super(name, reporter, dfm);
+    /**
+     *Constructor
+     * 
+     * @param name the name 
+     * @param dfm the definition file data model
+     */
+    public Laser2(String name, DefFileModel dfm) {
+        super(name, dfm);
         super.metrics(4, 1.5, 0.25, 30, 45, 135); // length, width, inertia, maxturninganglepersec, upwindangle, downwindangle 
         super.performance(
                 /* boat speed data */

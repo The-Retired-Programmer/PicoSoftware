@@ -17,7 +17,7 @@
 package linsdale.rtd.core.api;
 
 /**
- * A movement vector containing direction and speed
+ * A movement vector containing both direction and speed
  *
  * @author Richard Linsdale (richard.linsdale at blueyonder.co.uk)
  */
@@ -31,21 +31,41 @@ public class Flow {
     private static final double KNOTSTOMETRESPERSECOND = (double) 1853 / 3600; // multiply knots to get m/s
     // source NASA - 1 knot = 1.853 km/hour
 
+    /**
+     * Constructor.
+     */
     public Flow() {
         direction = new Direction();
         speed = 0;
     }
 
+    /**
+     * Constructor.
+     *
+     * @param angle direction (degrees)
+     * @param speed speed (knots)
+     */
     public Flow(int angle, double speed) {
         this.direction = new Direction(angle);
         this.speed = speed;
     }
 
+    /**
+     * Constructor.
+     *
+     * @param copy flow - used to clone
+     */
     public Flow(Flow copy) {
         this.direction = new Direction(copy.getDirection());
         this.speed = copy.getSpeedKnots();
     }
 
+    /**
+     * Normalise the direction (range is -179 to 180 degrees).
+     *
+     * @param direction direction (degrees)
+     * @return the normalised direction (degrees)
+     */
     public static int normaliseDirection(int direction) {
         while (direction > 180) {
             direction -= 360;
@@ -56,34 +76,75 @@ public class Flow {
         return direction;
     }
 
+    /**
+     * Set the direction of a flow.
+     *
+     * @param angle direction (degrees)
+     */
     public void setAngle(int angle) {
         this.direction.set(angle);
     }
 
+    /**
+     * Get the direction of a flow.
+     *
+     * @return direction (degrees)
+     */
     public int getAngle() {
         return direction.getDegrees();
     }
 
+    /**
+     * Get the direction of a flow.
+     *
+     * @return direction
+     */
     public Direction getDirection() {
         return direction;
     }
 
+    /**
+     * Set the direction of a flow.
+     *
+     * @param direction direction
+     */
     public void setDirection(Direction direction) {
         this.direction = direction;
     }
 
+    /**
+     * Set the speed of a flow.
+     *
+     * @param speed speed (knots)
+     */
     public void setSpeedKnots(double speed) {
         this.speed = speed;
     }
 
+    /**
+     * Get the speed of a flow.
+     *
+     * @return speed (knots)
+     */
     public double getSpeedKnots() {
         return speed;
     }
 
+    /**
+     * Get the speed of a flow.
+     *
+     * @return speed (metres/second)
+     */
     public double getSpeedMetresPerSecond() {
         return speed * KNOTSTOMETRESPERSECOND;
     }
 
+    /**
+     * Convert Knots to Metres/Second
+     *
+     * @param knots speed
+     * @return speed (metres/sec)
+     */
     public static double convertKnots2MetresPerSecond(double knots) {
         return knots * KNOTSTOMETRESPERSECOND;
     }

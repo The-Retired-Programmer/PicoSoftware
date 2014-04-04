@@ -18,19 +18,25 @@ package linsdale.rtd.complexflow;
 
 import org.openide.util.lookup.ServiceProvider;
 import linsdale.rtd.core.api.FlowModel;
-import linsdale.rtd.core.api.RTAObjectFactory;
+import linsdale.rtd.core.api.RtdFactory;
 import linsdale.rtd.code.DefFileModel;
-import linsdale.nbpcg.supportlib.OutputReporter;
 
 /**
- *
+ * Factory to create ComplexFlow objects.
+ * 
  * @author Richard Linsdale (richard.linsdale at blueyonder.co.uk)
  */
 @ServiceProvider(service = ComplexFlowFactory.class)
-public class ComplexFlowFactory implements RTAObjectFactory<FlowModel> {
+public class ComplexFlowFactory implements RtdFactory<FlowModel> {
 
+    /**
+     * Create a new Instance of a ComplexFlow object
+     * @param name the name 
+     * @param dfm the definition file datamodel
+     * @return the ComplexFlow object
+     */
     @Override
-    public FlowModel newInstance(String name, OutputReporter reporter, DefFileModel dfm) {
-        return new ComplexFlow(name, reporter, dfm);
+    public FlowModel newInstance(String name, DefFileModel dfm) {
+        return new ComplexFlow(name, dfm);
     }
 }

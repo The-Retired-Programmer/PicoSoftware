@@ -46,6 +46,8 @@ import org.openide.util.lookup.ProxyLookup;
 import org.openide.windows.TopComponent;
 
 /**
+ * The Multiview Element to display the simulation, based on the definition
+ * file.
  *
  * @author Richard Linsdale (richard.linsdale at blueyonder.co.uk)
  */
@@ -71,8 +73,12 @@ public final class ScenarioSimulationElement extends JPanel implements MultiView
     private Timer timer;
     private TimeStepsRunner runner;
     private int simulationtime = 0;
-    private OutputReporter reporter;
 
+    /**
+     * Get the simulation display instance which is in focus.
+     *
+     * @return this instance
+     */
     public static ScenarioSimulationElement getSimulationInFocus() {
         TopComponent tc = TopComponent.getRegistry().getActivated();
         if (tc == null) {
@@ -81,6 +87,11 @@ public final class ScenarioSimulationElement extends JPanel implements MultiView
         return tc.getLookup().lookup(ScenarioSimulationElement.class);
     }
 
+    /**
+     * Constructor.
+     *
+     * @param lkp the top component lookup
+     */
     public ScenarioSimulationElement(Lookup lkp) {
         dataobj = lkp.lookup(DefFileDataObject.class);
         assert dataobj != null;
@@ -88,7 +99,7 @@ public final class ScenarioSimulationElement extends JPanel implements MultiView
         dataobj.getPrimaryFile().addFileChangeListener(new FileChangeAdapter() {
             @Override
             public void fileChanged(FileEvent fe) {
-                Log.get("linsdale.rta").finer("File change detected");
+                Log.get("linsdale.rtd").finer("File change detected");
                 reset();
             }
         });
@@ -107,12 +118,15 @@ public final class ScenarioSimulationElement extends JPanel implements MultiView
         toolbar.addSeparator();
     }
 
+    /**
+     * Start running the simulation.
+     */
     public void start() {
         if (isRunning) {
             return;
         }
         Scenario scenario = dfm.getScenario();
-        Log.get("linsdale.rta").finer("Simulation started");
+        Log.get("linsdale.rtd").finer("Simulation started");
         int rate = (int) (scenario.getSecondsPerDisplay() * 1000 / scenario.getSpeedup());
         timer = new Timer();
         runner = new TimeStepsRunner();
@@ -120,23 +134,34 @@ public final class ScenarioSimulationElement extends JPanel implements MultiView
         isRunning = true;
     }
 
+    /**
+     * Reset the simulation.
+     */
     public void reset() {
         terminate();
-        Log.get("linsdale.rta").finer("Simulation reset");
+        Log.get("linsdale.rtd").finer("Simulation reset");
         removeAll();
         dfm.finish();
         parseAndCreateSimulationDisplay();
     }
 
+    /**
+     * Terminate the simulation.
+     */
     public void terminate() {
         if (!isRunning) {
             return;
         }
-        Log.get("linsdale.rta").finer("Simulation terminated");
+        Log.get("linsdale.rtd").finer("Simulation terminated");
         isRunning = false;
         timer.cancel();
     }
 
+    /**
+     * Act on a function keystroke.
+     *
+     * @param key the keystroke
+     */
     public void keyAction(String key) {
         dfm.processKey(key);
     }
@@ -146,7 +171,7 @@ public final class ScenarioSimulationElement extends JPanel implements MultiView
         dfm = new DefFileModel();
         simulationtime = 0;
         try {
-            dfm.load(reporter, dataobj.getPrimaryFile().getInputStream(), errors);
+            dfm.load(dataobj.getPrimaryFile().getInputStream(), errors);
         } catch (FileNotFoundException ex) {
             errors.append("Could not open Definition file to read\n");
         }
@@ -177,6 +202,12 @@ public final class ScenarioSimulationElement extends JPanel implements MultiView
         repaint();
     }
 
+    /**
+     * Attach a panel to this element (embedded in a scroll pane). This would
+     * typically be the display canvas for the simulation display.
+     *
+     * @param panel the display canvas
+     */
     public void attachPanelScrolling(JPanel panel) {
         this.add(new JScrollPane(panel));
     }
@@ -222,14 +253,12 @@ public final class ScenarioSimulationElement extends JPanel implements MultiView
 
     @Override
     public void componentOpened() {
-        reporter = new OutputReporter(dataobj.getPrimaryFile().getNameExt(), "");
     }
 
     @Override
     public void componentClosed() {
         terminate();
         dfm.finish();
-        reporter.close();
     }
 
     @Override
@@ -279,11 +308,17 @@ public final class ScenarioSimulationElement extends JPanel implements MultiView
                 timeinfo.setText("Time: " + mmssformat(simulationtime));
                 dp.updateDisplay();
             } catch (Exception ex) {
-                Log.get("linsdale.rta").log(Level.SEVERE, null, ex);
+                Log.get("linsdale.rtd").log(Level.SEVERE, null, ex);
             }
         }
     }
 
+    /**
+     * Format a time in seconds into mm:ss format.
+     *
+     * @param seconds the time interval in seconds
+     * @return the time interval expressed as a mm:ss string
+     */
     public static String mmssformat(int seconds) {
         int mins = seconds / 60;
         int secs = seconds % 60;

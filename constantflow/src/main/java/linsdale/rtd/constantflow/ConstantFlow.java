@@ -17,18 +17,25 @@
 package linsdale.rtd.constantflow;
 
 import linsdale.rtd.code.DefFileModel;
-import linsdale.nbpcg.supportlib.OutputReporter;
 import linsdale.rtd.code.Scenario;
 import linsdale.rtd.complexflow.ComplexFlow;
 
 /**
+ * The ConstantFlow Class - represents a flow which is stready in speed and
+ * direction across the entire plane.
  *
  * @author Richard Linsdale (richard.linsdale at blueyonder.co.uk)
  */
 public class ConstantFlow extends ComplexFlow {
 
-    public ConstantFlow(String name, OutputReporter reporter, DefFileModel dfm) {
-        super(name, reporter, dfm);
+    /**
+     * Constructor
+     * 
+     * @param name the name 
+     * @param dfm the definition file datamodel
+     */
+    public ConstantFlow(String name, DefFileModel dfm) {
+        super(name, dfm);
         Scenario scenario = dfm.getScenario();
         double x = scenario.getWest();
         double y = scenario.getSouth();
@@ -42,6 +49,13 @@ public class ConstantFlow extends ComplexFlow {
         southwest.y = y;
     }
 
+    /**
+     * Set the parameter value for a particular key
+     * 
+     * @param key the parameter key
+     * @param value the parameter value
+     * @return success code
+     */
     @Override
     public int setParameter(String key, String value) {
         try {
@@ -68,6 +82,13 @@ public class ConstantFlow extends ComplexFlow {
         }
     }
 
+    /**
+     * Check the legality of a particular Parameter value
+     * 
+     * @param key the parameter key
+     * @param value the parameter value
+     * @return success code
+     */
     @Override
     public int checkParameter(String key, String value) {
         try {

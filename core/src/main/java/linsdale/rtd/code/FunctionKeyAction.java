@@ -27,6 +27,8 @@ import org.openide.awt.ActionRegistration;
 import org.openide.util.NbBundle.Messages;
 
 /**
+ * Function keystroke action - will pass to a defined keystroke action defined
+ * by the definition file.
  *
  * @author Richard Linsdale (richard.linsdale at blueyonder.co.uk)
  */
@@ -53,7 +55,7 @@ public final class FunctionKeyAction implements ActionListener {
     @Override
     public void actionPerformed(ActionEvent e) {
         String key = e.getActionCommand();
-        Log.get("linsdale.rta").log(Level.FINER, "Key {0} pressed", key);
+        Log.get("linsdale.rtd").log(Level.FINER, "Key {0} pressed", key);
         ScenarioSimulationElement el = ScenarioSimulationElement.getSimulationInFocus();
         if (el != null) {
             el.keyAction(key);

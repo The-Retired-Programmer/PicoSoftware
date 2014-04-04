@@ -34,7 +34,8 @@ import org.openide.util.NbBundle.Messages;
 import org.openide.windows.TopComponent;
 
 /**
- *
+ * The DataObject for the definition file.
+ * 
  * @author Richard Linsdale (richard.linsdale at blueyonder.co.uk)
  */
 @Messages({
@@ -103,6 +104,14 @@ import org.openide.windows.TopComponent;
 })
 public class DefFileDataObject extends MultiDataObject {
 
+    /**
+     * Constructor.
+     * 
+     * @param pf the file object
+     * @param loader the loader
+     * @throws DataObjectExistsException if failure
+     * @throws IOException if failure
+     */
     public DefFileDataObject(FileObject pf, MultiFileLoader loader) throws DataObjectExistsException, IOException {
         super(pf, loader);
         registerEditor("text/x-rtd", true);
@@ -113,6 +122,12 @@ public class DefFileDataObject extends MultiDataObject {
         return 1;
     }
 
+    /**
+     * Create the associated editor element.
+     * 
+     * @param lkp the top component element
+     * @return the editor element
+     */
     @MultiViewElement.Registration(
             displayName = "#LBL_DefFile_EDITOR",
             iconBase = "linsdale/rtd/definitionfiletype/shape_flip_horizontal.png",

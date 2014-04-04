@@ -16,20 +16,20 @@
  */
 package linsdale.rtd.mark;
 
-import linsdale.rtd.core.api.RTAObjectFactory;
+import linsdale.rtd.core.api.RtdFactory;
 import linsdale.rtd.code.DefFileModel;
-import linsdale.nbpcg.supportlib.OutputReporter;
 import org.openide.util.lookup.ServiceProvider;
 
 /**
- *
+ * Factory for Mark objects.
+ * 
  * @author Richard Linsdale (richard.linsdale at blueyonder.co.uk)
  */
 @ServiceProvider(service = MarkFactory.class)
-public class MarkFactory implements RTAObjectFactory<Mark> {
+public class MarkFactory implements RtdFactory<Mark> {
 
     @Override
-    public Mark newInstance(String name, OutputReporter reporter, DefFileModel dfm) {
-        return new Mark(name, reporter, dfm);
+    public Mark newInstance(String name, DefFileModel dfm) {
+        return new Mark(name, dfm);
     }
 }

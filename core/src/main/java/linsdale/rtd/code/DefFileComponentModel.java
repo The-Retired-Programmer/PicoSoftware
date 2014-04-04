@@ -19,6 +19,8 @@ package linsdale.rtd.code;
 import java.util.LinkedHashMap;
 
 /**
+ * The model containing the data elements associated with a component element of
+ * the definition file (eg a flow)
  *
  * @author Richard Linsdale (richard.linsdale at blueyonder.co.uk)
  */
@@ -28,23 +30,50 @@ public class DefFileComponentModel {
     private final String classname;
     private final LinkedHashMap<String, String> keyvaluepairs = new LinkedHashMap<>();
 
+    /**
+     * Constructor.
+     *
+     * @param instancename the name
+     * @param classname the class name
+     */
     public DefFileComponentModel(String instancename, String classname) {
         this.instancename = instancename;
         this.classname = classname;
     }
 
+    /**
+     * Add a parameter and its value.
+     *
+     * @param key the parameter key
+     * @param value the parameter value
+     */
     public void addparameter(String key, String value) {
         keyvaluepairs.put(key, value);
     }
 
+    /**
+     * Get the collection of all parameters.
+     *
+     * @return the parameters
+     */
     public LinkedHashMap<String, String> getParameters() {
         return keyvaluepairs;
     }
 
+    /**
+     * Get the class name of this component
+     *
+     * @return the class name
+     */
     public String getClassname() {
         return classname;
     }
 
+    /**
+     * Get the instance name of this component
+     *
+     * @return the instance name
+     */
     public String getInstancename() {
         return instancename;
     }

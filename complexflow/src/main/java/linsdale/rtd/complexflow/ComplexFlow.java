@@ -27,22 +27,55 @@ import linsdale.rtd.core.api.Flow;
 import linsdale.rtd.core.api.FlowModel;
 import linsdale.rtd.core.api.Location;
 import linsdale.rtd.code.DefFileModel;
-import linsdale.nbpcg.supportlib.OutputReporter;
 import linsdale.rtd.code.Scenario;
 
 /**
+ * The ComplexFlow Class - represents a flow which is described by flows (speed
+ * and direction) at the four corners points. Flows within the described area
+ * are interpolated.
  *
  * @author Richard Linsdale (richard.linsdale at blueyonder.co.uk)
  */
 public class ComplexFlow extends FlowModel {
 
+    /**
+     * the North East location (top right)
+     */
     protected Location northeast = new Location();
+
+    /**
+     * the flow at the North East location
+     */
     protected Flow northeastFlow = new Flow();
+
+    /**
+     * the North West location (top left)
+     */
     protected Location northwest = new Location();
+
+    /**
+     * the flow at the North West location
+     */
     protected Flow northwestFlow = new Flow();
+
+    /**
+     * the South East location (bottom right)
+     */
     protected Location southeast = new Location();
+
+    /**
+     * the flow at the South East location 
+     */
     protected Flow southeastFlow = new Flow();
+
+    /**
+     * the South West location (bottom left)
+     */
     protected Location southwest = new Location();
+
+    /**
+     * the flow at the South West location
+     */
     protected Flow southwestFlow = new Flow();
     private boolean showFlow = false;
     private double showFlowInterval = 100;
@@ -63,8 +96,14 @@ public class ComplexFlow extends FlowModel {
     private final double northedge;
     private final double southedge;
 
-    public ComplexFlow(String name, OutputReporter reporter, DefFileModel dfm) {
-        super(name, reporter, dfm);
+    /**
+     * Constructor
+     * 
+     * @param name the name 
+     * @param dfm the definition file data model
+     */
+    public ComplexFlow(String name, DefFileModel dfm) {
+        super(name, dfm);
         Scenario sc = dfm.getScenario();
         eastedge = sc.getEast();
         westedge = sc.getWest();
@@ -72,6 +111,10 @@ public class ComplexFlow extends FlowModel {
         southedge = sc.getSouth();
     }
 
+    /**
+     * Advance time.  Recalculate the flow.
+     * @param time the new time
+     */
     @Override
     public void timerAdvance(int time) {
         // as we are using a sine rule for swing - convert to an angle (in radians)
@@ -100,6 +143,12 @@ public class ComplexFlow extends FlowModel {
         }
     }
 
+    /**
+     * Draw the Flow arrows on the display canvas.
+     * 
+     * @param g2D the 2D graphics object
+     * @param pixelsPerMetre the scale factor
+     */
     @Override
     public void draw(Graphics2D g2D, double pixelsPerMetre) {
         if (showFlow) { // draw the flow arrows
@@ -149,6 +198,12 @@ public class ComplexFlow extends FlowModel {
         g2D.setTransform(xform);
     }
 
+    /**
+     * Get the Flow at the current time, at the requested location.
+     * 
+     * @param pos location 
+     * @return the flow
+     */
     @Override
     public Flow getFlow(Location pos) {
         Flow f = getFlowWithoutSwing(pos);
@@ -224,14 +279,26 @@ public class ComplexFlow extends FlowModel {
                 fromFlow.getSpeedKnots() + ratio * (toFlow.getSpeedKnots() - fromFlow.getSpeedKnots()));
     }
 
+    /**
+     * Get the Average flow across the total area.
+     * 
+     * @return the average flow
+     */
     @Override
-    public Flow getMeanFlow(Location pos) {
+    public Flow getMeanFlow() {
         return new Flow((northeastFlow.getAngle() + northwestFlow.getAngle()
                 + southeastFlow.getAngle() + southwestFlow.getAngle()) / 4,
                 (northeastFlow.getSpeedKnots() + northwestFlow.getSpeedKnots()
                 + southeastFlow.getSpeedKnots() + southwestFlow.getSpeedKnots()) / 4);
     }
 
+    /**
+     * Set the parameter value for a particular key
+     * 
+     * @param key the parameter key
+     * @param value the parameter value
+     * @return success code
+     */
     @Override
     public int setParameter(String key, String value) {
         try {
@@ -309,6 +376,13 @@ public class ComplexFlow extends FlowModel {
         }
     }
 
+    /**
+     * Check the legality of a particular Parameter value
+     * 
+     * @param key the parameter key
+     * @param value the parameter value
+     * @return success code
+     */
     @Override
     public int checkParameter(String key, String value) {
         try {

@@ -17,18 +17,26 @@
 package linsdale.rtd.northsouthgradientflow;
 
 import linsdale.rtd.code.DefFileModel;
-import linsdale.nbpcg.supportlib.OutputReporter;
 import linsdale.rtd.code.Scenario;
 import linsdale.rtd.complexflow.ComplexFlow;
 
 /**
+ * The NorthSouthGradientFlow Class - represents a flow with differing
+ * parameters (direction and speed) in a north-south direction. Intermediate
+ * positions are interpolated to provide the changing flow.
  *
  * @author Richard Linsdale (richard.linsdale at blueyonder.co.uk)
  */
 public class NorthSouthGradientFlow extends ComplexFlow {
 
-    public NorthSouthGradientFlow(String name, OutputReporter reporter, DefFileModel dfm) {
-        super(name, reporter, dfm);
+    /**
+     * Constructor
+     *
+     * @param name the name
+     * @param dfm the definition file data model
+     */
+    public NorthSouthGradientFlow(String name, DefFileModel dfm) {
+        super(name, dfm);
         Scenario scenario = dfm.getScenario();
         double x = scenario.getWest();
         double y = scenario.getSouth();

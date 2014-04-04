@@ -20,11 +20,18 @@ import org.netbeans.core.spi.multiview.text.MultiViewEditorElement;
 import org.openide.util.Lookup;
 
 /**
+ * The Multiview Element to display the text form of the definition file and
+ * allowing it's editing.
  *
  * @author Richard Linsdale (richard.linsdale at blueyonder.co.uk)
  */
 public class ScenarioEditorElement extends MultiViewEditorElement {
 
+    /**
+     * Creator
+     *
+     * @param lkp the top component lookup
+     */
     public ScenarioEditorElement(Lookup lkp) {
         super(lkp);
     }

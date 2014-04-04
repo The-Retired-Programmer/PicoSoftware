@@ -27,24 +27,50 @@ public class Location {
     // y +ve is North; x +ve is East
     // units are in metres
 
+    /**
+     * The horizontal position (ie east west)
+     */
     public double x = 0;
+
+    /**
+     * the vertical position (ie north south)
+     */
     public double y = 0;
 
+    /**
+     * Constructor.
+     */
     public Location() {
         this.x = 0;
         this.y = 0;
     }
 
+    /**
+     * Constructor.
+     *
+     * @param x the horizonal coordinate
+     * @param y the vertical coordinate
+     */
     public Location(double x, double y) {
         this.x = x;
         this.y = y;
     }
 
+    /**
+     * Constructor.
+     *
+     * @param pos the location (used to clone this location)
+     */
     public Location(Location pos) {
         x = pos.x;
         y = pos.y;
     }
 
+    /**
+     * Set the location.
+     *
+     * @param pos the location (to copy coordinates from)
+     */
     public void set(Location pos) {
         x = pos.x;
         y = pos.y;

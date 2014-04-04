@@ -22,20 +22,18 @@ import java.awt.Graphics2D;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Ellipse2D;
 import java.awt.geom.Line2D;
-import linsdale.nbpcg.annotations.RegisterLog;
 import linsdale.rtd.core.api.Location;
-import linsdale.rtd.core.api.RTAObject;
+import linsdale.rtd.core.api.Rtd;
 import linsdale.rtd.core.api.Direction;
 import linsdale.rtd.core.api.Polar;
 import linsdale.rtd.code.DefFileModel;
-import linsdale.nbpcg.supportlib.OutputReporter;
 
 /**
+ * The Mark Class - represent course marks.
  *
  * @author Richard Linsdale (richard.linsdale at blueyonder.co.uk)
  */
-@RegisterLog("linsdale.rta.mark")
-public class Mark extends RTAObject {
+public class Mark extends Rtd {
 
     // parameters which can be set via the definition file
     private Location pos = new Location();
@@ -51,23 +49,56 @@ public class Mark extends RTAObject {
     //
     private final double size = 1; // set up as 1 metre diameter object
 
-    public Mark(String name, OutputReporter reporter, DefFileModel dfm) {
-        super(name, reporter, dfm);
+    /**
+     * Constructor
+     *
+     * @param name the name
+     * @param dfm the definition file data model
+     */
+    public Mark(String name, DefFileModel dfm) {
+        super(name, dfm);
         setLaylineBase();
     }
 
+    /**
+     * Test if the mark as left to Port.
+     *
+     * @return true if leave to port
+     */
     public boolean toPort() {
         return leavetoport;
     }
 
+    /**
+     * Get the mark location.
+     *
+     * @return the location
+     */
     public Location getLocation() {
         return pos;
     }
 
-    public Polar getTruePolar(Location boatpos) { 
+    /**
+     * Get polar from given location to this mark.
+     *
+     * @param boatpos the given location
+     * @return the polar
+     */
+    public Polar getTruePolar(Location boatpos) {
         return new Polar(pos, boatpos);
     }
-    
+
+    /**
+     * Get a Polar course to the next mark. Include room to pass mark and
+     * understanding tacking up and down wind.
+     *
+     * @param boatpos the current boat position
+     * @param boatDirection the current boat direction
+     * @param reachdownwind true if boat tacks downwind
+     * @param boatoffset the boat offset when rounding mark
+     * @param distance allowance for rounding
+     * @return the polar
+     */
     public Polar getCoursePolar(Location boatpos, Direction boatDirection, boolean reachdownwind, double boatoffset, double distance) {   // actually is the location to pass the mark
         Polar boatmove = new Polar(distance, boatDirection); // this the potential boat movement during direction change
         Polar tomark = new Polar(pos, boatpos);
@@ -83,6 +114,11 @@ public class Mark extends RTAObject {
         }
     }
 
+    /**
+     * Get the next mark name
+     * 
+     * @return the next mark name
+     */
     public String nextMark() {
         return nextMark;
     }

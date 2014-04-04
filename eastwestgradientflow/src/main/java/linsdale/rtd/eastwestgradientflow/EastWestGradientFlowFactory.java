@@ -18,19 +18,19 @@ package linsdale.rtd.eastwestgradientflow;
 
 import org.openide.util.lookup.ServiceProvider;
 import linsdale.rtd.core.api.FlowModel;
-import linsdale.rtd.core.api.RTAObjectFactory;
+import linsdale.rtd.core.api.RtdFactory;
 import linsdale.rtd.code.DefFileModel;
-import linsdale.nbpcg.supportlib.OutputReporter;
 
 /**
+ * A Factory to create EastWestGradientFlow Objects
  *
  * @author Richard Linsdale (richard.linsdale at blueyonder.co.uk)
  */
 @ServiceProvider(service = EastWestGradientFlowFactory.class)
-public class EastWestGradientFlowFactory implements RTAObjectFactory<FlowModel> {
+public class EastWestGradientFlowFactory implements RtdFactory<FlowModel> {
 
     @Override
-    public FlowModel newInstance(String name, OutputReporter reporter, DefFileModel dfm) {
-        return new EastWestGradientFlow(name, reporter, dfm);
+    public FlowModel newInstance(String name, DefFileModel dfm) {
+        return new EastWestGradientFlow(name, dfm);
     }
 }

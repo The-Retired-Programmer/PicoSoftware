@@ -17,14 +17,20 @@
 package linsdale.rtd.core.api;
 
 import linsdale.rtd.code.DefFileModel;
-import linsdale.nbpcg.supportlib.OutputReporter;
 
 /**
- *
+ * The Abstract Factory Class.
+ * 
  * @author Richard Linsdale (richard.linsdale at blueyonder.co.uk)
- * @param <C>
+ * @param <C> the class of the rtd entity created by the factory
  */
-public interface RTAObjectFactory<C extends RTAObject> {
+public interface RtdFactory<C extends Rtd> {
 
-    public C newInstance(String name, OutputReporter reporter, DefFileModel dfm);
+    /**
+     * Create a new Instance of an rtd object
+     * @param name the name 
+     * @param dfm the definition file data model
+     * @return the rtd object
+     */
+    public C newInstance(String name, DefFileModel dfm);
 }

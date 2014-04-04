@@ -20,39 +20,53 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
 import linsdale.nbpcg.supportlib.Log;
-import linsdale.rtd.core.api.RTAObject;
+import linsdale.rtd.core.api.Rtd;
 import org.openide.util.Lookup;
-import linsdale.rtd.core.api.RTAObjectFactory;
-import linsdale.nbpcg.supportlib.OutputReporter;
+import linsdale.rtd.core.api.RtdFactory;
 
 /**
- *
+ * Registry of all Factory Classes.
+ * 
  * @author Richard Linsdale (richard.linsdale at blueyonder.co.uk)
  */
 public class FactoryManager {
 
-    private final static Map<String, Class<? extends RTAObjectFactory<?>>> factoryRegister = new HashMap<>();
+    private final static Map<String, Class<? extends RtdFactory<?>>> factoryRegister = new HashMap<>();
 
-    public static void registerFactory(String classname, Class<? extends RTAObjectFactory<?>> factoryClass) {
+    /**
+     * Constructor.
+     * 
+     * @param classname the classname of the target class created by the factory
+     * @param factoryClass the factory class
+     */
+    public static void registerFactory(String classname, Class<? extends RtdFactory<?>> factoryClass) {
         factoryRegister.put(classname, factoryClass);
     }
 
-    private static Class<? extends RTAObjectFactory<?>> getFactoryClass(String name) {
+    private static Class<? extends RtdFactory<?>> getFactoryClass(String name) {
         return factoryRegister.get(name);
     }
 
-    public static RTAObject newInstance(String classname, String instancename, OutputReporter reporter, DefFileModel dfm) {
-        Log.get("linsdale.rta").log(Level.FINE, "Creating a new instance {0} of class {1}", new Object[]{
+    /**
+     * Create a new Instance of the target class.
+     * 
+     * @param classname the classname of the target class
+     * @param instancename the name to be given to the instance
+     * @param dfm the definition file datamodel
+     * @return the new instance of the target class
+     */
+    public static Rtd newInstance(String classname, String instancename, DefFileModel dfm) {
+        Log.get("linsdale.rtd").log(Level.FINE, "Creating a new instance {0} of class {1}", new Object[]{
             instancename, classname
         });
-        Class<? extends RTAObjectFactory<?>> clazz = getFactoryClass(classname);
+        Class<? extends RtdFactory<?>> clazz = getFactoryClass(classname);
         if (clazz == null) {
             return null;
         }
-        RTAObjectFactory<?> factory = Lookup.getDefault().lookup(clazz);
+        RtdFactory<?> factory = Lookup.getDefault().lookup(clazz);
         if (factory == null) {
             return null;
         }
-        return factory.newInstance(instancename, reporter, dfm);
+        return factory.newInstance(instancename, dfm);
     }
 }

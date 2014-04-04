@@ -17,20 +17,26 @@
 package linsdale.rtd.constantflow;
 
 import linsdale.rtd.core.api.FlowModel;
-import linsdale.rtd.core.api.RTAObjectFactory;
+import linsdale.rtd.core.api.RtdFactory;
 import linsdale.rtd.code.DefFileModel;
-import linsdale.nbpcg.supportlib.OutputReporter;
 import org.openide.util.lookup.ServiceProvider;
 
 /**
- *
+ * Factory to create ConstantFlow objects.
+ * 
  * @author Richard Linsdale (richard.linsdale at blueyonder.co.uk)
  */
 @ServiceProvider(service = ConstantFlowFactory.class)
-public class ConstantFlowFactory implements RTAObjectFactory<FlowModel> {
+public class ConstantFlowFactory implements RtdFactory<FlowModel> {
 
+    /**
+     * Create a new Instance of a ConstantFlow object
+     * @param name the name 
+     * @param dfm the definition file datamodel
+     * @return the ConstantFlow object
+     */
     @Override
-    public FlowModel newInstance(String name, OutputReporter reporter, DefFileModel dfm) {
-        return new ConstantFlow(name, reporter, dfm);
+    public FlowModel newInstance(String name, DefFileModel dfm) {
+        return new ConstantFlow(name, dfm);
     }
 }

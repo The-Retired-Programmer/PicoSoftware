@@ -22,13 +22,19 @@ import linsdale.nbpcg.supportlib.Log;
 import org.openide.util.ImageUtilities;
 
 /**
- *
+ * The Pause action.
+ * 
  * @author Richard Linsdale (richard.linsdale at blueyonder.co.uk)
  */
 public final class PauseAction extends AbstractAction {
 
     private final ScenarioSimulationElement element;
 
+    /**
+     * Constructor
+     * 
+     * @param element the simulation element into which the action icon is to be placed
+     */
     public PauseAction(ScenarioSimulationElement element) {
         super("Pause Simulation", ImageUtilities.loadImageIcon("com/famfamfam/www/silkicons/control_pause_blue.png", false));
         this.element = element;
@@ -36,7 +42,7 @@ public final class PauseAction extends AbstractAction {
 
     @Override
     public void actionPerformed(ActionEvent ev) {
-        Log.get("linsdale.rta").finer("Pause button pressed");
+        Log.get("linsdale.rtd").finer("Pause button pressed");
         element.terminate();
     }
 }

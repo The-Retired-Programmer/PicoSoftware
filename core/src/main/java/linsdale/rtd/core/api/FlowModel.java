@@ -16,20 +16,38 @@
  */
 package linsdale.rtd.core.api;
 
-import linsdale.nbpcg.supportlib.OutputReporter;
 import linsdale.rtd.code.DefFileModel;
 
 /**
+ * Abstract Class describing a Flow Model. A Flow Model represents variable
+ * flows over a area.
  *
  * @author Richard Linsdale (richard.linsdale at blueyonder.co.uk)
  */
-abstract public class FlowModel extends RTAObject {
+abstract public class FlowModel extends Rtd {
 
-    public FlowModel(String name, OutputReporter reporter, DefFileModel dfm) {
-        super(name, reporter, dfm);
+    /**
+     * Constructor
+     *
+     * @param name the flowmodel name
+     * @param dfm the definition file datamodel
+     */
+    public FlowModel(String name, DefFileModel dfm) {
+        super(name, dfm);
     }
 
+    /**
+     * Get the flow at a point in the flowmodel at the current time.
+     *
+     * @param pos the point at which the flow is to be calculated
+     * @return the flow
+     */
     public abstract Flow getFlow(Location pos);
 
-    public abstract Flow getMeanFlow(Location pos);
+    /**
+     * Get the mean value for the flow across the entire flow model.
+     *
+     * @return the mean flow
+     */
+    public abstract Flow getMeanFlow();
 }

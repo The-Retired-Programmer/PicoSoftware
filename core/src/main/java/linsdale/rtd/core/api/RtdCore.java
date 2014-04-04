@@ -20,21 +20,50 @@ import java.awt.Color;
 import java.util.LinkedHashMap;
 
 /**
+ * The Abstract Class - represents the core class of every simulation object
+ * class.
  *
  * @author Richard Linsdale (richard.linsdale at blueyonder.co.uk)
  */
-abstract public class RTABaseObject {
+abstract public class RtdCore {
 
+    /**
+     * Parameter parsed/set OK
+     */
     public static final int PARAM_OK = 0;
+
+    /**
+     * Parameter parsed/set failed - key not recognised
+     */
     public static final int PARAM_BADKEY = 1;
+
+    /**
+     * Parameter parsed/set failed - value incorrect
+     */
     public static final int PARAM_BADVALUE = 2;
+
+    /**
+     * the entity name
+     */
     protected String name;
 
-    public RTABaseObject(String name) {
+    /**
+     * Constructor.
+     *
+     * @param name the entity name
+     */
+    public RtdCore(String name) {
         this.name = name;
     }
 
-    protected boolean parseYesNo(String value) {
+    /**
+     * Parse a yes/no parameter value
+     *
+     * @param value the string to parse
+     * @return the boolean result
+     * @throws NumberFormatException if not yes or no
+     */
+    protected boolean parseYesNo(String value) throws NumberFormatException {
         if (value.equals("yes")) {
             return true;
         }
@@ -44,7 +73,14 @@ abstract public class RTABaseObject {
         throw new NumberFormatException("Illegal yes/no boolean");
     }
 
-    protected Location parseLocation(String value) {
+    /**
+     * Parse a location parameter
+     *
+     * @param value the location string (xxx,yyy) parameter
+     * @return a location
+     * @throws NumberFormatException if not a location
+     */
+    protected Location parseLocation(String value) throws NumberFormatException {
         String[] coords = value.split(",");
         int l = coords.length;
         if (l != 2) {
@@ -56,7 +92,14 @@ abstract public class RTABaseObject {
         return loc;
     }
 
-    protected Color parseColour(String value) {
+    /**
+     * Parse a colour parameter
+     *
+     * @param value a colour string
+     * @return a Color
+     * @throws NumberFormatException if not a color
+     */
+    protected Color parseColour(String value) throws NumberFormatException {
         switch (value) {
             case "black":
                 return Color.BLACK;
@@ -106,20 +149,31 @@ abstract public class RTABaseObject {
         }
     }
 
+    /**
+     * Get the entity name
+     *
+     * @return the name
+     */
     public String getName() {
         return name;
     }
 
+    /**
+     * Set a number of parameters.
+     *
+     * @param parameters a map of parameter keys and values.
+     * @param errors a StringBuffer to collect error messages
+     */
     public void setParameters(LinkedHashMap<String, String> parameters, StringBuffer errors) {
         for (String key : parameters.keySet()) {
             String value = parameters.get(key);
             switch (setParameter(key, value)) {
-                case linsdale.rtd.core.api.RTAObject.PARAM_OK:
+                case linsdale.rtd.core.api.Rtd.PARAM_OK:
                     break;
-                case linsdale.rtd.core.api.RTAObject.PARAM_BADKEY:
+                case linsdale.rtd.core.api.Rtd.PARAM_BADKEY:
                     errors.append("Attempting to set undefined key (").append(name).append(".").append(key).append("=").append(value).append(")\n");
                     break;
-                case linsdale.rtd.core.api.RTAObject.PARAM_BADVALUE:
+                case linsdale.rtd.core.api.Rtd.PARAM_BADVALUE:
                     errors.append("Attempting to set key with bad value (").append(name).append(".").append(key).append("=").append(value).append(")\n");
                     break;
                 default:
@@ -129,18 +183,31 @@ abstract public class RTABaseObject {
         }
     }
 
+    /**
+     * Set a parameter.
+     *
+     * @param key the parameter key
+     * @param value the parameter value
+     * @return success code
+     */
     abstract public int setParameter(String key, String value);
 
+    /**
+     * Check a set of parameters.
+     *
+     * @param parameters a map of parameter keys and values.
+     * @param errors a StringBuffer to collect error messages
+     */
     public void checkParameters(LinkedHashMap<String, String> parameters, StringBuffer errors) {
         for (String key : parameters.keySet()) {
             String value = parameters.get(key);
             switch (checkParameter(key, value)) {
-                case linsdale.rtd.core.api.RTAObject.PARAM_OK:
+                case linsdale.rtd.core.api.Rtd.PARAM_OK:
                     break;
-                case linsdale.rtd.core.api.RTAObject.PARAM_BADKEY:
+                case linsdale.rtd.core.api.Rtd.PARAM_BADKEY:
                     errors.append("Attempting to set undefined key (").append(name).append(".").append(key).append("=").append(value).append(")\n");
                     break;
-                case linsdale.rtd.core.api.RTAObject.PARAM_BADVALUE:
+                case linsdale.rtd.core.api.Rtd.PARAM_BADVALUE:
                     errors.append("Attempting to set key with bad value (").append(name).append(".").append(key).append("=").append(value).append(")\n");
                     break;
                 default:
@@ -150,5 +217,12 @@ abstract public class RTABaseObject {
         }
     }
 
+    /**
+     * Check the legality of a particular Parameter value
+     *
+     * @param key the parameter key
+     * @param value the parameter value
+     * @return success code
+     */
     abstract public int checkParameter(String key, String value);
 }

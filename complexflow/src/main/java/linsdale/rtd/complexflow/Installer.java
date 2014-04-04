@@ -20,7 +20,8 @@ import linsdale.rtd.code.FactoryManager;
 import org.openide.modules.OnStart;
 
 /**
- *
+ * Register the ComplexFlow Factory.
+ * 
  * @author Richard Linsdale (richard.linsdale at blueyonder.co.uk)
  */
 @OnStart
