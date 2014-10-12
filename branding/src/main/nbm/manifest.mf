@@ -1,3 +1,4 @@
 Manifest-Version: 1.0
 OpenIDE-Module-Localizing-Bundle: linsdale/rta/branding/Bundle.properties
 AutoUpdate-Essential-Module: true
+OpenIDE-Module-Display-Category: Race Training Demonstrator - Application
