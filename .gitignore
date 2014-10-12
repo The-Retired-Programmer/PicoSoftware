@@ -1,6 +1,6 @@
 /core/target/
 /branding/target/
-/application/target/
+/builder/target/
 /boat/target/
 /laser2/target/
 /complexflow/target/

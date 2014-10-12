@@ -1,14 +1,61 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
+    
+    <properties>
+        <release>1</release>
+        <brandingToken>racetrainingdemonstrator</brandingToken>
+        <ghpagesroot>racetrainingdemonstrator</ghpagesroot>
+    </properties>
+    
     <parent>
-        <groupId>linsdale.racetrainingdemonstrator</groupId>
-        <artifactId>racetrainingdemonstrator-parent</artifactId>
-        <version>1.0-SNAPSHOT</version>
+        <groupId>uk.org.rlinsdale.poms</groupId>
+        <artifactId>nb-application-module</artifactId>
+        <version>1.0.0</version>
     </parent>
-    <artifactId>racetrainingdemonstrator-complexflow</artifactId>
+    
+    <groupId>uk.org.rlinsdale.racetrainingdemonstrator</groupId>
+    <artifactId>complexflow</artifactId>
+    <version>1.0.0</version>
     <packaging>nbm</packaging>
-    <name>RaceTrainingDemonstrator-complexflow</name>
+
+    <name>Race Training Demonstrator - complex flow</name>
+    
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>uk.org.rlinsdale</groupId>
+                <artifactId>nbpcglibrary</artifactId>
+                <version>3.1.0</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+            <!-- dependency>
+                <groupId>uk.org.rlinsdale</groupId>
+                <artifactId>racetrainingdemonstrator</artifactId>
+                <version>1.0.0</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency -->
+        </dependencies>
+    </dependencyManagement>
+    
+    <dependencies>
+        <dependency>
+            <groupId>org.netbeans.api</groupId>
+            <artifactId>org-openide-modules</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>uk.org.rlinsdale.racetrainingdemonstrator</groupId>
+            <artifactId>core</artifactId>
+            <version>1.0.0</version>
+        </dependency>
+        <dependency>
+            <artifactId>common</artifactId>
+            <groupId>uk.org.rlinsdale.nbpcglibrary</groupId>
+        </dependency>
+    </dependencies>
+    
     <build>
         <plugins>
             <plugin>
@@ -17,45 +64,11 @@
                 <extensions>true</extensions>
                 <configuration>
                     <publicPackages>
-                        <publicPackage>linsdale.rtd.complexflow</publicPackage>
+                        <publicPackage>uk.org.rlinsdale.racetrainingdemonstrator.complexflow</publicPackage>
                     </publicPackages>
-                </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-jar-plugin</artifactId>
-                <configuration>
-                    <useDefaultManifestFile>true</useDefaultManifestFile>
                 </configuration>
             </plugin>
         </plugins>
     </build>
-    <dependencies>
-        <dependency>
-            <groupId>org.netbeans.api</groupId>
-            <artifactId>org-netbeans-api-annotations-common</artifactId>
-            <version>${netbeans.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.netbeans.api</groupId>
-            <artifactId>org-openide-modules</artifactId>
-            <version>RELEASE80</version>
-            <type>jar</type>
-        </dependency>
-        <dependency>
-            <groupId>linsdale.racetrainingdemonstrator</groupId>
-            <artifactId>racetrainingdemonstrator-core</artifactId>
-            <version>1.0-SNAPSHOT</version>
-            <type>jar</type>
-        </dependency>
-        <dependency>
-            <artifactId>NBPCGSupportLibrary</artifactId>
-            <groupId>linsdale.nbpcglibrary</groupId>
-            <type>jar</type>
-            <version>1.0-SNAPSHOT</version>
-        </dependency>
-    </dependencies>
-    <properties>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    </properties>
+    
 </project>
