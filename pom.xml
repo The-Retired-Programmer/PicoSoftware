@@ -30,6 +30,8 @@
     
     <modules>
         <module>branding</module>
+        <module>main</module>
+        <module>updater</module>
         <module>builder</module>
         <module>core</module>
         <module>boat</module>

@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    
+    <!--
+        *** IMPORTANT ***
+        project.version , release and brandingToken must be consistent (ie the same)
+        in parent, main, branding and builder projects
+    -->
+
+    <properties>
+        <release>1</release>
+        <brandingToken>racetrainingdemonstrator</brandingToken>
+        <ghpagesroot>racetrainingdemonstrator</ghpagesroot>
+    </properties>
+    
+    <parent>
+        <groupId>uk.org.rlinsdale.poms</groupId>
+        <artifactId>nb-application-module-filtering</artifactId>
+        <version>1.0.0</version>
+    </parent>
+    
+    <groupId>uk.org.rlinsdale.racetrainingdemonstrator</groupId>
+    <artifactId>main</artifactId>
+    <version>1.0.0</version>
+    <packaging>nbm</packaging>
+    
+    <name>Race Training Demonstrator - main</name>
+    
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>uk.org.rlinsdale</groupId>
+                <artifactId>lindos</artifactId>
+                <version>3.1.1</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+    <dependencies>
+        <dependency>
+            <groupId>org.netbeans.api</groupId>
+            <artifactId>org-openide-modules</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>uk.org.rlinsdale.lindos</groupId>
+            <artifactId>lifecycle</artifactId>
+        </dependency>
+    </dependencies>
+</project>
