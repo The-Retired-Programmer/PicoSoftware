@@ -35,10 +35,6 @@
     
     <dependencies>
         <dependency>
-            <groupId>org.netbeans.api</groupId>
-            <artifactId>org-openide-modules</artifactId>
-        </dependency>
-        <dependency>
             <groupId>uk.org.rlinsdale.racetrainingdemonstrator</groupId>
             <artifactId>core</artifactId>
             <version>1.0.0</version>

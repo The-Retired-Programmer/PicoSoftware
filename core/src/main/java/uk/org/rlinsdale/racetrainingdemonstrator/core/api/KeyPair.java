@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014 Richard Linsdale (richard.linsdale at blueyonder.co.uk)
+ * Copyright (C) 2014 Richard Linsdale
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -14,22 +14,27 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package uk.org.rlinsdale.racetrainingdemonstrator.mark;
 
-import uk.org.rlinsdale.racetrainingdemonstrator.core.api.ElementFactory;
-import uk.org.rlinsdale.racetrainingdemonstrator.core.AllElements;
-import org.openide.util.lookup.ServiceProvider;
+package uk.org.rlinsdale.racetrainingdemonstrator.core.api;
 
 /**
- * Factory for Mark objects.
- * 
+ *
  * @author Richard Linsdale (richard.linsdale at blueyonder.co.uk)
  */
-@ServiceProvider(service = MarkFactory.class)
-public class MarkFactory implements ElementFactory<Mark> {
-
-    @Override
-    public Mark get(String name, AllElements dfm) {
-        return new Mark(name, dfm);
+public class KeyPair {
+    
+    public enum Status {
+        OK,
+        BADKEY,
+        BADVALUE
     }
+    
+    public final String key;
+    public final String value;
+    
+    public KeyPair(String key, String value){
+        this.key=key;
+        this.value = value;
+    }
+
 }

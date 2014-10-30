@@ -16,9 +16,12 @@
  */
 package uk.org.rlinsdale.racetrainingdemonstrator.swingingflow;
 
-import uk.org.rlinsdale.racetrainingdemonstrator.core.AllElements;
 import uk.org.rlinsdale.racetrainingdemonstrator.core.ScenarioElement;
 import uk.org.rlinsdale.racetrainingdemonstrator.complexflow.ComplexFlow;
+import uk.org.rlinsdale.racetrainingdemonstrator.core.api.KeyPair;
+import uk.org.rlinsdale.racetrainingdemonstrator.core.api.KeyPair.Status;
+import static uk.org.rlinsdale.racetrainingdemonstrator.core.api.KeyPair.Status.BADVALUE;
+import static uk.org.rlinsdale.racetrainingdemonstrator.core.api.KeyPair.Status.OK;
 
 /**
  * The SwingingFlow Class - represents a flow which oscillates about a mean
@@ -32,11 +35,10 @@ public class SwingingFlow extends ComplexFlow {
      * Constructor
      *
      * @param name the name
-     * @param dfm the definition file data model
+     * @param scenario the field of play
      */
-    public SwingingFlow(String name, AllElements dfm) {
-        super(name, dfm);
-        ScenarioElement scenario = dfm.getScenarioElement();
+    public SwingingFlow(String name, ScenarioElement scenario) {
+        super(name, scenario);
         double x = scenario.getWest();
         double y = scenario.getSouth();
         northeast.x = x;
@@ -50,46 +52,46 @@ public class SwingingFlow extends ComplexFlow {
     }
 
     @Override
-    public int setParameter(String key, String value) {
+    protected Status setParameter(KeyPair kp) {
         try {
-            switch (key) {
+            switch (kp.key) {
                 case "meanfrom":
-                    int angle = Integer.parseInt(value);
+                    int angle = Integer.parseInt(kp.value);
                     northeastFlow.setAngle(angle);
                     northwestFlow.setAngle(angle);
                     southeastFlow.setAngle(angle);
                     southwestFlow.setAngle(angle);
-                    return PARAM_OK;
+                    return OK;
                 case "speed":
-                    double speed = Double.parseDouble(value);
+                    double speed = Double.parseDouble(kp.value);
                     northeastFlow.setSpeedKnots(speed);
                     northwestFlow.setSpeedKnots(speed);
                     southeastFlow.setSpeedKnots(speed);
                     southwestFlow.setSpeedKnots(speed);
-                    return PARAM_OK;
+                    return OK;
                 default:
-                    return super.setParameter(key, value);
+                    return super.setParameter(kp);
             }
         } catch (NumberFormatException numberFormatException) {
-            return PARAM_BADVALUE;
+            return BADVALUE;
         }
     }
 
     @Override
-    public int checkParameter(String key, String value) {
+    protected Status checkParameter(KeyPair kp) {
         try {
-            switch (key) {
+            switch (kp.key) {
                 case "meanfrom":
-                    Integer.parseInt(value);
-                    return PARAM_OK;
+                    Integer.parseInt(kp.value);
+                    return OK;
                 case "speed":
-                    Double.parseDouble(value);
-                    return PARAM_OK;
+                    Double.parseDouble(kp.value);
+                    return OK;
                 default:
-                    return super.checkParameter(key, value);
+                    return super.checkParameter(kp);
             }
         } catch (NumberFormatException numberFormatException) {
-            return PARAM_BADVALUE;
+            return BADVALUE;
         }
     }
 }

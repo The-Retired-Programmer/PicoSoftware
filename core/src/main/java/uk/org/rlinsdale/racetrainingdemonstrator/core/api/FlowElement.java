@@ -16,7 +16,8 @@
  */
 package uk.org.rlinsdale.racetrainingdemonstrator.core.api;
 
-import uk.org.rlinsdale.racetrainingdemonstrator.core.AllElements;
+import uk.org.rlinsdale.racetrainingdemonstrator.core.ScenarioElement;
+
 
 /**
  * Abstract Class describing a Flow Model. A Flow Model represents variable
@@ -25,15 +26,18 @@ import uk.org.rlinsdale.racetrainingdemonstrator.core.AllElements;
  * @author Richard Linsdale (richard.linsdale at blueyonder.co.uk)
  */
 abstract public class FlowElement extends DisplayableElement {
+    
+    final protected ScenarioElement scenario;
 
     /**
      * Constructor
      *
-     * @param name the flowmodel name
-     * @param dfm the definition file datamodel
+     * @param name the flow name - either wind or water
+     * @param scenario the scenario to be applied
      */
-    public FlowElement(String name, AllElements dfm) {
-        super(name, dfm);
+    public FlowElement(String name, ScenarioElement scenario) {
+        super(name);
+        this.scenario = scenario;
     }
 
     /**

@@ -56,9 +56,9 @@ public final class FunctionKeyAction implements ActionListener {
     public void actionPerformed(ActionEvent e) {
         String key = e.getActionCommand();
         Log.get("uk.org.rlinsdale.racetrainingdemonstrator").log(Level.FINER, "Key {0} pressed", key);
-        ScenarioSimulationDisplay el = ScenarioSimulationDisplay.getSimulationInFocus();
-        if (el != null) {
-            el.keyAction(key);
+        ScenarioSimulationDisplay simulationdisplayinfocus = ScenarioSimulationDisplay.getSimulationInFocus();
+        if (simulationdisplayinfocus != null) {
+            simulationdisplayinfocus.keyAction(key);
         }
     }
 }

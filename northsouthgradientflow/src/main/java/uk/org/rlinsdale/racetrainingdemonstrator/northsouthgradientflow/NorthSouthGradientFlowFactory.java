@@ -17,20 +17,25 @@
 package uk.org.rlinsdale.racetrainingdemonstrator.northsouthgradientflow;
 
 import uk.org.rlinsdale.racetrainingdemonstrator.core.api.FlowElement;
-import uk.org.rlinsdale.racetrainingdemonstrator.core.api.ElementFactory;
-import uk.org.rlinsdale.racetrainingdemonstrator.core.AllElements;
 import org.openide.util.lookup.ServiceProvider;
+import uk.org.rlinsdale.racetrainingdemonstrator.core.ScenarioElement;
+import uk.org.rlinsdale.racetrainingdemonstrator.core.api.FlowElementFactory;
 
 /**
  * A Factory to create NorthSouthGradientFlow Objects
  *
  * @author Richard Linsdale (richard.linsdale at blueyonder.co.uk)
  */
-@ServiceProvider(service = NorthSouthGradientFlowFactory.class)
-public class NorthSouthGradientFlowFactory implements ElementFactory<FlowElement> {
+@ServiceProvider(service = FlowElementFactory.class)
+public class NorthSouthGradientFlowFactory extends FlowElementFactory {
 
     @Override
-    public FlowElement get(String name, AllElements dfm) {
-        return new NorthSouthGradientFlow(name, dfm);
+    public FlowElement createInstance(String instancename, ScenarioElement scenario) {
+        return new NorthSouthGradientFlow(instancename, scenario);
+    }
+
+    @Override
+    public String getName() {
+        return "northsouthgradientflow";
     }
 }

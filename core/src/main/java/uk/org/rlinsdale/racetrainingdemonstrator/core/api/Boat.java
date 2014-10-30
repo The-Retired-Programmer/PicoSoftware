@@ -14,7 +14,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package uk.org.rlinsdale.racetrainingdemonstrator.boat;
+package uk.org.rlinsdale.racetrainingdemonstrator.core.api;
 
 import java.awt.BasicStroke;
 import java.awt.Color;
@@ -26,15 +26,13 @@ import java.awt.geom.Line2D;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import uk.org.rlinsdale.nbpcglibrary.common.LogicException;
-import uk.org.rlinsdale.racetrainingdemonstrator.core.api.DisplayableElement;
-import uk.org.rlinsdale.racetrainingdemonstrator.core.api.Direction;
-import uk.org.rlinsdale.racetrainingdemonstrator.core.api.Flow;
-import uk.org.rlinsdale.racetrainingdemonstrator.core.api.Location;
-import uk.org.rlinsdale.racetrainingdemonstrator.core.api.Polar;
-import uk.org.rlinsdale.racetrainingdemonstrator.core.AllElements;
 import uk.org.rlinsdale.racetrainingdemonstrator.core.ScenarioElement;
-import uk.org.rlinsdale.racetrainingdemonstrator.core.api.FlowElement;
+import uk.org.rlinsdale.racetrainingdemonstrator.core.api.KeyPair.Status;
+import static uk.org.rlinsdale.racetrainingdemonstrator.core.api.KeyPair.Status.BADKEY;
+import static uk.org.rlinsdale.racetrainingdemonstrator.core.api.KeyPair.Status.BADVALUE;
+import static uk.org.rlinsdale.racetrainingdemonstrator.core.api.KeyPair.Status.OK;
 import uk.org.rlinsdale.racetrainingdemonstrator.mark.Mark;
 
 /**
@@ -44,6 +42,12 @@ import uk.org.rlinsdale.racetrainingdemonstrator.mark.Mark;
  * @author Richard Linsdale (richard.linsdale at blueyonder.co.uk)
  */
 public abstract class Boat extends DisplayableElement {
+    
+    final protected ScenarioElement scenario;
+    final protected FlowElement wind;
+    final protected FlowElement water;
+    final protected Map<String, Mark> marks;
+    
     // parameters - can be set via the definition file
 
     private Color colour = Color.black;
@@ -122,18 +126,25 @@ public abstract class Boat extends DisplayableElement {
     private final List<Location> track = Collections.synchronizedList(new ArrayList<Location>());
 
     /**
-     * Constructor.
-     * 
-     * @param name the name 
-     * @param dfm the definition file datamodel
+     * Constructor
+     *
+     * @param name the flow name - either wind or water
+     * @param scenario the scenario to be applied
+     * @param wind the wind flow
+     * @param water the water flow
+     * @param marks the set of marks
      */
-    public Boat(String name, AllElements dfm) {
-        super(name, dfm);
+    public Boat(String name, ScenarioElement scenario, FlowElement wind, FlowElement water, Map<String, Mark> marks) {
+        super(name);
+        this.scenario = scenario;
+        this.wind = wind;
+        this.water = water;
+        this.marks = marks;
         initNextMarkVariables();
     }
 
     /**
-     * Set teh metrics for the boat.
+     * Set the metrics for the boat.
      * 
      * @param length boat length
      * @param width boat width
@@ -213,8 +224,7 @@ public abstract class Boat extends DisplayableElement {
     }
 
     private void calculateAllEnvironmentVariables() {
-        FlowElement windmodel = dfm.getWind();
-        winddirection = windmodel.getFlow(pos).getDirection();
+        winddirection = wind.getFlow(pos).getDirection();
         currentTack = direction.angleDiff(winddirection) > 0 ? STARBOARD : PORT;
         if (nextMark != null) {
             Polar toNextMark = nextMark.getTruePolar(pos);
@@ -227,7 +237,7 @@ public abstract class Boat extends DisplayableElement {
             downwindchannelvalue = currentTack == STARBOARD ? downwindchannelleft : downwindchannelright;
             upwindchannelvalue = currentTack == STARBOARD ? upwindchannelleft : upwindchannelright;
         }
-        windAngleToMeanWind = winddirection.angleDiff(windmodel.getMeanFlow().getDirection());
+        windAngleToMeanWind = winddirection.angleDiff(wind.getMeanFlow().getDirection());
         boatAngleToWind = direction.absAngleDiff(winddirection);
     }
 
@@ -243,7 +253,6 @@ public abstract class Boat extends DisplayableElement {
     private int limitsHandler() {
         // test if at fixed limits and 'relect' direction to keep within limits
         // test for a distance inside limits so that turn is complete within limits.
-        ScenarioElement scenario = dfm.getScenarioElement();
         double distance = boatspeed * 4;
         int angle = direction.getDegrees();
         if (pos.x <= (scenario.getWestLimit() + distance) && angle < 0) {
@@ -423,11 +432,8 @@ public abstract class Boat extends DisplayableElement {
     }
 
     private void initNextMarkVariables() {
-        if (dfm != null) {
-            ScenarioElement scenario = dfm.getScenarioElement();
-            nextMark = (Mark) dfm.get(scenario.getFirstMark());
+            nextMark = marks.get(scenario.getFirstMark());
             updateNextMarkVariables();
-        }
     }
 
     private void changeNextMarkVariables() {
@@ -439,7 +445,7 @@ public abstract class Boat extends DisplayableElement {
         if (nextMark != null) {
             startOfLeg = new Location(pos);
             nextMarkPolar = new Polar(nextMark.getLocation(), startOfLeg);
-            followingMark = (Mark) dfm.get(nextMark.nextMark());
+            followingMark = marks.get(nextMark.nextMark());
             if (followingMark != null) {
                 followingMarkPolar = new Polar(followingMark.getLocation(), nextMark.getLocation());
             }
@@ -452,19 +458,19 @@ public abstract class Boat extends DisplayableElement {
      * @param requiredDirection teh required direction
      */
     public void moveBoat(Direction requiredDirection) {
-        Flow wind = dfm.getWind().getFlow(pos);
-        Flow water = dfm.getWater().getFlow(pos);
+        Flow windflow = wind.getFlow(pos);
+        Flow waterflow = water.getFlow(pos);
         // calculate the potential boat speed - based on wind speed and relative angle 
         double potentialBoatspeed = Flow.convertKnots2MetresPerSecond(
-                getPotentialBoatSpeed(requiredDirection.absAngleDiff(wind.getDirection()),
-                        wind.getSpeedKnots()));
+                getPotentialBoatSpeed(requiredDirection.absAngleDiff(windflow.getDirection()),
+                        windflow.getSpeedKnots()));
         boatspeed += inertia * (potentialBoatspeed - boatspeed);
         // and now move the boat
         // start by calculating the vector components of the boats movement
         Polar move = new Polar(boatspeed, requiredDirection);
         // next calculate and addElement the components of water movement
         move.subtract(
-                new Polar(water.getSpeedMetresPerSecond(), water.getDirection()));
+                new Polar(waterflow.getSpeedMetresPerSecond(), waterflow.getDirection()));
         Location updated = move.polar2Location(pos); // updated position calculated
         track.add(updated); // record it in track
         pos.set(updated); // and set the new position
@@ -510,171 +516,157 @@ public abstract class Boat extends DisplayableElement {
         return boatspeedlower + ratio * (boatspeedupper - boatspeedlower);
     }
 
-    /**
-     * Set the parameter value for a particular key
-     * 
-     * @param key the parameter key
-     * @param value the parameter value
-     * @return success code
-     */
     @Override
-    public int setParameter(String key, String value) {
+    public Status setParameter(KeyPair kp) {
         try {
-            switch (key) {
+            switch (kp.key) {
                 case "heading":
-                    int heading = Integer.parseInt(value);
+                    int heading = Integer.parseInt(kp.value);
                     direction.set(heading);
                     nextDirection.set(heading);
                     break;
                 case "location":
-                    pos = parseLocation(value);
+                    pos = parseLocation(kp.value);
                     updateNextMarkVariables();
                     break;
                 case "colour":
-                    colour = parseColour(value);
+                    colour = parseColour(kp.value);
                     trackColour = colour;
                     break;
                 case "trackcolour":
-                    trackColour = parseColour(value);
+                    trackColour = parseColour(kp.value);
                     break;
                 case "upwindsailonbesttack":
-                    tackonbesttack = parseYesNo(value);
+                    tackonbesttack = parseYesNo(kp.value);
                     break;
                 case "upwindtackifheaded":
-                    tackifheaded = parseYesNo(value);
+                    tackifheaded = parseYesNo(kp.value);
                     break;
                 case "upwindbearawayifheaded":
-                    bearawayupwindifheaded = parseYesNo(value);
+                    bearawayupwindifheaded = parseYesNo(kp.value);
                     break;
                 case "upwindluffupiflifted":
-                    luffupupwindiflifted = parseYesNo(value);
+                    luffupupwindiflifted = parseYesNo(kp.value);
                     break;
                 case "reachdownwind":
-                    reachdownwind = parseYesNo(value);
+                    reachdownwind = parseYesNo(kp.value);
                     break;
                 case "downwindsailonbestgybe":
-                    gybeonbesttack = parseYesNo(value);
+                    gybeonbesttack = parseYesNo(kp.value);
                     break;
                 case "downwindbearawayifheaded":
-                    bearawaydownwindifheaded = parseYesNo(value);
+                    bearawaydownwindifheaded = parseYesNo(kp.value);
                     break;
                 case "downwindgybeiflifted":
-                    gybeiflifted = parseYesNo(value);
+                    gybeiflifted = parseYesNo(kp.value);
                     break;
                 case "downwindluffupiflifted":
-                    luffupdownwindiflifted = parseYesNo(value);
+                    luffupdownwindiflifted = parseYesNo(kp.value);
                     break;
                 case "upwindchannel":
-                    double vu = Double.parseDouble(value) / 2;
+                    double vu = Double.parseDouble(kp.value) / 2;
                     upwindchannelleft = vu;
                     upwindchannelright = vu;
                     upwindchannel = true;
                     break;
                 case "upwindchannelleft":
-                    upwindchannelleft = Double.parseDouble(value);
+                    upwindchannelleft = Double.parseDouble(kp.value);
                     upwindchannel = true;
                     break;
                 case "upwindchannelright":
-                    upwindchannelright = Double.parseDouble(value);
+                    upwindchannelright = Double.parseDouble(kp.value);
                     upwindchannel = true;
                     break;
                 case "downwindchannel":
-                    double vd = Double.parseDouble(value) / 2;
+                    double vd = Double.parseDouble(kp.value) / 2;
                     downwindchannelleft = vd;
                     downwindchannelright = vd;
                     downwindchannel = true;
                     break;
                 case "downwindchannelleft":
-                    downwindchannelleft = Double.parseDouble(value);
+                    downwindchannelleft = Double.parseDouble(kp.value);
                     downwindchannel = true;
                     break;
                 case "downwindchannelright":
-                    downwindchannelright = Double.parseDouble(value);
+                    downwindchannelright = Double.parseDouble(kp.value);
                     downwindchannel = true;
                     break;
                 default:
-                    return PARAM_BADKEY;
+                    return BADKEY;
             }
-            return PARAM_OK;
+            return OK;
         } catch (NumberFormatException numberFormatException) {
-            return PARAM_BADVALUE;
+            return BADVALUE;
         }
     }
 
-    /**
-     *Check the legality of a particular Parameter value
-     * 
-     * @param key the parameter key
-     * @param value the parameter value
-     * @return success code
-     */
     @Override
-    public int checkParameter(String key, String value) {
+    public Status checkParameter(KeyPair kp) {
         try {
-            switch (key) {
+            switch (kp.key) {
                 case "heading":
-                    Integer.parseInt(value);
+                    Integer.parseInt(kp.value);
                     break;
                 case "location":
-                    parseLocation(value);
+                    parseLocation(kp.value);
                     break;
                 case "colour":
-                    parseColour(value);
+                    parseColour(kp.value);
                     break;
                 case "trackcolour":
-                    parseColour(value);
+                    parseColour(kp.value);
                     break;
                 case "upwindsailonbesttack":
-                    parseYesNo(value);
+                    parseYesNo(kp.value);
                     break;
                 case "upwindtackifheaded":
-                    parseYesNo(value);
+                    parseYesNo(kp.value);
                     break;
                 case "upwindbearawayifheaded":
-                    parseYesNo(value);
+                    parseYesNo(kp.value);
                     break;
                 case "upwindluffupiflifted":
-                    parseYesNo(value);
+                    parseYesNo(kp.value);
                     break;
                 case "reachdownwind":
-                    parseYesNo(value);
+                    parseYesNo(kp.value);
                     break;
                 case "downwindsailonbestgybe":
-                    parseYesNo(value);
+                    parseYesNo(kp.value);
                     break;
                 case "downwindbearawayifheaded":
-                    parseYesNo(value);
+                    parseYesNo(kp.value);
                     break;
                 case "downwindgybeiflifted":
-                    parseYesNo(value);
+                    parseYesNo(kp.value);
                     break;
                 case "downwindluffupiflifted":
-                    parseYesNo(value);
+                    parseYesNo(kp.value);
                     break;
                 case "upwindchannel":
-                    Double.parseDouble(value);
+                    Double.parseDouble(kp.value);
                     break;
                 case "upwindchannelleft":
-                    Double.parseDouble(value);
+                    Double.parseDouble(kp.value);
                     break;
                 case "upwindchannelright":
-                    Double.parseDouble(value);
+                    Double.parseDouble(kp.value);
                     break;
                 case "downwindchannel":
-                    Double.parseDouble(value);
+                    Double.parseDouble(kp.value);
                     break;
                 case "downwindchannelleft":
-                    Double.parseDouble(value);
+                    Double.parseDouble(kp.value);
                     break;
                 case "downwindchannelright":
-                    Double.parseDouble(value);
+                    Double.parseDouble(kp.value);
                     break;
                 default:
-                    return PARAM_BADKEY;
+                    return BADKEY;
             }
-            return PARAM_OK;
+            return OK;
         } catch (NumberFormatException numberFormatException) {
-            return PARAM_BADVALUE;
+            return BADVALUE;
         }
     }
 
@@ -686,7 +678,7 @@ public abstract class Boat extends DisplayableElement {
      */
     @Override
     public void draw(Graphics2D g2D, double pixelsPerMetre) {
-        int relative = direction.angleDiff(dfm.getWind().getFlow(pos).getDirection());
+        int relative = direction.angleDiff(wind.getFlow(pos).getDirection());
         boolean onStarboard = relative > 0;
         int absrelative = Math.abs(relative);
         int sailRotation = absrelative <= 45 ? 0 : (absrelative - 45) * 2 / 3;

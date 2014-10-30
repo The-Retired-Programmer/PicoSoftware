@@ -25,8 +25,13 @@ import java.awt.geom.Line2D;
 import uk.org.rlinsdale.racetrainingdemonstrator.core.api.Location;
 import uk.org.rlinsdale.racetrainingdemonstrator.core.api.DisplayableElement;
 import uk.org.rlinsdale.racetrainingdemonstrator.core.api.Direction;
+import uk.org.rlinsdale.racetrainingdemonstrator.core.api.FlowElement;
+import uk.org.rlinsdale.racetrainingdemonstrator.core.api.KeyPair;
+import uk.org.rlinsdale.racetrainingdemonstrator.core.api.KeyPair.Status;
+import static uk.org.rlinsdale.racetrainingdemonstrator.core.api.KeyPair.Status.BADKEY;
+import static uk.org.rlinsdale.racetrainingdemonstrator.core.api.KeyPair.Status.BADVALUE;
+import static uk.org.rlinsdale.racetrainingdemonstrator.core.api.KeyPair.Status.OK;
 import uk.org.rlinsdale.racetrainingdemonstrator.core.api.Polar;
-import uk.org.rlinsdale.racetrainingdemonstrator.core.AllElements;
 
 /**
  * The Mark Class - represent course marks.
@@ -34,6 +39,8 @@ import uk.org.rlinsdale.racetrainingdemonstrator.core.AllElements;
  * @author Richard Linsdale (richard.linsdale at blueyonder.co.uk)
  */
 public class Mark extends DisplayableElement {
+
+    final private FlowElement wind;
 
     // parameters which can be set via the definition file
     private Location pos = new Location();
@@ -48,15 +55,17 @@ public class Mark extends DisplayableElement {
     private Location laylineBase;
     //
     private final double size = 1; // set up as 1 metre diameter object
+    //
 
     /**
      * Constructor
      *
      * @param name the name
-     * @param elements the definition file data model
+     * @param wind the wind flow to be applied
      */
-    public Mark(String name, AllElements elements) {
-        super(name, elements);
+    public Mark(String name, FlowElement wind) {
+        super(name);
+        this.wind = wind;
         setLaylineBase();
     }
 
@@ -103,7 +112,7 @@ public class Mark extends DisplayableElement {
         Polar boatmove = new Polar(distance, boatDirection); // this the potential boat movement during direction change
         Polar tomark = new Polar(pos, boatpos);
         tomark.subtract(boatmove);
-        Direction w = dfm.getWind().getFlow(pos).getDirection();
+        Direction w = wind.getFlow(pos).getDirection();
         int relative = tomark.absAngleDiff(w);
         if (relative <= 45) {
             return tomark.add(new Polar((size + boatoffset) * 2, w.getDegrees() + (leavetoport ? 90 : -90)));
@@ -116,7 +125,7 @@ public class Mark extends DisplayableElement {
 
     /**
      * Get the next mark name
-     * 
+     *
      * @return the next mark name
      */
     public String nextMark() {
@@ -130,7 +139,7 @@ public class Mark extends DisplayableElement {
 
     private void setLaylineBase() {
         // calculate the target point as the present time for current wind direction
-        Direction windDirection = dfm.getWind().getFlow(pos).getDirection();
+        Direction windDirection = wind.getFlow(pos).getDirection();
         Polar toPt;
         if (downwindLaylines) {
             toPt = new Polar(2 * size, windDirection.getDegrees()
@@ -160,7 +169,7 @@ public class Mark extends DisplayableElement {
         g2D.fill(s);
         g2D.setTransform(xform);
         // now draw the laylines - this are scale independent and set to 1 pixel line
-        Direction windDirection = dfm.getWind().getFlow(pos).getDirection();
+        Direction windDirection = wind.getFlow(pos).getDirection();
         if (windwardLaylines) {
             pixelLine(g2D, laylineBase, new Polar(laylineLength,
                     windDirection.getDegrees() + 135), laylineColour, pixelsPerMetre);
@@ -185,77 +194,77 @@ public class Mark extends DisplayableElement {
     }
 
     @Override
-    public int setParameter(String key, String value) {
+    protected Status setParameter(KeyPair kp) {
         try {
-            switch (key) {
+            switch (kp.key) {
                 case "location":
-                    pos = parseLocation(value);
+                    pos = parseLocation(kp.value);
                     setLaylineBase();
-                    return PARAM_OK;
+                    return OK;
                 case "windwardlaylines":
-                    windwardLaylines = parseYesNo(value);
+                    windwardLaylines = parseYesNo(kp.value);
                     setLaylineBase();
-                    return PARAM_OK;
+                    return OK;
                 case "downwindlaylines":
-                    downwindLaylines = parseYesNo(value);
+                    downwindLaylines = parseYesNo(kp.value);
                     setLaylineBase();
-                    return PARAM_OK;
+                    return OK;
                 case "laylinelength":
-                    laylineLength = Double.parseDouble(value);
-                    return PARAM_OK;
+                    laylineLength = Double.parseDouble(kp.value);
+                    return OK;
                 case "laylinecolour":
-                    laylineColour = parseColour(value);
-                    return PARAM_OK;
+                    laylineColour = parseColour(kp.value);
+                    return OK;
                 case "colour":
-                    colour = parseColour(value);
-                    return PARAM_OK;
+                    colour = parseColour(kp.value);
+                    return OK;
                 case "leavetoport":
-                    leavetoport = parseYesNo(value);
+                    leavetoport = parseYesNo(kp.value);
                     setLaylineBase();
-                    return PARAM_OK;
+                    return OK;
                 case "nextmark":
-                    nextMark = value;
-                    return PARAM_OK;
+                    nextMark = kp.value;
+                    return OK;
                 default:
-                    return PARAM_BADKEY;
+                    return BADKEY;
             }
         } catch (NumberFormatException numberFormatException) {
-            return PARAM_BADVALUE;
+            return BADVALUE;
         }
     }
 
     @Override
-    public int checkParameter(String key, String value) {
+    protected Status checkParameter(KeyPair kp) {
         try {
-            switch (key) {
+            switch (kp.key) {
                 case "location":
-                    parseLocation(value);
-                    return PARAM_OK;
+                    parseLocation(kp.value);
+                    return OK;
                 case "windwardlaylines":
-                    parseYesNo(value);
-                    return PARAM_OK;
+                    parseYesNo(kp.value);
+                    return OK;
                 case "downwindlaylines":
-                    parseYesNo(value);
-                    return PARAM_OK;
+                    parseYesNo(kp.value);
+                    return OK;
                 case "laylinelength":
-                    Double.parseDouble(value);
-                    return PARAM_OK;
+                    Double.parseDouble(kp.value);
+                    return OK;
                 case "laylinecolour":
-                    parseColour(value);
-                    return PARAM_OK;
+                    parseColour(kp.value);
+                    return OK;
                 case "colour":
-                    Color chk = parseColour(value);
-                    return PARAM_OK;
+                    Color chk = parseColour(kp.value);
+                    return OK;
                 case "leavetoport":
-                    parseYesNo(value);
-                    return PARAM_OK;
+                    parseYesNo(kp.value);
+                    return OK;
                 case "nextmark":
-                    return PARAM_OK;
+                    return OK;
                 default:
-                    return PARAM_BADKEY;
+                    return BADKEY;
             }
         } catch (NumberFormatException numberFormatException) {
-            return PARAM_BADVALUE;
+            return BADVALUE;
         }
     }
 }

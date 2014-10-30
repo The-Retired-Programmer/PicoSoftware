@@ -17,20 +17,25 @@
 package uk.org.rlinsdale.racetrainingdemonstrator.eastwestgradientflow;
 
 import org.openide.util.lookup.ServiceProvider;
+import uk.org.rlinsdale.racetrainingdemonstrator.core.ScenarioElement;
 import uk.org.rlinsdale.racetrainingdemonstrator.core.api.FlowElement;
-import uk.org.rlinsdale.racetrainingdemonstrator.core.api.ElementFactory;
-import uk.org.rlinsdale.racetrainingdemonstrator.core.AllElements;
+import uk.org.rlinsdale.racetrainingdemonstrator.core.api.FlowElementFactory;
 
 /**
  * A Factory to create EastWestGradientFlow Objects
  *
  * @author Richard Linsdale (richard.linsdale at blueyonder.co.uk)
  */
-@ServiceProvider(service = EastWestGradientFlowFactory.class)
-public class EastWestGradientFlowFactory implements ElementFactory<FlowElement> {
+@ServiceProvider(service = FlowElementFactory.class)
+public class EastWestGradientFlowFactory extends FlowElementFactory{
 
     @Override
-    public FlowElement get(String name, AllElements dfm) {
-        return new EastWestGradientFlow(name, dfm);
+    public FlowElement createInstance(String instancename, ScenarioElement scenario) {
+        return new EastWestGradientFlow(instancename, scenario);
+    }
+
+    @Override
+    public String getName() {
+        return "eastwestgradientflow";
     }
 }

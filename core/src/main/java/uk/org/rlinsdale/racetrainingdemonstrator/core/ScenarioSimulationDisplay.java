@@ -17,7 +17,14 @@
 package uk.org.rlinsdale.racetrainingdemonstrator.core;
 
 import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.Rectangle;
+import java.awt.RenderingHints;
 import java.io.FileNotFoundException;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.logging.Level;
@@ -28,6 +35,7 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JToolBar;
+import javax.swing.Scrollable;
 import uk.org.rlinsdale.nbpcglibrary.common.Log;
 import uk.org.rlinsdale.racetrainingdemonstrator.core.api.Polar;
 import uk.org.rlinsdale.racetrainingdemonstrator.definitionfiletype.DefFileDataObject;
@@ -43,10 +51,14 @@ import org.openide.util.NbBundle.Messages;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ProxyLookup;
 import org.openide.windows.TopComponent;
+import uk.org.rlinsdale.racetrainingdemonstrator.core.api.Boat;
+import uk.org.rlinsdale.racetrainingdemonstrator.core.api.FlowElement;
+import uk.org.rlinsdale.racetrainingdemonstrator.core.api.FlowElementFactory;
+import uk.org.rlinsdale.racetrainingdemonstrator.core.api.KeyPair;
 
 /**
- * The Multiview DisplayableElement to display the simulation, based on the definition
- file.
+ * The Multiview DisplayableElement to display the simulation, based on the
+ * definition file.
  *
  * @author Richard Linsdale (richard.linsdale at blueyonder.co.uk)
  */
@@ -66,7 +78,10 @@ public final class ScenarioSimulationDisplay extends JPanel implements MultiView
     private JLabel firstleginfo = null;
     private transient MultiViewElementCallback callback;
     //
-    private AllElements allelements;
+    private final Map<String, Boat> boats = new HashMap<>();
+    private final Map<String, Mark> marks = new HashMap<>();
+    private final ScenarioElement scenario = new ScenarioElement();
+    private final Map<String, FlowElement> flows = new HashMap<>();
     private DisplayPanel dp;
     private boolean isRunning = false;
     private Timer timer;
@@ -124,7 +139,6 @@ public final class ScenarioSimulationDisplay extends JPanel implements MultiView
         if (isRunning) {
             return;
         }
-        ScenarioElement scenario = allelements.getScenarioElement();
         Log.get("uk.org.rlinsdale.racetrainingdemonstrator").finer("Simulation started");
         int rate = (int) (scenario.getSecondsPerDisplay() * 1000 / scenario.getSpeedup());
         timer = new Timer();
@@ -140,7 +154,15 @@ public final class ScenarioSimulationDisplay extends JPanel implements MultiView
         terminate();
         Log.get("uk.org.rlinsdale.racetrainingdemonstrator").finer("Simulation reset");
         removeAll();
-        allelements.finish();
+        boats.values().stream().forEach((boat) -> {
+            boat.finish();
+        });
+        marks.values().stream().forEach((mark) -> {
+            mark.finish();
+        });
+        flows.values().stream().forEach((flow) -> {
+            flow.finish();
+        });
         parseAndCreateSimulationDisplay();
     }
 
@@ -162,27 +184,39 @@ public final class ScenarioSimulationDisplay extends JPanel implements MultiView
      * @param key the keystroke
      */
     public void keyAction(String key) {
-        allelements.processKey(key);
+        boats.values().stream().forEach((boat) -> {
+            boat.actionKey(key);
+        });
+        marks.values().stream().forEach((mark) -> {
+            mark.actionKey(key);
+        });
+        flows.values().stream().forEach((flow) -> {
+            flow.actionKey(key);
+        });
     }
 
     private void parseAndCreateSimulationDisplay() {
         StringBuffer errors = new StringBuffer();
-        allelements = new AllElements();
         simulationtime = 0;
+        // insert default flows
+        FlowElement water = FlowElementFactory.createInstance("constantflow", "water", scenario);
+        flows.put("water", water);
+        FlowElement wind = FlowElementFactory.createInstance("constantflow", "wind", scenario);
+        wind.setParameter(new KeyPair("speed", "10"), errors);
+        flows.put("wind", wind);
         try {
-            allelements.load(dataobj.getPrimaryFile().getInputStream(), errors);
+            Parser parser = new Parser();
+            parser.parse(dataobj.getPrimaryFile().getInputStream(), errors, scenario, flows, marks, boats);
         } catch (FileNotFoundException ex) {
             errors.append("Could not open Definition file to read\n");
         }
         if (errors.length() == 0) {
-            ScenarioElement sc = allelements.getScenarioElement();
-            Mark m1 = (Mark) allelements.get(sc.getFirstMark());
+            Mark m1 = marks.get(scenario.getFirstMark());
             if (m1 != null) {
-                Polar p1 = new Polar(m1.getLocation(), sc.getStartLocation());
-
+                Polar p1 = new Polar(m1.getLocation(), scenario.getStartLocation());
                 firstleginfo = new JLabel("First Mark: " + Integer.toString((int) p1.getDistance()) + "m");
             }
-            dp = new DisplayPanel(allelements);
+            dp = new DisplayPanel();
             this.attachPanelScrolling(dp);
         } else {
             dp = null;
@@ -259,7 +293,6 @@ public final class ScenarioSimulationDisplay extends JPanel implements MultiView
         terminate();
     }
 
-
     @Override
     public void componentShowing() {
     }
@@ -296,11 +329,20 @@ public final class ScenarioSimulationDisplay extends JPanel implements MultiView
         @Override
         public void run() {
             try {
-                ScenarioElement scenario = allelements.getScenarioElement();
                 int secondsperdisplay = scenario.getSecondsPerDisplay();
                 while (secondsperdisplay > 0) {
-                    allelements.processDefinitions(simulationtime);
-                    allelements.timerAdvance(simulationtime);
+                    boats.values().stream().forEach((boat) -> {
+                        boat.actionFutureParameters(simulationtime);
+                        boat.timerAdvance(simulationtime);
+                    });
+                    marks.values().stream().forEach((mark) -> {
+                        mark.actionFutureParameters(simulationtime);
+                        mark.timerAdvance(simulationtime);
+                    });
+                    flows.values().stream().forEach((flow) -> {
+                        flow.actionFutureParameters(simulationtime);
+                        flow.timerAdvance(simulationtime);
+                    });
                     secondsperdisplay--;
                     simulationtime++;
                 }
@@ -327,4 +369,86 @@ public final class ScenarioSimulationDisplay extends JPanel implements MultiView
         }
         return Integer.toString(mins) + ":" + ss;
     }
+
+    /**
+     * The display canvas for the simulation.
+     *
+     * @author Richard Linsdale (richard.linsdale at blueyonder.co.uk)
+     */
+    private final class DisplayPanel extends JPanel implements Scrollable {
+
+        private final Dimension preferredsize;
+
+        /**
+         * Constructor
+         *
+         * @param scenario the field of play
+         * @param all the list of all displayable elements
+         */
+        public DisplayPanel() {
+            double width = scenario.east - scenario.west;
+            double depth = scenario.north - scenario.south;
+            double scale = scenario.scale;
+            preferredsize = new Dimension((int) (width * scale), (int) (depth * scale));
+        }
+
+        /**
+         * Update the display
+         */
+        public void updateDisplay() {
+            this.repaint();
+        }
+
+        @Override
+        public void paintComponent(Graphics g) {
+            this.setBackground(new Color(200, 255, 255));
+            super.paintComponent(g);
+            Graphics2D g2D = (Graphics2D) g;
+            // set the rendering hints
+            g2D.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+            g2D.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+            // now draw the various items
+            Double pixelsPerMetre = scenario.draw(g2D);
+            boats.values().stream().forEach((boat) -> {
+                boat.draw(g2D, pixelsPerMetre);
+            });
+            marks.values().stream().forEach((mark) -> {
+                mark.draw(g2D, pixelsPerMetre);
+            });
+            flows.values().stream().forEach((flow) -> {
+                flow.draw(g2D, pixelsPerMetre);
+            });
+        }
+
+        @Override
+        public Dimension getPreferredSize() {
+            return preferredsize;
+        }
+
+        @Override
+        public Dimension getPreferredScrollableViewportSize() {
+            return preferredsize;
+        }
+
+        @Override
+        public int getScrollableUnitIncrement(Rectangle visibleRect, int orientation, int direction) {
+            return 20;
+        }
+
+        @Override
+        public int getScrollableBlockIncrement(Rectangle visibleRect, int orientation, int direction) {
+            return 200;
+        }
+
+        @Override
+        public boolean getScrollableTracksViewportWidth() {
+            return false;
+        }
+
+        @Override
+        public boolean getScrollableTracksViewportHeight() {
+            return false;
+        }
+    }
+
 }

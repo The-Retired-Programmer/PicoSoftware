@@ -16,9 +16,12 @@
  */
 package uk.org.rlinsdale.racetrainingdemonstrator.northsouthgradientflow;
 
-import uk.org.rlinsdale.racetrainingdemonstrator.core.AllElements;
 import uk.org.rlinsdale.racetrainingdemonstrator.core.ScenarioElement;
 import uk.org.rlinsdale.racetrainingdemonstrator.complexflow.ComplexFlow;
+import uk.org.rlinsdale.racetrainingdemonstrator.core.api.KeyPair;
+import uk.org.rlinsdale.racetrainingdemonstrator.core.api.KeyPair.Status;
+import static uk.org.rlinsdale.racetrainingdemonstrator.core.api.KeyPair.Status.BADVALUE;
+import static uk.org.rlinsdale.racetrainingdemonstrator.core.api.KeyPair.Status.OK;
 
 /**
  * The NorthSouthGradientFlow Class - represents a flow with differing
@@ -33,11 +36,10 @@ public class NorthSouthGradientFlow extends ComplexFlow {
      * Constructor
      *
      * @param name the name
-     * @param dfm the definition file data model
+     * @param scenario the field of play
      */
-    public NorthSouthGradientFlow(String name, AllElements dfm) {
-        super(name, dfm);
-        ScenarioElement scenario = dfm.getScenarioElement();
+    public NorthSouthGradientFlow(String name, ScenarioElement scenario) {
+        super(name, scenario);
         double x = scenario.getWest();
         double y = scenario.getSouth();
         southeast.x = x;
@@ -52,77 +54,77 @@ public class NorthSouthGradientFlow extends ComplexFlow {
     }
 
     @Override
-    public int setParameter(String key, String value) {
+    protected Status setParameter(KeyPair kp) {
         double y;
         int angle;
         double speed;
         try {
-            switch (key) {
+            switch (kp.key) {
                 case "northposition":
-                    y = Double.parseDouble(value);
+                    y = Double.parseDouble(kp.value);
                     northwest.y = y;
                     northeast.y = y;
-                    return PARAM_OK;
+                    return OK;
                 case "northfrom":
-                    angle = Integer.parseInt(value);
+                    angle = Integer.parseInt(kp.value);
                     northwestFlow.setAngle(angle);
                     northeastFlow.setAngle(angle);
-                    return PARAM_OK;
+                    return OK;
                 case "northspeed":
-                    speed = Double.parseDouble(value);
+                    speed = Double.parseDouble(kp.value);
                     northwestFlow.setSpeedKnots(speed);
                     northeastFlow.setSpeedKnots(speed);
-                    return PARAM_OK;
+                    return OK;
                 case "southposition":
-                    y = Double.parseDouble(value);
+                    y = Double.parseDouble(kp.value);
                     southwest.y = y;
                     southeast.y = y;
-                    return PARAM_OK;
+                    return OK;
                 case "southfrom":
-                    angle = Integer.parseInt(value);
+                    angle = Integer.parseInt(kp.value);
                     southwestFlow.setAngle(angle);
                     southeastFlow.setAngle(angle);
-                    return PARAM_OK;
+                    return OK;
                 case "southspeed":
-                    speed = Double.parseDouble(value);
+                    speed = Double.parseDouble(kp.value);
                     southwestFlow.setSpeedKnots(speed);
                     southeastFlow.setSpeedKnots(speed);
-                    return PARAM_OK;
+                    return OK;
                 default:
-                    return super.setParameter(key, value);
+                    return super.setParameter(kp);
             }
         } catch (NumberFormatException numberFormatException) {
-            return PARAM_BADVALUE;
+            return BADVALUE;
         }
     }
 
     @Override
-    public int checkParameter(String key, String value) {
+    protected Status checkParameter(KeyPair kp) {
         try {
-            switch (key) {
+            switch (kp.key) {
                 case "northposition":
-                    Double.parseDouble(value);
-                    return PARAM_OK;
+                    Double.parseDouble(kp.value);
+                    return OK;
                 case "northfrom":
-                    Integer.parseInt(value);
-                    return PARAM_OK;
+                    Integer.parseInt(kp.value);
+                    return OK;
                 case "northspeed":
-                    Double.parseDouble(value);
-                    return PARAM_OK;
+                    Double.parseDouble(kp.value);
+                    return OK;
                 case "southposition":
-                    Double.parseDouble(value);
-                    return PARAM_OK;
+                    Double.parseDouble(kp.value);
+                    return OK;
                 case "southfrom":
-                    Integer.parseInt(value);
-                    return PARAM_OK;
+                    Integer.parseInt(kp.value);
+                    return OK;
                 case "southspeed":
-                    Double.parseDouble(value);
-                    return PARAM_OK;
+                    Double.parseDouble(kp.value);
+                    return OK;
                 default:
-                    return super.checkParameter(key, value);
+                    return super.checkParameter(kp);
             }
         } catch (NumberFormatException numberFormatException) {
-            return PARAM_BADVALUE;
+            return BADVALUE;
         }
     }
 }

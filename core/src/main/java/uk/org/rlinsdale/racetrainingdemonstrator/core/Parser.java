@@ -20,67 +20,115 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.util.Map;
+import uk.org.rlinsdale.racetrainingdemonstrator.core.api.Boat;
+import uk.org.rlinsdale.racetrainingdemonstrator.core.api.BoatFactory;
+import uk.org.rlinsdale.racetrainingdemonstrator.core.api.DisplayableElement;
+import uk.org.rlinsdale.racetrainingdemonstrator.core.api.FlowElement;
+import uk.org.rlinsdale.racetrainingdemonstrator.core.api.FlowElementFactory;
+import uk.org.rlinsdale.racetrainingdemonstrator.core.api.KeyPair;
+import uk.org.rlinsdale.racetrainingdemonstrator.mark.Mark;
 
 /**
  * Parse the definition file.
- * 
+ *
  * @author Richard Linsdale (richard.linsdale at blueyonder.co.uk)
  */
 public class Parser {
-    
+
     private enum Token {
+
         KEYVALUE, FAILURE, BLANK, ADDELEMENT, EOF, TIME, ACTION
     }
 
+    private String line;
     private int time;
-    private String instancename;
-    private String key;
-    private String value;
+    private KeyPair kp;
     private String keystring;
 
     /**
      * Parse the definition file and load into definition data model.
-     * 
+     *
      * @param in1 input stream used to read the file definitions
-     * @param allelements the definition data model
+     * @param scenario the field of play
      * @param errors a stringbuffer to append errors messages
+     * @param flows the set of flows (wind and water)
+     * @param marks the set of marks
+     * @param boats the set of boats
      */
-    public void parse(InputStream in1, AllElements allelements, StringBuffer errors) {
-        int currenttime = 0;
+    public void parse(InputStream in1, StringBuffer errors, ScenarioElement scenario, Map<String, FlowElement> flows, Map<String, Mark> marks, Map<String, Boat> boats) {
         BufferedReader in = new BufferedReader(new InputStreamReader(in1));
-        ElementParameters parameters = new ElementParameters("scenario", "scenario");
-        allelements.addElement("scenario", parameters);
+        //
+        if (parseScenario(in, errors, scenario)) {
+            parseRemainder(in, errors, scenario, flows, marks, boats);
+        }
+    }
+
+    private boolean parseScenario(BufferedReader in, StringBuffer errors, ScenarioElement scenario) {
         while (true) {
-            String line;
+            try {
+                line = in.readLine();
+            } catch (IOException ex) {
+                errors.append("IOException when reading file (").append(ex.getMessage()).append(")\n");
+                return false;
+            }
+            switch (parseline()) {
+                case ADDELEMENT:
+                    return true;
+                case ACTION:
+                    errors.append("! command illegal within scenario context (").append(line).append(")\n");
+                    break;
+                case KEYVALUE:
+                    scenario.setParameter(kp, errors);
+                    break;
+                case BLANK:
+                    break; // ignore comment and blank lines
+                case EOF:
+                    errors.append("EOF illegal within scenario context (").append(line).append(")\n");
+                    return false;
+                case TIME:
+                    errors.append("@ command illegal within scenario context (").append(line).append(")\n");
+                    break;
+                default:
+                    errors.append("Illegal content (").append(line).append(")\n");
+            }
+        }
+    }
+
+    private void parseRemainder(BufferedReader in, StringBuffer errors, ScenarioElement scenario, Map<String, FlowElement> flows, Map<String, Mark> marks, Map<String, Boat> boats) {
+        int currenttime = 0;
+        DisplayableElement currentElement = getElement(kp.key, kp.value, scenario, flows, marks, boats);
+
+        while (true) {
             try {
                 line = in.readLine();
             } catch (IOException ex) {
                 errors.append("IOException when reading file (").append(ex.getMessage()).append(")\n");
                 return;
             }
-            switch (parseline(line)) {
+            switch (parseline()) {
                 case ADDELEMENT:
                     if (currenttime == 0) {
-                        parameters = new ElementParameters(key, value);
-                        allelements.addElement(key, parameters);
-                        instancename = key;
+                        currentElement = getElement(kp.key, kp.value, scenario, flows, marks, boats);
                     } else {
                         errors.append("Can't create instances at time > 0 (").append(line).append(")\n");
                     }
                     break;
                 case ACTION:
-                    ElementParameters def = new ElementParameters(instancename, null);
-                    def.addparameter(key, value);
-                    allelements.addKey(keystring, def);
+                    if (currentElement != null) {
+                        currentElement.defineKeyaction(keystring, kp, errors);
+                    }
                     break;
                 case KEYVALUE:
                     if (currenttime == 0) {
-                        parameters.addparameter(key, value);
+                        if (currentElement != null) {
+                            currentElement.setParameter(kp, errors);
+                        }
                     } else {
-                        extractObjectnameFromKey(errors);
-                        ElementParameters fdef = new ElementParameters(instancename, null);
-                        allelements.addFutureDefinition(currenttime, fdef);
-                        fdef.addparameter(key, value);
+                        DisplayableElement instance = extractInstanceFromKey(errors, flows, marks, boats);
+                        if (instance != null) {
+                            instance.setFutureParameter(currenttime, kp, errors);
+                        }
                     }
                     break;
                 case BLANK:
@@ -100,7 +148,27 @@ public class Parser {
         }
     }
 
-    private Token parseline(String line) {
+    private DisplayableElement getElement(String instancename, String classrefname, ScenarioElement scenario, Map<String, FlowElement> flows, Map<String, Mark> marks, Map<String, Boat> boats) {
+        if (instancename.equals("water") || instancename.equals("wind")) {
+                FlowElement flow = FlowElementFactory.createInstance(classrefname, instancename, scenario);
+                if (flow != null) {
+                    flows.put(instancename, flow);
+                }
+            return flow;
+        }
+        if (classrefname.equals("mark")) {
+            Mark mark = new Mark(instancename, flows.get("wind"));
+                marks.put(instancename, mark);
+            return mark;
+        }
+        Boat boat = BoatFactory.createInstance(classrefname, instancename, scenario, flows.get("wind"), flows.get("water"), marks);
+            if (boat != null) {
+                boats.put(instancename, boat);
+            }
+        return boat;
+    }
+
+    private Token parseline() {
         if (line == null) {
             return Token.EOF;
         }
@@ -114,10 +182,10 @@ public class Parser {
             return Token.BLANK;
         }
         if (line.startsWith("+")) {
-            return parseKeyValue(line, 1, Token.ADDELEMENT);
+            return parseKeyValue(1, Token.ADDELEMENT);
         }
         if (line.startsWith("!")) {
-            return parseAction(line.substring(1).trim());
+            return parseAction(1);
         }
         if (line.startsWith("@")) {
             int colonAt = line.indexOf(':');
@@ -139,39 +207,60 @@ public class Parser {
                 }
             }
         } else {
-            return parseKeyValue(line, 0, Token.KEYVALUE);
+            return parseKeyValue(0, Token.KEYVALUE);
         }
     }
 
-    private Token parseKeyValue(String line, int startoffset, Token success) {
+    private Token parseKeyValue(int startoffset, Token success) {
         int equalsAt = line.indexOf('=');
         if (equalsAt == -1) {
             return Token.FAILURE;
         } else {
-            key = line.substring(startoffset, equalsAt).replace(" ", "").toLowerCase().trim();
-            value = line.substring(equalsAt + 1).replace(" ", "").toLowerCase().trim();
+            kp = new KeyPair(
+                    line.substring(startoffset, equalsAt).replace(" ", "").toLowerCase().trim(),
+                    line.substring(equalsAt + 1).replace(" ", "").toLowerCase().trim()
+            );
             return success;
         }
     }
 
-    private Token parseAction(String line) {
-        int equalsColon = line.indexOf(':');
-        if (equalsColon == -1) {
+    private Token parseAction(int startoffset) {
+        int colonAt = line.indexOf(':');
+        if (colonAt == -1) {
             return Token.FAILURE;
         }
-        keystring = line.substring(1, equalsColon).trim();
-        return parseKeyValue(line, equalsColon + 1, Token.ACTION);
+        keystring = line.substring(startoffset, colonAt).trim();
+        return parseKeyValue(colonAt + 1, Token.ACTION);
     }
 
-    private void extractObjectnameFromKey(StringBuffer errors) {
-        String fullkey = key;
+    private DisplayableElement extractInstanceFromKey(StringBuffer errors, Map<String, FlowElement> flows, Map<String, Mark> marks, Map<String, Boat> boats) {
+        String fullkey = kp.key;
         //
         int dotAt = fullkey.indexOf('.');
         if (dotAt == -1) {
-            errors.append("Parameter key is not dotted(").append(fullkey).append("=").append(value).append(")\n");
-        } else {
-            instancename = fullkey.substring(0, dotAt).trim();
-            key = fullkey.substring(dotAt + 1).trim();
+            errors.append("Parameter key is not dotted(").append(fullkey).append("=").append(kp.value).append(")\n");
+            return null;
+        }
+        String instancename = fullkey.substring(0, dotAt).trim();
+        kp = new KeyPair(
+                fullkey.substring(dotAt + 1).trim(),
+                kp.value);
+        switch (instancename) {
+            case "wind":
+                return flows.get("wind");
+            case "water":
+                return flows.get("wind");
+            default:
+                DisplayableElement de = boats.get(instancename);
+                if (de != null) {
+                    return de;
+                }
+                de = marks.get(instancename);
+                if (de != null) {
+                    return de;
+                }
+                errors.append("No instance of name \"").append(instancename).append("\" found (").append(line).append(")\n");
+                return null;
         }
     }
 }

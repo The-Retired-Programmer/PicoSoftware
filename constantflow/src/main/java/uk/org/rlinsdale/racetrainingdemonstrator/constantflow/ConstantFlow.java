@@ -16,9 +16,12 @@
  */
 package uk.org.rlinsdale.racetrainingdemonstrator.constantflow;
 
-import uk.org.rlinsdale.racetrainingdemonstrator.core.AllElements;
 import uk.org.rlinsdale.racetrainingdemonstrator.core.ScenarioElement;
 import uk.org.rlinsdale.racetrainingdemonstrator.complexflow.ComplexFlow;
+import uk.org.rlinsdale.racetrainingdemonstrator.core.api.KeyPair;
+import uk.org.rlinsdale.racetrainingdemonstrator.core.api.KeyPair.Status;
+import static uk.org.rlinsdale.racetrainingdemonstrator.core.api.KeyPair.Status.BADVALUE;
+import static uk.org.rlinsdale.racetrainingdemonstrator.core.api.KeyPair.Status.OK;
 
 /**
  * The ConstantFlow Class - represents a flow which is stready in speed and
@@ -31,12 +34,11 @@ public class ConstantFlow extends ComplexFlow {
     /**
      * Constructor
      * 
-     * @param name the name 
-     * @param dfm the definition file datamodel
+     * @param name the instance name of this flow
+     * @param scenario the field of play
      */
-    public ConstantFlow(String name, AllElements dfm) {
-        super(name, dfm);
-        ScenarioElement scenario = dfm.getScenarioElement();
+    public ConstantFlow(String name, ScenarioElement scenario) {
+        super(name, scenario);
         double x = scenario.getWest();
         double y = scenario.getSouth();
         northeast.x = x;
@@ -49,61 +51,47 @@ public class ConstantFlow extends ComplexFlow {
         southwest.y = y;
     }
 
-    /**
-     * Set the parameter value for a particular key
-     * 
-     * @param key the parameter key
-     * @param value the parameter value
-     * @return success code
-     */
     @Override
-    public int setParameter(String key, String value) {
+    protected Status setParameter(KeyPair kp) {
         try {
-            switch (key) {
+            switch (kp.key) {
                 case "from":
-                    int angle = Integer.parseInt(value);
+                    int angle = Integer.parseInt(kp.value);
                     northeastFlow.setAngle(angle);
                     northwestFlow.setAngle(angle);
                     southeastFlow.setAngle(angle);
                     southwestFlow.setAngle(angle);
-                    return PARAM_OK;
+                    return OK;
                 case "speed":
-                    double speed = Double.parseDouble(value);
+                    double speed = Double.parseDouble(kp.value);
                     northeastFlow.setSpeedKnots(speed);
                     northwestFlow.setSpeedKnots(speed);
                     southeastFlow.setSpeedKnots(speed);
                     southwestFlow.setSpeedKnots(speed);
-                    return PARAM_OK;
+                    return OK;
                 default:
-                    return super.setParameter(key, value);
+                    return super.setParameter(kp);
             }
         } catch (NumberFormatException numberFormatException) {
-            return PARAM_BADVALUE;
+            return BADVALUE;
         }
     }
 
-    /**
-     * Check the legality of a particular Parameter value
-     * 
-     * @param key the parameter key
-     * @param value the parameter value
-     * @return success code
-     */
     @Override
-    public int checkParameter(String key, String value) {
+    protected Status checkParameter(KeyPair kp) {
         try {
-            switch (key) {
+            switch (kp.key) {
                 case "from":
-                    Integer.parseInt(value);
-                    return PARAM_OK;
+                    Integer.parseInt(kp.value);
+                    return OK;
                 case "speed":
-                    Double.parseDouble(value);
-                    return PARAM_OK;
+                    Double.parseDouble(kp.value);
+                    return OK;
                 default:
-                    return super.checkParameter(key, value);
+                    return super.checkParameter(kp);
             }
         } catch (NumberFormatException numberFormatException) {
-            return PARAM_BADVALUE;
+            return BADVALUE;
         }
     }
 }

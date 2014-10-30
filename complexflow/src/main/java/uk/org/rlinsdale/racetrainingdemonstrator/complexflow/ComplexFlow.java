@@ -26,8 +26,12 @@ import java.text.NumberFormat;
 import uk.org.rlinsdale.racetrainingdemonstrator.core.api.Flow;
 import uk.org.rlinsdale.racetrainingdemonstrator.core.api.FlowElement;
 import uk.org.rlinsdale.racetrainingdemonstrator.core.api.Location;
-import uk.org.rlinsdale.racetrainingdemonstrator.core.AllElements;
 import uk.org.rlinsdale.racetrainingdemonstrator.core.ScenarioElement;
+import uk.org.rlinsdale.racetrainingdemonstrator.core.api.KeyPair;
+import uk.org.rlinsdale.racetrainingdemonstrator.core.api.KeyPair.Status;
+import static uk.org.rlinsdale.racetrainingdemonstrator.core.api.KeyPair.Status.BADKEY;
+import static uk.org.rlinsdale.racetrainingdemonstrator.core.api.KeyPair.Status.BADVALUE;
+import static uk.org.rlinsdale.racetrainingdemonstrator.core.api.KeyPair.Status.OK;
 
 /**
  * The ComplexFlow Class - represents a flow which is described by flows (speed
@@ -99,16 +103,15 @@ public class ComplexFlow extends FlowElement {
     /**
      * Constructor
      * 
-     * @param name the name 
-     * @param dfm the definition file data model
+     * @param name the instance name to be associated with the flow
+     * @param scenario the field of play
      */
-    public ComplexFlow(String name, AllElements dfm) {
-        super(name, dfm);
-        ScenarioElement sc = dfm.getScenarioElement();
-        eastedge = sc.getEast();
-        westedge = sc.getWest();
-        northedge = sc.getNorth();
-        southedge = sc.getSouth();
+    public ComplexFlow(String name, ScenarioElement scenario) {
+        super(name, scenario);
+        eastedge = scenario.getEast();
+        westedge = scenario.getWest();
+        northedge = scenario.getNorth();
+        southedge = scenario.getSouth();
     }
 
     /**
@@ -292,166 +295,152 @@ public class ComplexFlow extends FlowElement {
                 + southeastFlow.getSpeedKnots() + southwestFlow.getSpeedKnots()) / 4);
     }
 
-    /**
-     * Set the parameter value for a particular key
-     * 
-     * @param key the parameter key
-     * @param value the parameter value
-     * @return success code
-     */
     @Override
-    public int setParameter(String key, String value) {
+    protected Status setParameter(KeyPair kp) {
         try {
-            switch (key) {
+            switch (kp.key) {
                 case "northeastposition":
-                    northeast = parseLocation(value);
-                    return PARAM_OK;
+                    northeast = parseLocation(kp.value);
+                    return OK;
                 case "northeastfrom":
-                    northeastFlow.setAngle(Integer.parseInt(value));
-                    return PARAM_OK;
+                    northeastFlow.setAngle(Integer.parseInt(kp.value));
+                    return OK;
                 case "northeastspeed":
-                    northeastFlow.setSpeedKnots(Double.parseDouble(value));
-                    return PARAM_OK;
+                    northeastFlow.setSpeedKnots(Double.parseDouble(kp.value));
+                    return OK;
                 case "northwestposition":
-                    northwest = parseLocation(value);
-                    return PARAM_OK;
+                    northwest = parseLocation(kp.value);
+                    return OK;
                 case "northwestfrom":
-                    northwestFlow.setAngle(Integer.parseInt(value));
-                    return PARAM_OK;
+                    northwestFlow.setAngle(Integer.parseInt(kp.value));
+                    return OK;
                 case "northwestspeed":
-                    northwestFlow.setSpeedKnots(Double.parseDouble(value));
-                    return PARAM_OK;
+                    northwestFlow.setSpeedKnots(Double.parseDouble(kp.value));
+                    return OK;
                 case "southeastposition":
-                    southeast = parseLocation(value);
-                    return PARAM_OK;
+                    southeast = parseLocation(kp.value);
+                    return OK;
                 case "southeastfrom":
-                    southeastFlow.setAngle(Integer.parseInt(value));
-                    return PARAM_OK;
+                    southeastFlow.setAngle(Integer.parseInt(kp.value));
+                    return OK;
                 case "southeastspeed":
-                    southeastFlow.setSpeedKnots(Double.parseDouble(value));
-                    return PARAM_OK;
+                    southeastFlow.setSpeedKnots(Double.parseDouble(kp.value));
+                    return OK;
                 case "southwestposition":
-                    southwest = parseLocation(value);
-                    return PARAM_OK;
+                    southwest = parseLocation(kp.value);
+                    return OK;
                 case "southwestfrom":
-                    southwestFlow.setAngle(Integer.parseInt(value));
-                    return PARAM_OK;
+                    southwestFlow.setAngle(Integer.parseInt(kp.value));
+                    return OK;
                 case "southwestspeed":
-                    southwestFlow.setSpeedKnots(Double.parseDouble(value));
-                    return PARAM_OK;
+                    southwestFlow.setSpeedKnots(Double.parseDouble(kp.value));
+                    return OK;
                 case "showflow":
-                    showFlow = parseYesNo(value);
-                    return PARAM_OK;
+                    showFlow = parseYesNo(kp.value);
+                    return OK;
                 case "showflowinterval":
-                    showFlowInterval = Double.parseDouble(value);
-                    return PARAM_OK;
+                    showFlowInterval = Double.parseDouble(kp.value);
+                    return OK;
                 case "showflowcolour":
-                    showFlowColour = parseColour(value);
-                    return PARAM_OK;
+                    showFlowColour = parseColour(kp.value);
+                    return OK;
                 case "swingangle":
-                    swing = Integer.parseInt(value);
+                    swing = Integer.parseInt(kp.value);
                     swinging = period > 0;
-                    return PARAM_OK;
+                    return OK;
                 case "swingperiod":
-                    period = Integer.parseInt(value);
+                    period = Integer.parseInt(kp.value);
                     swinging = period > 0;
-                    return PARAM_OK;
+                    return OK;
                 case "shiftangle":
-                    shift = Integer.parseInt(value);
+                    shift = Integer.parseInt(kp.value);
                     shifting = shiftperiod > 0 || randomshifts;
-                    return PARAM_OK;
+                    return OK;
                 case "shiftperiod":
-                    shiftperiod = Integer.parseInt(value);
+                    shiftperiod = Integer.parseInt(kp.value);
                     shifting = shiftperiod > 0 || randomshifts;
-                    return PARAM_OK;
+                    return OK;
                 case "randomshifts":
-                    randomshifts = parseYesNo(value);
+                    randomshifts = parseYesNo(kp.value);
                     shifting = shiftperiod > 0 || randomshifts;
-                    return PARAM_OK;
+                    return OK;
                 default:
-                    return PARAM_BADKEY;
+                    return BADKEY;
             }
         } catch (NumberFormatException numberFormatException) {
-            return PARAM_BADVALUE;
+            return BADVALUE;
         }
     }
 
-    /**
-     * Check the legality of a particular Parameter value
-     * 
-     * @param key the parameter key
-     * @param value the parameter value
-     * @return success code
-     */
     @Override
-    public int checkParameter(String key, String value) {
+    protected Status checkParameter(KeyPair kp) {
         try {
-            switch (key) {
+            switch (kp.key) {
                 case "northeastposition":
-                    parseLocation(value);
-                    return PARAM_OK;
+                    parseLocation(kp.value);
+                    return OK;
                 case "northeastfrom":
-                    Integer.parseInt(value);
-                    return PARAM_OK;
+                    Integer.parseInt(kp.value);
+                    return OK;
                 case "northeastspeed":
-                    Double.parseDouble(value);
-                    return PARAM_OK;
+                    Double.parseDouble(kp.value);
+                    return OK;
                 case "northwestposition":
-                    parseLocation(value);
-                    return PARAM_OK;
+                    parseLocation(kp.value);
+                    return OK;
                 case "northwestfrom":
-                    Integer.parseInt(value);
-                    return PARAM_OK;
+                    Integer.parseInt(kp.value);
+                    return OK;
                 case "northwestspeed":
-                    Double.parseDouble(value);
-                    return PARAM_OK;
+                    Double.parseDouble(kp.value);
+                    return OK;
                 case "southeastposition":
-                    parseLocation(value);
-                    return PARAM_OK;
+                    parseLocation(kp.value);
+                    return OK;
                 case "southeastfrom":
-                    Integer.parseInt(value);
-                    return PARAM_OK;
+                    Integer.parseInt(kp.value);
+                    return OK;
                 case "southeastspeed":
-                    Double.parseDouble(value);
-                    return PARAM_OK;
+                    Double.parseDouble(kp.value);
+                    return OK;
                 case "southwestposition":
-                    parseLocation(value);
-                    return PARAM_OK;
+                    parseLocation(kp.value);
+                    return OK;
                 case "southwestfrom":
-                    Integer.parseInt(value);
-                    return PARAM_OK;
+                    Integer.parseInt(kp.value);
+                    return OK;
                 case "southwestspeed":
-                    Double.parseDouble(value);
-                    return PARAM_OK;
+                    Double.parseDouble(kp.value);
+                    return OK;
                 case "showflow":
-                    parseYesNo(value);
-                    return PARAM_OK;
+                    parseYesNo(kp.value);
+                    return OK;
                 case "showflowinterval":
-                    Double.parseDouble(value);
-                    return PARAM_OK;
+                    Double.parseDouble(kp.value);
+                    return OK;
                 case "showflowcolour":
-                    parseColour(value);
-                    return PARAM_OK;
+                    parseColour(kp.value);
+                    return OK;
                 case "swingangle":
-                    Integer.parseInt(value);
-                    return PARAM_OK;
+                    Integer.parseInt(kp.value);
+                    return OK;
                 case "swingperiod":
-                    Integer.parseInt(value);
-                    return PARAM_OK;
+                    Integer.parseInt(kp.value);
+                    return OK;
                 case "shiftangle":
-                    Integer.parseInt(value);
-                    return PARAM_OK;
+                    Integer.parseInt(kp.value);
+                    return OK;
                 case "shiftperiod":
-                    Integer.parseInt(value);
-                    return PARAM_OK;
+                    Integer.parseInt(kp.value);
+                    return OK;
                 case "randomshifts":
-                    parseYesNo(value);
-                    return PARAM_OK;
+                    parseYesNo(kp.value);
+                    return OK;
                 default:
-                    return PARAM_BADKEY;
+                    return BADKEY;
             }
         } catch (NumberFormatException numberFormatException) {
-            return PARAM_BADVALUE;
+            return BADVALUE;
         }
     }
 }

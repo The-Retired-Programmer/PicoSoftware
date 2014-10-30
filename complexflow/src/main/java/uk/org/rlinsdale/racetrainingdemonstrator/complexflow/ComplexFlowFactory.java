@@ -17,26 +17,27 @@
 package uk.org.rlinsdale.racetrainingdemonstrator.complexflow;
 
 import org.openide.util.lookup.ServiceProvider;
+import uk.org.rlinsdale.racetrainingdemonstrator.core.ScenarioElement;
 import uk.org.rlinsdale.racetrainingdemonstrator.core.api.FlowElement;
-import uk.org.rlinsdale.racetrainingdemonstrator.core.api.ElementFactory;
-import uk.org.rlinsdale.racetrainingdemonstrator.core.AllElements;
+import uk.org.rlinsdale.racetrainingdemonstrator.core.api.FlowElementFactory;
 
 /**
  * Factory to create ComplexFlow objects.
  * 
  * @author Richard Linsdale (richard.linsdale at blueyonder.co.uk)
  */
-@ServiceProvider(service = ComplexFlowFactory.class)
-public class ComplexFlowFactory implements ElementFactory<FlowElement> {
+@ServiceProvider(service = FlowElementFactory.class)
+public class ComplexFlowFactory extends FlowElementFactory {
 
-    /**
-     * Create a new Instance of a ComplexFlow object
-     * @param name the name 
-     * @param dfm the definition file datamodel
-     * @return the ComplexFlow object
-     */
     @Override
-    public FlowElement get(String name, AllElements dfm) {
-        return new ComplexFlow(name, dfm);
+    public FlowElement createInstance(String instancename, ScenarioElement scenario) {
+        return new ComplexFlow(instancename, scenario);
     }
+
+    @Override
+    public String getName() {
+        return "complexflow";
+    }
+    
+    
 }

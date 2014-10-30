@@ -16,8 +16,11 @@
  */
 package uk.org.rlinsdale.racetrainingdemonstrator.laser2;
 
-import uk.org.rlinsdale.racetrainingdemonstrator.core.AllElements;
-import uk.org.rlinsdale.racetrainingdemonstrator.boat.Boat;
+import java.util.Map;
+import uk.org.rlinsdale.racetrainingdemonstrator.core.ScenarioElement;
+import uk.org.rlinsdale.racetrainingdemonstrator.core.api.Boat;
+import uk.org.rlinsdale.racetrainingdemonstrator.core.api.FlowElement;
+import uk.org.rlinsdale.racetrainingdemonstrator.mark.Mark;
 
 /**
  * The Laser 2 Dinghy.
@@ -29,11 +32,14 @@ public class Laser2 extends Boat {
     /**
      *Constructor
      * 
-     * @param name the name 
-     * @param dfm the definition file data model
+     * @param name the name
+     * @param scenario the field of play
+     * @param wind the wind flow
+     * @param water the water flow
+     * @param marks the set of marks
      */
-    public Laser2(String name, AllElements dfm) {
-        super(name, dfm);
+    public Laser2(String name, ScenarioElement scenario, FlowElement wind, FlowElement water, Map<String, Mark> marks) {
+        super(name, scenario, wind, water, marks);
         super.metrics(4, 1.5, 0.25, 30, 45, 135); // length, width, inertia, maxturninganglepersec, upwindangle, downwindangle 
         super.performance(
                 /* boat speed data */

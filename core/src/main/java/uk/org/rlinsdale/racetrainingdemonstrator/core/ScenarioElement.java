@@ -23,6 +23,11 @@ import java.awt.geom.AffineTransform;
 import java.awt.geom.Rectangle2D;
 import uk.org.rlinsdale.racetrainingdemonstrator.core.api.Location;
 import uk.org.rlinsdale.racetrainingdemonstrator.core.api.Element;
+import uk.org.rlinsdale.racetrainingdemonstrator.core.api.KeyPair;
+import uk.org.rlinsdale.racetrainingdemonstrator.core.api.KeyPair.Status;
+import static uk.org.rlinsdale.racetrainingdemonstrator.core.api.KeyPair.Status.BADKEY;
+import static uk.org.rlinsdale.racetrainingdemonstrator.core.api.KeyPair.Status.BADVALUE;
+import static uk.org.rlinsdale.racetrainingdemonstrator.core.api.KeyPair.Status.OK;
 
 /**
  * The Core Information to describe the Simulation.
@@ -118,7 +123,7 @@ public class ScenarioElement extends Element {
     /**
      * Time Scaling - less than 1 is faster ; greater than 1 is slower
      */
-    public double speedup = 1; 
+    public double speedup = 1;
     //
 
     /**
@@ -126,16 +131,13 @@ public class ScenarioElement extends Element {
      */
     public String firstMark = "";
 
-    /**
-     * Constructor
-     */
     public ScenarioElement() {
         super("scenario");
     }
 
     /**
      * Get the East Limit
-     * 
+     *
      * @return the east limit
      */
     public double getEastLimit() {
@@ -144,7 +146,7 @@ public class ScenarioElement extends Element {
 
     /**
      * Get the West Limit
-     * 
+     *
      * @return the west limit
      */
     public double getWestLimit() {
@@ -153,7 +155,7 @@ public class ScenarioElement extends Element {
 
     /**
      * Get the North Limit
-     * 
+     *
      * @return the north limit
      */
     public double getNorthLimit() {
@@ -162,7 +164,7 @@ public class ScenarioElement extends Element {
 
     /**
      * Get the South Limit
-     * 
+     *
      * @return the south limit
      */
     public double getSouthLimit() {
@@ -171,7 +173,7 @@ public class ScenarioElement extends Element {
 
     /**
      * Get the East edge
-     * 
+     *
      * @return the east edge
      */
     public double getEast() {
@@ -180,6 +182,7 @@ public class ScenarioElement extends Element {
 
     /**
      * Get the West edge
+     *
      * @return the west edge
      */
     public double getWest() {
@@ -188,7 +191,7 @@ public class ScenarioElement extends Element {
 
     /**
      * Get the North edge
-     * 
+     *
      * @return the north edge
      */
     public double getNorth() {
@@ -197,7 +200,7 @@ public class ScenarioElement extends Element {
 
     /**
      * Get the South edge
-     * 
+     *
      * @return the south edge
      */
     public double getSouth() {
@@ -206,7 +209,7 @@ public class ScenarioElement extends Element {
 
     /**
      * Draw the ScenarioElement on the display canvas.
-     * 
+     *
      * @param g2D the 2D graphics object
      * @return the scale factor (pixels/metre)
      */
@@ -249,7 +252,7 @@ public class ScenarioElement extends Element {
 
     /**
      * Get the display rate.
-     * 
+     *
      * @return display rate (seconds/display repaint)
      */
     public int getSecondsPerDisplay() {
@@ -258,7 +261,7 @@ public class ScenarioElement extends Element {
 
     /**
      * Get the speed up.
-     * 
+     *
      * @return the speed up (less than 1 is faster ; greater than 1 is slower)
      */
     public double getSpeedup() {
@@ -267,7 +270,7 @@ public class ScenarioElement extends Element {
 
     /**
      * Get the name of the first mark.
-     * 
+     *
      * @return the mark name
      */
     public String getFirstMark() {
@@ -276,7 +279,7 @@ public class ScenarioElement extends Element {
 
     /**
      * Get the start location.
-     * 
+     *
      * @return the start location
      */
     public Location getStartLocation() {
@@ -284,103 +287,53 @@ public class ScenarioElement extends Element {
     }
 
     @Override
-    public int setParameter(String key, String value) {
+    protected Status setParameter(KeyPair kp) {
         try {
-            switch (key) {
+            switch (kp.key) {
                 case "east":
-                    east = Double.parseDouble(value);
-                    return PARAM_OK;
+                    east = Double.parseDouble(kp.value);
+                    return OK;
                 case "west":
-                    west = Double.parseDouble(value);
-                    return PARAM_OK;
+                    west = Double.parseDouble(kp.value);
+                    return OK;
                 case "north":
-                    north = Double.parseDouble(value);
-                    return PARAM_OK;
+                    north = Double.parseDouble(kp.value);
+                    return OK;
                 case "south":
-                    south = Double.parseDouble(value);
-                    return PARAM_OK;
+                    south = Double.parseDouble(kp.value);
+                    return OK;
                 case "eastlimit":
-                    eastlimit = Double.parseDouble(value);
-                    return PARAM_OK;
+                    eastlimit = Double.parseDouble(kp.value);
+                    return OK;
                 case "westlimit":
-                    westlimit = Double.parseDouble(value);
-                    return PARAM_OK;
+                    westlimit = Double.parseDouble(kp.value);
+                    return OK;
                 case "northlimit":
-                    northlimit = Double.parseDouble(value);
-                    return PARAM_OK;
+                    northlimit = Double.parseDouble(kp.value);
+                    return OK;
                 case "southlimit":
-                    southlimit = Double.parseDouble(value);
-                    return PARAM_OK;
+                    southlimit = Double.parseDouble(kp.value);
+                    return OK;
                 case "zoom":
-                    scale = Double.parseDouble(value);
-                    return PARAM_OK;
+                    scale = Double.parseDouble(kp.value);
+                    return OK;
                 case "secondsperdisplay":
-                    secondsperdisplay = Integer.parseInt(value);
-                    return PARAM_OK;
+                    secondsperdisplay = Integer.parseInt(kp.value);
+                    return OK;
                 case "speedup":
-                    speedup = Double.parseDouble(value);
-                    return PARAM_OK;
+                    speedup = Double.parseDouble(kp.value);
+                    return OK;
                 case "firstmark":
-                    firstMark = value;
-                    return PARAM_OK;
+                    firstMark = kp.value;
+                    return OK;
                 case "startlocation":
-                    startLocation = parseLocation(value);
-                    return PARAM_OK;
+                    startLocation = parseLocation(kp.value);
+                    return OK;
                 default:
-                    return PARAM_BADKEY;
+                    return BADKEY;
             }
         } catch (NumberFormatException numberFormatException) {
-            return PARAM_BADVALUE;
-        }
-    }
-
-    @Override
-    public int checkParameter(String key, String value) {
-        try {
-            switch (key) {
-                case "east":
-                    Double.parseDouble(value);
-                    return PARAM_OK;
-                case "west":
-                    Double.parseDouble(value);
-                    return PARAM_OK;
-                case "north":
-                    Double.parseDouble(value);
-                    return PARAM_OK;
-                case "south":
-                    Double.parseDouble(value);
-                    return PARAM_OK;
-                case "eastlimit":
-                    Double.parseDouble(value);
-                    return PARAM_OK;
-                case "westlimit":
-                    Double.parseDouble(value);
-                    return PARAM_OK;
-                case "northlimit":
-                    Double.parseDouble(value);
-                    return PARAM_OK;
-                case "southlimit":
-                    Double.parseDouble(value);
-                    return PARAM_OK;
-                case "zoom":
-                    Double.parseDouble(value);
-                    return PARAM_OK;
-                case "secondsperdisplay":
-                    Integer.parseInt(value);
-                    return PARAM_OK;
-                case "speedup":
-                    Double.parseDouble(value);
-                    return PARAM_OK;
-                case "firstmark":
-                    return PARAM_OK;
-                case "startlocation":
-                    parseLocation(value);
-                    return PARAM_OK;
-                default:
-                    return PARAM_BADKEY;
-            }
-        } catch (NumberFormatException numberFormatException) {
-            return PARAM_BADVALUE;
+            return BADVALUE;
         }
     }
 }

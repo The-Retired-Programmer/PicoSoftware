@@ -17,26 +17,25 @@
 package uk.org.rlinsdale.racetrainingdemonstrator.constantflow;
 
 import uk.org.rlinsdale.racetrainingdemonstrator.core.api.FlowElement;
-import uk.org.rlinsdale.racetrainingdemonstrator.core.api.ElementFactory;
-import uk.org.rlinsdale.racetrainingdemonstrator.core.AllElements;
 import org.openide.util.lookup.ServiceProvider;
+import uk.org.rlinsdale.racetrainingdemonstrator.core.ScenarioElement;
+import uk.org.rlinsdale.racetrainingdemonstrator.core.api.FlowElementFactory;
 
 /**
  * Factory to create ConstantFlow objects.
  * 
  * @author Richard Linsdale (richard.linsdale at blueyonder.co.uk)
  */
-@ServiceProvider(service = ConstantFlowFactory.class)
-public class ConstantFlowFactory implements ElementFactory<FlowElement> {
+@ServiceProvider(service = FlowElementFactory.class)
+public class ConstantFlowFactory extends FlowElementFactory {
 
-    /**
-     * Create a new Instance of a ConstantFlow object
-     * @param name the name 
-     * @param dfm the definition file datamodel
-     * @return the ConstantFlow object
-     */
     @Override
-    public FlowElement get(String name, AllElements dfm) {
-        return new ConstantFlow(name, dfm);
+    public FlowElement createInstance(String instancename, ScenarioElement scenario) {
+        return new ConstantFlow(instancename, scenario);
+    }
+
+    @Override
+    public String getName() {
+        return "constantflow";
     }
 }

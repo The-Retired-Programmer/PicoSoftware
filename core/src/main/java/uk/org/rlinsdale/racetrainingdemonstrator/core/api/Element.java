@@ -17,7 +17,8 @@
 package uk.org.rlinsdale.racetrainingdemonstrator.core.api;
 
 import java.awt.Color;
-import java.util.LinkedHashMap;
+import java.util.List;
+import uk.org.rlinsdale.racetrainingdemonstrator.core.api.KeyPair.Status;
 
 /**
  * The Abstract Class - represents the core class of every simulation object
@@ -27,30 +28,11 @@ import java.util.LinkedHashMap;
  */
 abstract public class Element {
 
+    final protected String name;
+
     /**
      * Parameter parsed/set OK
-     */
-    public static final int PARAM_OK = 0;
-
-    /**
-     * Parameter parsed/set failed - key not recognised
-     */
-    public static final int PARAM_BADKEY = 1;
-
-    /**
-     * Parameter parsed/set failed - value incorrect
-     */
-    public static final int PARAM_BADVALUE = 2;
-
-    /**
-     * the entity name
-     */
-    protected String name;
-
-    /**
-     * Constructor.
-     *
-     * @param name the entity name
+     * @param name the element name
      */
     public Element(String name) {
         this.name = name;
@@ -161,68 +143,37 @@ abstract public class Element {
     /**
      * Set a number of parameters.
      *
-     * @param parameters a map of parameter keys and values.
+     * @param kps list of key pairs
      * @param errors a StringBuffer to collect error messages
      */
-    public void setParameters(LinkedHashMap<String, String> parameters, StringBuffer errors) {
-        for (String key : parameters.keySet()) {
-            String value = parameters.get(key);
-            switch (setParameter(key, value)) {
-                case PARAM_OK:
-                    break;
-                case PARAM_BADKEY:
-                    errors.append("Attempting to set undefined key (").append(name).append(".").append(key).append("=").append(value).append(")\n");
-                    break;
-                case PARAM_BADVALUE:
-                    errors.append("Attempting to set key with bad value (").append(name).append(".").append(key).append("=").append(value).append(")\n");
-                    break;
-                default:
-                    errors.append("Bad return code - SYSTEM PROBLEM!\n");
-                    break;
-            }
+    public void setParameters(List<KeyPair> kps, StringBuffer errors) {
+        kps.stream().forEach((kp) -> {
+            setParameter(kp, errors);
+        });
+    }
+
+    public void setParameter(KeyPair kp, StringBuffer errors) {
+        switch (setParameter(kp)) {
+            case OK:
+                break;
+            case BADKEY:
+                errors.append("Attempting to set undefined key (").append(name).append(".").append(kp.key).append("=").append(kp.value).append(")\n");
+                break;
+            case BADVALUE:
+                errors.append("Attempting to set key with bad value (").append(name).append(".").append(kp.key).append("=").append(kp.value).append(")\n");
+                break;
+            default:
+                errors.append("Bad return code - SYSTEM PROBLEM!\n");
+                break;
         }
     }
 
     /**
      * Set a parameter.
      *
-     * @param key the parameter key
-     * @param value the parameter value
+     * @param kp the key/value pair
      * @return success code
      */
-    abstract public int setParameter(String key, String value);
+    abstract protected Status setParameter(KeyPair kp);
 
-    /**
-     * Check a set of parameters.
-     *
-     * @param parameters a map of parameter keys and values.
-     * @param errors a StringBuffer to collect error messages
-     */
-    public void checkParameters(LinkedHashMap<String, String> parameters, StringBuffer errors) {
-        for (String key : parameters.keySet()) {
-            String value = parameters.get(key);
-            switch (checkParameter(key, value)) {
-                case uk.org.rlinsdale.racetrainingdemonstrator.core.api.DisplayableElement.PARAM_OK:
-                    break;
-                case uk.org.rlinsdale.racetrainingdemonstrator.core.api.DisplayableElement.PARAM_BADKEY:
-                    errors.append("Attempting to set undefined key (").append(name).append(".").append(key).append("=").append(value).append(")\n");
-                    break;
-                case uk.org.rlinsdale.racetrainingdemonstrator.core.api.DisplayableElement.PARAM_BADVALUE:
-                    errors.append("Attempting to set key with bad value (").append(name).append(".").append(key).append("=").append(value).append(")\n");
-                    break;
-                default:
-                    errors.append("Bad return code - SYSTEM PROBLEM!\n");
-                    break;
-            }
-        }
-    }
-
-    /**
-     * Check the legality of a particular Parameter value
-     *
-     * @param key the parameter key
-     * @param value the parameter value
-     * @return success code
-     */
-    abstract public int checkParameter(String key, String value);
 }

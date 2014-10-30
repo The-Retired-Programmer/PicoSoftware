@@ -16,20 +16,28 @@
  */
 package uk.org.rlinsdale.racetrainingdemonstrator.laser2;
 
-import uk.org.rlinsdale.racetrainingdemonstrator.core.api.ElementFactory;
-import uk.org.rlinsdale.racetrainingdemonstrator.core.AllElements;
+import java.util.Map;
+import uk.org.rlinsdale.racetrainingdemonstrator.core.api.BoatFactory;
 import org.openide.util.lookup.ServiceProvider;
+import uk.org.rlinsdale.racetrainingdemonstrator.core.ScenarioElement;
+import uk.org.rlinsdale.racetrainingdemonstrator.core.api.FlowElement;
+import uk.org.rlinsdale.racetrainingdemonstrator.mark.Mark;
 
 /**
  * The Laser2 factory.
  * 
  * @author Richard Linsdale (richard.linsdale at blueyonder.co.uk)
  */
-@ServiceProvider(service = Laser2Factory.class)
-public class Laser2Factory implements ElementFactory<Laser2> {
+@ServiceProvider(service = BoatFactory.class)
+public class Laser2Factory extends BoatFactory<Laser2> {
 
     @Override
-    public Laser2 get(String name, AllElements dfm) {
-        return new Laser2(name, dfm);
+    public Laser2 createInstance(String instancename, ScenarioElement scenario, FlowElement wind, FlowElement water, Map<String, Mark> marks) {
+        return new Laser2(instancename, scenario, wind, water, marks);
+    }
+
+    @Override
+    public String getName() {
+        return "laser2";
     }
 }

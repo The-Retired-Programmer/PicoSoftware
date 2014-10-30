@@ -17,20 +17,25 @@
 package uk.org.rlinsdale.racetrainingdemonstrator.swingingflow;
 
 import uk.org.rlinsdale.racetrainingdemonstrator.core.api.FlowElement;
-import uk.org.rlinsdale.racetrainingdemonstrator.core.api.ElementFactory;
-import uk.org.rlinsdale.racetrainingdemonstrator.core.AllElements;
 import org.openide.util.lookup.ServiceProvider;
+import uk.org.rlinsdale.racetrainingdemonstrator.core.ScenarioElement;
+import uk.org.rlinsdale.racetrainingdemonstrator.core.api.FlowElementFactory;
 
 /**
  * A Factory to create SwingingFlow Objects
  *
  * @author Richard Linsdale (richard.linsdale at blueyonder.co.uk)
  */
-@ServiceProvider(service = SwingingFlowFactory.class)
-public class SwingingFlowFactory implements ElementFactory<FlowElement> {
+@ServiceProvider(service = FlowElementFactory.class)
+public class SwingingFlowFactory extends FlowElementFactory {
 
     @Override
-    public FlowElement get(String name, AllElements dfm) {
-        return new SwingingFlow(name, dfm);
+    public FlowElement createInstance(String instancename, ScenarioElement scenario) {
+        return new SwingingFlow(instancename, scenario);
+    }
+
+    @Override
+    public String getName() {
+        return "swingingflow";
     }
 }
