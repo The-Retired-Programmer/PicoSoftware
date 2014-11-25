@@ -2,21 +2,9 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     
-    <!--
-        *** IMPORTANT ***
-        project.version , release and brandingToken must be consistent (ie the same)
-        in parent, main, branding and builder projects
-    -->
-
-    <properties>
-        <release>1</release>
-        <brandingToken>racetrainingdemonstrator</brandingToken>
-        <ghpagesroot>racetrainingdemonstrator</ghpagesroot>
-    </properties>
-    
     <parent>
         <groupId>uk.org.rlinsdale.poms</groupId>
-        <artifactId>nb-application-module-filtering</artifactId>
+        <artifactId>nb-application-module-filtering-enforced</artifactId>
         <version>1.0.0</version>
     </parent>
     

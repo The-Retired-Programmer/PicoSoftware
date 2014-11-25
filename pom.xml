@@ -3,18 +3,6 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     
-    <!--
-        *** IMPORTANT ***
-        project.version , release and brandingToken must be consistent (ie the same)
-        in parent, main, branding and builder projects
-    -->
-
-    <properties>
-        <release>1</release>
-        <brandingToken>racetrainingdemonstrator</brandingToken>
-        <ghpagesroot>racetrainingdemonstrator</ghpagesroot>
-    </properties>
-    
     <parent>
         <groupId>uk.org.rlinsdale.poms</groupId>
         <artifactId>nb-application-parent</artifactId>

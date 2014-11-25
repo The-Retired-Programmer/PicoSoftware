@@ -2,21 +2,9 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     
-    <!--
-        *** IMPORTANT ***
-        project.version , release and brandingToken must be consistent (ie the same)
-        in parent, main, branding, updater and builder projects
-    -->
-
-    <properties>
-        <release>1</release>
-        <brandingToken>racetrainingdemonstrator</brandingToken>
-        <ghpagesroot>racetrainingdemonstrator</ghpagesroot>
-    </properties>
-    
     <parent>
         <groupId>uk.org.rlinsdale.poms</groupId>
-        <artifactId>nb-application-module</artifactId>
+        <artifactId>nb-application-module-enforced</artifactId>
         <version>1.0.0</version>
     </parent>
     
@@ -84,17 +72,6 @@
     
     <dependencies>
         <dependency>
-            <groupId>org.netbeans.cluster</groupId>
-            <artifactId>platform</artifactId>
-            <type>pom</type>
-        </dependency>
-        <dependency>
-            <groupId>uk.org.rlinsdale</groupId>
-            <artifactId>nbpcglibrary</artifactId>
-            <version>3.1.1</version>
-            <type>pom</type>
-        </dependency>
-        <dependency>
             <groupId>uk.org.rlinsdale.racetrainingdemonstrator</groupId>
             <artifactId>branding</artifactId>
         </dependency>
@@ -133,6 +110,10 @@
         <dependency>
             <groupId>uk.org.rlinsdale.racetrainingdemonstrator</groupId>
             <artifactId>swingingflow</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.netbeans.api</groupId>
+            <artifactId>org-netbeans-modules-autoupdate-services</artifactId>
         </dependency>
     </dependencies>
     

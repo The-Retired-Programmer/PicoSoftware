@@ -14,7 +14,7 @@ relevant to this release.
 Online Javadoc for this release can be found
 [here](http://javadoc.rlinsdale.org.uk/racetrainingdemonstrator/v${release}/index.html),
 whilst a downloadable jar file containing the same Javadoc is available from
-[here](http://repository.rlinsdale.org.uk/uk/org/rlinsdale/racetrainingdemonstrator/parent/${project.version}/parent-${project.version}-javadoc.jar)
+[here](http://javadoc.rlinsdale.org.uk/racetrainingdemonstrator/v${release}/racetrainingdemonstrator-javadoc.jar)
 
 Developers modifying the source code are encouraged to submit their changes
 back to the project using a Pull-Request (for consideration for
