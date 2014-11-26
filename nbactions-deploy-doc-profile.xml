@@ -8,21 +8,6 @@
             <goals>
                 <goal>antrun:run</goal>
             </goals>
-            <properties>
-                <no.clean>true</no.clean>
-            </properties>
-        </action>
-        <action>
-            <actionName>clean</actionName>
-            <packagings>
-                <packaging>*</packaging>
-            </packagings>
-            <goals>
-                <goal>antrun:run</goal>
-            </goals>
-            <properties>
-                <no.build>true</no.build>
-            </properties>
         </action>
         <action>
             <actionName>rebuild</actionName>
@@ -42,6 +27,18 @@
             <goals>
                 <goal>antrun:run</goal>
             </goals>
+        </action>
+        <action>
+            <actionName>clean</actionName>
+            <packagings>
+                <packaging>*</packaging>
+            </packagings>
+            <goals>
+                <goal>antrun:run</goal>
+            </goals>
+            <properties>
+                <skip.action>true</skip.action>
+            </properties>
         </action>
         
     </actions>
