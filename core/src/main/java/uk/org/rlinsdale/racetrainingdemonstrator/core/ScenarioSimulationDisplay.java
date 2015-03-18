@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014 Richard Linsdale (richard.linsdale at blueyonder.co.uk)
+ * Copyright (C) 2014-2015 Richard Linsdale (richard.linsdale at blueyonder.co.uk)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -36,7 +36,6 @@ import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JToolBar;
 import javax.swing.Scrollable;
-import uk.org.rlinsdale.nbpcglibrary.common.Log;
 import uk.org.rlinsdale.racetrainingdemonstrator.core.api.Polar;
 import uk.org.rlinsdale.racetrainingdemonstrator.definitionfiletype.DefFileDataObject;
 import uk.org.rlinsdale.racetrainingdemonstrator.mark.Mark;
@@ -51,6 +50,7 @@ import org.openide.util.NbBundle.Messages;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ProxyLookup;
 import org.openide.windows.TopComponent;
+import uk.org.rlinsdale.nbpcglibrary.common.LogBuilder;
 import uk.org.rlinsdale.racetrainingdemonstrator.core.api.Boat;
 import uk.org.rlinsdale.racetrainingdemonstrator.core.api.FlowElement;
 import uk.org.rlinsdale.racetrainingdemonstrator.core.api.FlowElementFactory;
@@ -113,7 +113,7 @@ public final class ScenarioSimulationDisplay extends JPanel implements MultiView
         dataobj.getPrimaryFile().addFileChangeListener(new FileChangeAdapter() {
             @Override
             public void fileChanged(FileEvent fe) {
-                Log.get("uk.org.rlinsdale.racetrainingdemonstrator").finer("File change detected");
+                LogBuilder.writeLog("racetrainingdemonstrator", this, "fileChanged");
                 reset();
             }
         });
@@ -139,7 +139,7 @@ public final class ScenarioSimulationDisplay extends JPanel implements MultiView
         if (isRunning) {
             return;
         }
-        Log.get("uk.org.rlinsdale.racetrainingdemonstrator").finer("Simulation started");
+        LogBuilder.writeLog("racetrainingdemonstrator", this, "start");
         int rate = (int) (scenario.getSecondsPerDisplay() * 1000 / scenario.getSpeedup());
         timer = new Timer();
         runner = new TimeStepsRunner();
@@ -152,7 +152,7 @@ public final class ScenarioSimulationDisplay extends JPanel implements MultiView
      */
     public void reset() {
         terminate();
-        Log.get("uk.org.rlinsdale.racetrainingdemonstrator").finer("Simulation reset");
+        LogBuilder.writeLog("racetrainingdemonstrator", this, "reset");
         removeAll();
         boats.values().stream().forEach((boat) -> {
             boat.finish();
@@ -173,7 +173,7 @@ public final class ScenarioSimulationDisplay extends JPanel implements MultiView
         if (!isRunning) {
             return;
         }
-        Log.get("uk.org.rlinsdale.racetrainingdemonstrator").finer("Simulation terminated");
+        LogBuilder.writeLog("racetrainingdemonstrator", this, "terminate");
         isRunning = false;
         timer.cancel();
     }
@@ -349,7 +349,7 @@ public final class ScenarioSimulationDisplay extends JPanel implements MultiView
                 timeinfo.setText("Time: " + mmssformat(simulationtime));
                 dp.updateDisplay();
             } catch (Exception ex) {
-                Log.get("uk.org.rlinsdale.racetrainingdemonstrator").log(Level.SEVERE, null, ex);
+                LogBuilder.create("racetrainingdemonstrator", Level.SEVERE).addExceptionMessage(ex);
             }
         }
     }

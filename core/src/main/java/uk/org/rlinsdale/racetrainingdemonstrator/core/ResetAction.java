@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014 Richard Linsdale (richard.linsdale at blueyonder.co.uk)
+ * Copyright (C) 2014-2015 Richard Linsdale (richard.linsdale at blueyonder.co.uk)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,12 +18,12 @@ package uk.org.rlinsdale.racetrainingdemonstrator.core;
 
 import java.awt.event.ActionEvent;
 import javax.swing.AbstractAction;
-import uk.org.rlinsdale.nbpcglibrary.common.Log;
 import org.openide.util.ImageUtilities;
+import uk.org.rlinsdale.nbpcglibrary.common.LogBuilder;
 
 /**
  * The Reset Action
- * 
+ *
  * @author Richard Linsdale (richard.linsdale at blueyonder.co.uk)
  */
 public final class ResetAction extends AbstractAction {
@@ -32,8 +32,9 @@ public final class ResetAction extends AbstractAction {
 
     /**
      * Constructor
-     * 
-     * @param element the simulation element into which the action icon is to be placed
+     *
+     * @param element the simulation element into which the action icon is to be
+     * placed
      */
     public ResetAction(ScenarioSimulationDisplay element) {
         super("Reset Simulation", ImageUtilities.loadImageIcon("com/famfamfam/www/silkicons/control_start_blue.png", false));
@@ -42,7 +43,7 @@ public final class ResetAction extends AbstractAction {
 
     @Override
     public void actionPerformed(ActionEvent ev) {
-        Log.get("uk.org.rlinsdale.racetrainingdemonstrator").finer("Reset button pressed");
+        LogBuilder.writeLog("racetrainingdemonstrator", this, "actionPerformed");
         element.reset();
     }
 }

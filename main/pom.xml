@@ -5,27 +5,20 @@
     <parent>
         <groupId>uk.org.rlinsdale.poms</groupId>
         <artifactId>nb-application-module-filtering-enforced</artifactId>
-        <version>1.0.0</version>
+        <version>1.0.2</version>
     </parent>
     
     <groupId>uk.org.rlinsdale.racetrainingdemonstrator</groupId>
     <artifactId>main</artifactId>
-    <version>1.0.0</version>
+    <version>1.0.1</version>
     <packaging>nbm</packaging>
     
     <name>Race Training Demonstrator - main</name>
     
-    <dependencyManagement>
-        <dependencies>
-            <dependency>
-                <groupId>uk.org.rlinsdale</groupId>
-                <artifactId>lindos</artifactId>
-                <version>3.1.1</version>
-                <type>pom</type>
-                <scope>import</scope>
-            </dependency>
-        </dependencies>
-    </dependencyManagement>
+   <properties>
+        <lindos.version>3.1.6</lindos.version>
+    </properties>
+    
     <dependencies>
         <dependency>
             <groupId>org.netbeans.api</groupId>
@@ -34,6 +27,7 @@
         <dependency>
             <groupId>uk.org.rlinsdale.lindos</groupId>
             <artifactId>lifecycle</artifactId>
+            <version>${lindos.version}</version>
         </dependency>
     </dependencies>
 </project>

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014 Richard Linsdale (richard.linsdale at blueyonder.co.uk)
+ * Copyright (C) 2014-2015 Richard Linsdale (richard.linsdale at blueyonder.co.uk)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,9 +16,8 @@
  */
 package uk.org.rlinsdale.racetrainingdemonstrator.core.api;
 
-import java.util.logging.Level;
 import org.openide.util.Lookup;
-import uk.org.rlinsdale.nbpcglibrary.common.Log;
+import uk.org.rlinsdale.nbpcglibrary.common.LogBuilder;
 import uk.org.rlinsdale.racetrainingdemonstrator.core.ScenarioElement;
 
 /**
@@ -53,9 +52,7 @@ public abstract class FlowElementFactory {
      * @return the new instance of the target class
      */
     public static FlowElement createInstance(String classrefname, String instancename, ScenarioElement scenario) {
-        Log.get("uk.org.rlinsdale.racetrainingdemonstrator").log(Level.FINE, "Creating a new instance {0} of class {1}", new Object[]{
-            instancename, classrefname
-        });
+        LogBuilder.writeLog("racetrainingdemonstrator", "BoatFactory", "createInstance", instancename, classrefname);
         for (FlowElementFactory factory : Lookup.getDefault().lookupAll(FlowElementFactory.class)) {
             if (factory.getName().equals(classrefname)) {
                 return factory.createInstance(instancename, scenario);
@@ -63,6 +60,5 @@ public abstract class FlowElementFactory {
         }
         return null;
     }
-    
-    
+
 }

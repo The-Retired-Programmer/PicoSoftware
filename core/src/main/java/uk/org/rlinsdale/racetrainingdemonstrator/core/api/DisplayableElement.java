@@ -20,10 +20,7 @@ import java.awt.Graphics2D;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import uk.org.rlinsdale.nbpcglibrary.common.LogicException;
-import uk.org.rlinsdale.nbpcglibrary.common.RegisterLog;
-import uk.org.rlinsdale.racetrainingdemonstrator.core.ElementParameters;
-import uk.org.rlinsdale.racetrainingdemonstrator.core.ScenarioSimulationDisplay;
+import uk.org.rlinsdale.nbpcglibrary.annotations.RegisterLog;
 import uk.org.rlinsdale.racetrainingdemonstrator.core.api.KeyPair.Status;
 
 /**
@@ -31,7 +28,7 @@ import uk.org.rlinsdale.racetrainingdemonstrator.core.api.KeyPair.Status;
  *
  * @author Richard Linsdale (richard.linsdale at blueyonder.co.uk)
  */
-@RegisterLog("uk.org.rlinsdale.racetrainingdemonstrator")
+@RegisterLog("racetrainingdemonstrator")
 abstract public class DisplayableElement extends Element {
     
      private final Map<String, KeyPair>keyactions = new HashMap<>();

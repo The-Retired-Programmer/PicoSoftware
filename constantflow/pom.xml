@@ -5,42 +5,35 @@
     <parent>
         <groupId>uk.org.rlinsdale.poms</groupId>
         <artifactId>nb-application-module</artifactId>
-        <version>1.0.0</version>
+        <version>1.0.2</version>
     </parent>
     
     <groupId>uk.org.rlinsdale.racetrainingdemonstrator</groupId>
     <artifactId>constantflow</artifactId>
-    <version>1.0.0</version>
+    <version>1.0.1</version>
     <packaging>nbm</packaging>
 
     <name>Race Training Demonstrator - constant flow</name>
     
-    <dependencyManagement>
-        <dependencies>
-            <dependency>
-                <groupId>uk.org.rlinsdale</groupId>
-                <artifactId>nbpcglibrary</artifactId>
-                <version>3.1.1</version>
-                <type>pom</type>
-                <scope>import</scope>
-            </dependency>
-        </dependencies>
-    </dependencyManagement>
+    <properties>
+        <nbpcglibrary.version>3.1.6</nbpcglibrary.version>
+    </properties>
     
     <dependencies>
         <dependency>
             <groupId>uk.org.rlinsdale.racetrainingdemonstrator</groupId>
             <artifactId>core</artifactId>
-            <version>1.0.0</version>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>uk.org.rlinsdale.nbpcglibrary</groupId>
             <artifactId>common</artifactId>
+            <version>${nbpcglibrary.version}</version>
         </dependency>
         <dependency>
             <groupId>uk.org.rlinsdale.racetrainingdemonstrator</groupId>
             <artifactId>complexflow</artifactId>
-            <version>1.0.0</version>
+            <version>${project.version}</version>
         </dependency>
     </dependencies>
 

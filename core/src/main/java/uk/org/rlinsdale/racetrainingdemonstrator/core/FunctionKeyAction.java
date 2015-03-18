@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014 Richard Linsdale (richard.linsdale at blueyonder.co.uk)
+ * Copyright (C) 2014-2015 Richard Linsdale (richard.linsdale at blueyonder.co.uk)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,13 +18,12 @@ package uk.org.rlinsdale.racetrainingdemonstrator.core;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.logging.Level;
-import uk.org.rlinsdale.nbpcglibrary.common.Log;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
 import org.openide.awt.ActionReferences;
 import org.openide.awt.ActionRegistration;
 import org.openide.util.NbBundle.Messages;
+import uk.org.rlinsdale.nbpcglibrary.common.LogBuilder;
 
 /**
  * Function keystroke action - will pass to a defined keystroke action defined
@@ -55,7 +54,7 @@ public final class FunctionKeyAction implements ActionListener {
     @Override
     public void actionPerformed(ActionEvent e) {
         String key = e.getActionCommand();
-        Log.get("uk.org.rlinsdale.racetrainingdemonstrator").log(Level.FINER, "Key {0} pressed", key);
+        LogBuilder.writeLog("racetrainingdemonstrator", this, "actionPerformed", key);
         ScenarioSimulationDisplay simulationdisplayinfocus = ScenarioSimulationDisplay.getSimulationInFocus();
         if (simulationdisplayinfocus != null) {
             simulationdisplayinfocus.keyAction(key);

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014 Richard Linsdale (richard.linsdale at blueyonder.co.uk)
+ * Copyright (C) 2014-2015 Richard Linsdale (richard.linsdale at blueyonder.co.uk)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,9 +17,8 @@
 package uk.org.rlinsdale.racetrainingdemonstrator.core.api;
 
 import java.util.Map;
-import java.util.logging.Level;
 import org.openide.util.Lookup;
-import uk.org.rlinsdale.nbpcglibrary.common.Log;
+import uk.org.rlinsdale.nbpcglibrary.common.LogBuilder;
 import uk.org.rlinsdale.racetrainingdemonstrator.core.ScenarioElement;
 import uk.org.rlinsdale.racetrainingdemonstrator.mark.Mark;
 
@@ -32,7 +31,8 @@ import uk.org.rlinsdale.racetrainingdemonstrator.mark.Mark;
 public abstract class BoatFactory<B extends Boat> {
 
     /**
-     * createInstance an element
+     * createInstance an element LogBuilder.writeLog("racetrainingdemonstrator",
+     * "BoatFactory", "createInstance",instancename, classrefname);
      *
      * @param instancename the objectname
      * @param scenario the scenario to be applied
@@ -62,9 +62,7 @@ public abstract class BoatFactory<B extends Boat> {
      * @return the new instance of the target class
      */
     public static Boat createInstance(String classrefname, String instancename, ScenarioElement scenario, FlowElement wind, FlowElement water, Map<String, Mark> marks) {
-        Log.get("uk.org.rlinsdale.racetrainingdemonstrator").log(Level.FINE, "Creating a new instance {0} of class {1}", new Object[]{
-            instancename, classrefname
-        });
+        LogBuilder.writeLog("racetrainingdemonstrator", "BoatFactory", "createInstance", instancename, classrefname);
         for (BoatFactory factory : Lookup.getDefault().lookupAll(BoatFactory.class)) {
             if (factory.getName().equals(classrefname)) {
                 return factory.createInstance(instancename, scenario, wind, water, marks);

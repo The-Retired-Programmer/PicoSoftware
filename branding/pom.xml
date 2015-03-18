@@ -6,12 +6,12 @@
     <parent>
         <groupId>uk.org.rlinsdale.poms</groupId>
         <artifactId>nb-application-module-enforced</artifactId>
-        <version>1.0.0</version>
+        <version>1.0.2</version>
     </parent>
     
     <groupId>uk.org.rlinsdale.racetrainingdemonstrator</groupId>
     <artifactId>branding</artifactId>
-    <version>1.0.0</version>
+    <version>1.0.1</version>
     <packaging>nbm</packaging>
 
     <name>Race Training Demonstrator - branding</name>
