@@ -3,18 +3,31 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     
-    <parent>
+     <parent>
         <groupId>uk.org.rlinsdale.poms</groupId>
-        <artifactId>nb-application-parent</artifactId>
-        <version>1.0.2</version>
+        <artifactId>nb-application</artifactId>
+        <version>2.0.0</version>
     </parent>
 
     <groupId>uk.org.rlinsdale.racetrainingdemonstrator</groupId>
     <artifactId>parent</artifactId>
-    <version>1.0.1</version>
+    <version>1.0.2</version>
     <packaging>pom</packaging>
 
     <name>Race Training Demonstrator - parent</name>
+    
+    <properties>
+        <javaSource>1.8</javaSource>
+        <javaTarget>1.8</javaTarget>
+        <netbeans.version>RELEASE801</netbeans.version>
+        <nbpcglibrary.version>3.1.8</nbpcglibrary.version>
+        <lindos.version>3.1.8</lindos.version>
+        <release>1</release>
+        <brandingToken>racetrainingdemonstrator</brandingToken>
+        <javadocname>racetrainingdemonstrator</javadocname>
+        <javadoctitle>Race Training Demonstrator</javadoctitle>
+        <ghpagesroot>racetrainingdemonstrator</ghpagesroot>
+    </properties>
     
     <modules>
         <module>branding</module>

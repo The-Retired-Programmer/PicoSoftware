@@ -18,6 +18,7 @@ package uk.org.rlinsdale.racetrainingdemonstrator.main;
 
 import uk.org.rlinsdale.lindos.lifecycle.SimpleLifeCycle;
 import org.openide.modules.OnStart;
+import uk.org.rlinsdale.lindos.lifecycle.ApplicationPropertiesException;
 
 /**
  *  LifecycleManagement
@@ -30,7 +31,7 @@ public class LifeCycle extends SimpleLifeCycle {
     /**
      * Constructor.
      */
-    public LifeCycle() {
+    public LifeCycle() throws ApplicationPropertiesException {
         super(LifeCycle.class.getResourceAsStream("/META-INF/application.properties"),
                 null);
     }

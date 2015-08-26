@@ -3,14 +3,13 @@
     <modelVersion>4.0.0</modelVersion>
     
     <parent>
-        <groupId>uk.org.rlinsdale.poms</groupId>
-        <artifactId>nb-application-module-enforced</artifactId>
+        <groupId>uk.org.rlinsdale.racetrainingdemonstrator</groupId>
+        <artifactId>parent</artifactId>
         <version>1.0.2</version>
     </parent>
     
     <groupId>uk.org.rlinsdale.racetrainingdemonstrator</groupId>
     <artifactId>updater</artifactId>
-    <version>1.0.1</version>
     <packaging>nbm</packaging>
     
     <name>Race Training Demonstrator - updater</name>
@@ -69,6 +68,7 @@
         <dependency>
             <groupId>org.netbeans.api</groupId>
             <artifactId>org-netbeans-modules-autoupdate-services</artifactId>
+            <version>${netbeans.version}</version>
         </dependency>
     </dependencies>
     

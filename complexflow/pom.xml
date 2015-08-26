@@ -3,21 +3,16 @@
     <modelVersion>4.0.0</modelVersion>
     
     <parent>
-        <groupId>uk.org.rlinsdale.poms</groupId>
-        <artifactId>nb-application-module</artifactId>
+        <groupId>uk.org.rlinsdale.racetrainingdemonstrator</groupId>
+        <artifactId>parent</artifactId>
         <version>1.0.2</version>
     </parent>
     
     <groupId>uk.org.rlinsdale.racetrainingdemonstrator</groupId>
     <artifactId>complexflow</artifactId>
-    <version>1.0.1</version>
     <packaging>nbm</packaging>
 
     <name>Race Training Demonstrator - complex flow</name>
-    
-    <properties>
-        <nbpcglibrary.version>3.1.6</nbpcglibrary.version>
-    </properties>
     
     <dependencies>
         <dependency>

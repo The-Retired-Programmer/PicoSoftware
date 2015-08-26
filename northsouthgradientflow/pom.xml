@@ -3,21 +3,16 @@
     <modelVersion>4.0.0</modelVersion>
     
     <parent>
-        <groupId>uk.org.rlinsdale.poms</groupId>
-        <artifactId>nb-application-module</artifactId>
+        <groupId>uk.org.rlinsdale.racetrainingdemonstrator</groupId>
+        <artifactId>parent</artifactId>
         <version>1.0.2</version>
     </parent>
     
     <groupId>uk.org.rlinsdale.racetrainingdemonstrator</groupId>
     <artifactId>northsouthgradientflow</artifactId>
-    <version>1.0.1</version>
     <packaging>nbm</packaging>
 
     <name>Race Training Demonstrator - north south gradient flow</name>
-    
-    <properties>
-        <nbpcglibrary.version>3.1.6</nbpcglibrary.version>
-    </properties>
     
     <dependencies>
         <dependency>
@@ -28,6 +23,7 @@
         <dependency>
             <groupId>org.netbeans.api</groupId>
             <artifactId>org-openide-modules</artifactId>
+            <version>${netbeans.version}</version>
         </dependency>
         <dependency>
             <artifactId>common</artifactId>
