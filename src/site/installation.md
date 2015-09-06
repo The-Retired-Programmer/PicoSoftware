@@ -1,3 +1,8 @@
+{::comment define doc.title=Race Training Demonstrator Installation Instructions /}
+{::comment define doc.header= Installation Instructions /}
+{::comment define doc.name = Race Training Demonstrator /}
+{::comment define doc.menu.menu = [Race Training Demonstrator Home](index.html) /}
+
 This document refers to release v${project.version}
 
 #####Mailer for Linux

@@ -1,3 +1,8 @@
+{::comment define doc.title=Race Training Demonstrator Developer Documentation /}
+{::comment define doc.header= Developer Documentation /}
+{::comment define doc.name = Race Training Demonstrator /}
+{::comment define doc.menu.menu = [Race Training Demonstrator Home](index.html) /}
+
 This document refers to release v${project.version}
 
 As an open source solution, the source code

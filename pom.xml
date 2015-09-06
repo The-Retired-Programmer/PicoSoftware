@@ -17,6 +17,7 @@
     <name>Race Training Demonstrator - parent</name>
     
     <properties>
+        <project_key>racetrainingdemonstrator</project_key>
         <javaSource>1.8</javaSource>
         <javaTarget>1.8</javaTarget>
         <netbeans.version>RELEASE801</netbeans.version>
