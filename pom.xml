@@ -5,7 +5,7 @@
     
      <parent>
         <groupId>uk.org.rlinsdale.poms</groupId>
-        <artifactId>nb-application</artifactId>
+        <artifactId>netbeans-application</artifactId>
         <version>2.0.0</version>
     </parent>
 
@@ -18,16 +18,8 @@
     
     <properties>
         <project_key>racetrainingdemonstrator</project_key>
-        <javaSource>1.8</javaSource>
-        <javaTarget>1.8</javaTarget>
-        <netbeans.version>RELEASE801</netbeans.version>
         <nbpcglibrary.version>3.1.8</nbpcglibrary.version>
         <lindos.version>3.1.8</lindos.version>
-        <release>1</release>
-        <brandingToken>racetrainingdemonstrator</brandingToken>
-        <javadocname>racetrainingdemonstrator</javadocname>
-        <javadoctitle>Race Training Demonstrator</javadoctitle>
-        <ghpagesroot>racetrainingdemonstrator</ghpagesroot>
     </properties>
     
     <modules>

@@ -2,7 +2,7 @@
 {::comment define doc.header= Race Training Demonstrator /}
 {::comment define doc.tagline=shows effects of wind and water on sailing boats in a race /}
 {::comment define doc.name = Race Training Demonstrator /}
-{::comment define doc.menu.menu = [Software and Embedded Solutions Home](http://richard-linsdale.github.io/) /}
+{::comment define doc.menu.menu = [Software and Embedded Solutions Home](http://www.rlinsdale.org.uk/software/) /}
 {::comment define status=Not yet released - In active development /}
 
 Shows effects of wind and water on sailing boats in a race.
@@ -10,7 +10,7 @@ Shows effects of wind and water on sailing boats in a race.
 It is is a Java standalone application, built on the Netbeans Application Platform, and requires the Java
 8 runtime environment
           
-Current release is ${project.version}
+Current release is ${project-version}
                                                 
 Project Status: ${status}
      
