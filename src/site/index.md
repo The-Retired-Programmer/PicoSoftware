@@ -1,9 +1,9 @@
-{::comment define doc.title=Race Training Demonstrator /}
-{::comment define doc.header= Race Training Demonstrator /}
-{::comment define doc.tagline=shows effects of wind and water on sailing boats in a race /}
-{::comment define doc.name = Race Training Demonstrator /}
-{::comment define doc.menu.menu = [Software and Embedded Solutions Home](http://www.rlinsdale.org.uk/software/) /}
-{::comment define status=Not yet released - In active development /}
+{::comment} define doc.title=Race Training Demonstrator {:/comment}
+{::comment} define doc.header= Race Training Demonstrator {:/comment}
+{::comment} define doc.tagline=shows effects of wind and water on sailing boats in a race {:/comment}
+{::comment} define doc.name = Race Training Demonstrator {:/comment}
+{::comment} define doc.menu.menu = [Software and Embedded Solutions Home](http://www.rlinsdale.org.uk/software/) {:/comment}
+{::comment} define status=Not yet released - In active development {:/comment}
 
 Shows effects of wind and water on sailing boats in a race.
 
@@ -14,14 +14,14 @@ Current release is ${project-version}
                                                 
 Project Status: ${status}
      
-#####Documentation
+##Documentation
 
 * [Installation Instructions](installation.html)
 * [Release Notes](release.html)
 * [User Documentation](user.html)
 * [Developer Documentation](developer.html)
                 
-#####Support
+##Support
 
 The author would be interested in any feedback on this project
 from users of the plug-in.  Issues (bugs or possible

@@ -1,7 +1,7 @@
-{::comment define doc.title=Race Training Demonstrator Developer Documentation /}
-{::comment define doc.header= Developer Documentation /}
-{::comment define doc.name = Race Training Demonstrator /}
-{::comment define doc.menu.menu = [Race Training Demonstrator Home](index.html) /}
+{::comment} define doc.title=Race Training Demonstrator Developer Documentation {:/comment}
+{::comment} define doc.header= Developer Documentation {:/comment}
+{::comment} define doc.name = Race Training Demonstrator {:/comment}
+{::comment} define doc.menu.menu = [Race Training Demonstrator Home](index.html) {:/comment}
 
 This document refers to release v${project-version}
 

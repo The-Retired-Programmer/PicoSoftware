@@ -1,11 +1,11 @@
-{::comment define doc.title=Race Training Demonstrator Installation Instructions /}
-{::comment define doc.header= Installation Instructions /}
-{::comment define doc.name = Race Training Demonstrator /}
-{::comment define doc.menu.menu = [Race Training Demonstrator Home](index.html) /}
+{::comment} define doc.title=Race Training Demonstrator Installation Instructions {:/comment}
+{::comment} define doc.header= Installation Instructions {:/comment}
+{::comment} define doc.name = Race Training Demonstrator {:/comment}
+{::comment} define doc.menu.menu = [Race Training Demonstrator Home](index.html) {:/comment}
 
 This document refers to release v${project-version}
 
-#####Mailer for Linux
+##Mailer for Linux
 
 This is available as a shell script installer. It can be downloaded
 from [here](http://www.rlinsdale.org.uk/repository/uk/org/rlinsdale/racetrainingdemonstrator/${project-version}/racetrainingdemonstrator-${project-version}-linux.sh).
