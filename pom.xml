@@ -6,20 +6,20 @@
      <parent>
         <groupId>uk.org.rlinsdale.poms</groupId>
         <artifactId>netbeans-application</artifactId>
-        <version>2.0.0</version>
+        <version>2.0.1</version>
     </parent>
 
     <groupId>uk.org.rlinsdale.racetrainingdemonstrator</groupId>
     <artifactId>parent</artifactId>
-    <version>1.0.2</version>
+    <version>1.0.3</version>
     <packaging>pom</packaging>
 
     <name>Race Training Demonstrator - parent</name>
     
     <properties>
         <project_key>racetrainingdemonstrator</project_key>
-        <nbpcglibrary.version>3.1.8</nbpcglibrary.version>
-        <lindos.version>3.1.8</lindos.version>
+        <nbpcglibrary.version>3.1.15</nbpcglibrary.version>
+        <lindos.version>3.1.15</lindos.version>
     </properties>
     
     <modules>
