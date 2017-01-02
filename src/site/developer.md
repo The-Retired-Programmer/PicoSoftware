@@ -1,14 +1,11 @@
-{::comment} define doc.title=Race Training Demonstrator Developer Documentation {:/comment}
-{::comment} define doc.header= Developer Documentation {:/comment}
-{::comment} define doc.name = Race Training Demonstrator {:/comment}
-{::comment} define doc.menu.menu = [Race Training Demonstrator Home](index.html) {:/comment}
+The source code is available on GitHub.
 
-This document refers to release v${project-version}
+The build/dependency manangement system is Maven.
 
-As an open source solution, the source code
-is available on GitHub. The project is a Maven project written in Java, and
-is a Java standalone application.  The Netbeans IDE was used as
-the development platform, but is not mandatory as this is a Maven project.
+The development environment uses the Netbeans IDE, but this is not mandatory,
+any development environment which can work with a Maven project can be used.
+
+**Source Code**
 
 Sources for this release can be found [here](https://github.com/Richard-Linsdale/racetrainingdemonstrator/releases/tag/v${project-version}).
 
