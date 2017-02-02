@@ -2,31 +2,19 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
-    
-     <parent>
-        <groupId>uk.org.rlinsdale.poms</groupId>
-        <artifactId>netbeans-application</artifactId>
-        <version>2.0.1</version>
-    </parent>
 
-    <groupId>uk.org.rlinsdale.racetrainingdemonstrator</groupId>
+    <groupId>uk.theretiredprogrammer.racetrainingdemonstrator</groupId>
     <artifactId>parent</artifactId>
-    <version>1.0.3</version>
+    <version>2.0.0-SNAPSHOT</version>
     <packaging>pom</packaging>
 
-    <name>Race Training Demonstrator - parent</name>
-    
-    <properties>
-        <project_key>racetrainingdemonstrator</project_key>
-        <nbpcglibrary.version>3.1.15</nbpcglibrary.version>
-        <lindos.version>3.1.15</lindos.version>
-    </properties>
+    <name>Race Training Demonstrator</name>
     
     <modules>
         <module>branding</module>
         <module>main</module>
         <module>updater</module>
-        <module>builder</module>
+        <module>aggregator</module>
         <module>core</module>
         <module>boat</module>
         <module>laser2</module>

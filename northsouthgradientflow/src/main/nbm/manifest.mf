@@ -1,5 +1,5 @@
 Manifest-Version: 1.0
-OpenIDE-Module-Localizing-Bundle: uk/org/rlinsdale/racetrainingdemonstrator/northsouthgradientflow/Bundle.properties
+OpenIDE-Module-Localizing-Bundle: uk/theretiredprogrammer/racetrainingdemonstrator/northsouthgradientflow/Bundle.properties
 OpenIDE-Module-Display-Category: Application Optional
 AutoUpdate-Essential-Module: false
 AutoUpdate-Show-In-Client: true

@@ -3,64 +3,76 @@
     <modelVersion>4.0.0</modelVersion>
     
     <parent>
-        <groupId>uk.org.rlinsdale.racetrainingdemonstrator</groupId>
-        <artifactId>parent</artifactId>
-        <version>1.0.3</version>
+        <groupId>uk.theretiredprogrammer.poms</groupId>
+        <artifactId>nbm</artifactId>
+        <version>3.0.0-SNAPSHOT</version>
     </parent>
     
+    <groupId>uk.theretiredprogrammer.racetrainingdemonstrator</groupId>
     <artifactId>updater</artifactId>
+    <version>2.0.0-SNAPSHOT</version>
     <packaging>nbm</packaging>
     
-    <name>Race Training Demonstrator - updater</name>
+    <name>Race Training Demonstrator - Updater</name>
+    
+    <properties>
+        <licenseName>Apache 2.0</licenseName>
+        <licenseFile>../LICENSE</licenseFile>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <netbeans.version>RELEASE82</netbeans.version>
+        <maven.compiler.source>1.8</maven.compiler.source>
+        <maven.compiler.target>1.8</maven.compiler.target>
+        <project_key>racetrainingdemonstrator</project_key>
+    </properties>
     
     <dependencies>
         <dependency>
-            <groupId>uk.org.rlinsdale.racetrainingdemonstrator</groupId>
+            <groupId>uk.theretiredprogrammer.racetrainingdemonstrator</groupId>
             <artifactId>branding</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>uk.org.rlinsdale.racetrainingdemonstrator</groupId>
+            <groupId>uk.theretiredprogrammer.racetrainingdemonstrator</groupId>
             <artifactId>main</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>uk.org.rlinsdale.racetrainingdemonstrator</groupId>
+            <groupId>uk.theretiredprogrammer.racetrainingdemonstrator</groupId>
             <artifactId>core</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>uk.org.rlinsdale.racetrainingdemonstrator</groupId>
+            <groupId>uk.theretiredprogrammer.racetrainingdemonstrator</groupId>
             <artifactId>boat</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>uk.org.rlinsdale.racetrainingdemonstrator</groupId>
+            <groupId>uk.theretiredprogrammer.racetrainingdemonstrator</groupId>
             <artifactId>complexflow</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>uk.org.rlinsdale.racetrainingdemonstrator</groupId>
+            <groupId>uk.theretiredprogrammer.racetrainingdemonstrator</groupId>
             <artifactId>constantflow</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>uk.org.rlinsdale.racetrainingdemonstrator</groupId>
+            <groupId>uk.theretiredprogrammer.racetrainingdemonstrator</groupId>
             <artifactId>eastwestgradientflow</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>uk.org.rlinsdale.racetrainingdemonstrator</groupId>
+            <groupId>uk.theretiredprogrammer.racetrainingdemonstrator</groupId>
             <artifactId>laser2</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>uk.org.rlinsdale.racetrainingdemonstrator</groupId>
+            <groupId>uk.theretiredprogrammer.racetrainingdemonstrator</groupId>
             <artifactId>northsouthgradientflow</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>uk.org.rlinsdale.racetrainingdemonstrator</groupId>
+            <groupId>uk.theretiredprogrammer.racetrainingdemonstrator</groupId>
             <artifactId>swingingflow</artifactId>
             <version>${project.version}</version>
         </dependency>
@@ -70,5 +82,14 @@
             <version>${netbeans.version}</version>
         </dependency>
     </dependencies>
+    
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>nbm-maven-plugin</artifactId>
+            </plugin>
+        </plugins>
+    </build>
     
 </project>
