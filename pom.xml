@@ -25,4 +25,31 @@
         <module>northsouthgradientflow</module>
     </modules>
     
+    <url>https://www.theretiredprogrammer.uk/?Project=${projectId}</url>
+    
+    <scm>
+        <connection>scm:git:git://github.com/The-Retired-Programmer/${projectId}.git</connection>
+        <developerConnection>scm:git:ssh://github.com:The-Retired-Programmer/${projectId}.git</developerConnection>
+        <url>http://github.com/The-Retired-Programmer/${projectId}/tree/master</url>
+    </scm>
+
+    <developers>
+        <developer>
+            <name>Richard Linsdale</name>
+            <email>richard@theretiredprogrammer.uk</email>
+            <organization>The-Retired-Programmer</organization>
+            <organizationUrl>https://www.theretiredprogrammer.uk</organizationUrl>
+        </developer>
+    </developers>
+  
+    <licenses>
+        <license>
+            <name>The Apache License, Version 2.0</name>
+            <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+        </license>
+    </licenses>
+
+    <properties>
+        <projectId>racetrainingdemonstrator</projectId>
+    </properties>
 </project>
