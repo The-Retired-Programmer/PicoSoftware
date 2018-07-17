@@ -19,7 +19,6 @@ import java.awt.Graphics2D;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import uk.theretiredprogrammer.nbpcglibrary.annotations.RegisterLog;
 import uk.theretiredprogrammer.racetrainingdemonstrator.core.api.KeyPair.Status;
 
 /**
@@ -27,7 +26,6 @@ import uk.theretiredprogrammer.racetrainingdemonstrator.core.api.KeyPair.Status;
  *
  * @author Richard Linsdale (richard at theretiredprogrammer.uk)
  */
-@RegisterLog("racetrainingdemonstrator")
 abstract public class DisplayableElement extends Element {
     
      private final Map<String, KeyPair>keyactions = new HashMap<>();

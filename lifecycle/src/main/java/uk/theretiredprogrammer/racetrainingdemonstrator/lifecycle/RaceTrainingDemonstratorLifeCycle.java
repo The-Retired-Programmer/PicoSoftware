@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2017 Richard Linsdale.
+ * Copyright 2014-2018 Richard Linsdale.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,11 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package uk.theretiredprogrammer.racetrainingdemonstrator.main;
+package uk.theretiredprogrammer.racetrainingdemonstrator.lifecycle;
 
-import uk.theretiredprogrammer.nbpcglibrary.lifecycle.SimpleLifeCycle;
+import uk.theretiredprogrammer.nbpcglibrary.lifecycle.BasicLifeCycle;
 import org.openide.modules.OnStart;
-import uk.theretiredprogrammer.nbpcglibrary.lifecycle.ApplicationPropertiesException;
 
 /**
  *  LifecycleManagement
@@ -25,13 +24,16 @@ import uk.theretiredprogrammer.nbpcglibrary.lifecycle.ApplicationPropertiesExcep
  * @author Richard Linsdale - richard at theretiredprogrammer.uk
  */
 @OnStart
-public class LifeCycle extends SimpleLifeCycle {
+public class RaceTrainingDemonstratorLifeCycle extends BasicLifeCycle implements Runnable {
 
     /**
      * Constructor.
      */
-    public LifeCycle() throws ApplicationPropertiesException {
-        super(LifeCycle.class.getResourceAsStream("/META-INF/application.properties"),
-                null);
+    public RaceTrainingDemonstratorLifeCycle() {
+        super(RaceTrainingDemonstratorLifeCycle.class.getResourceAsStream("/META-INF/application.properties"));
+    }
+
+    @Override
+    public void run() {
     }
 }

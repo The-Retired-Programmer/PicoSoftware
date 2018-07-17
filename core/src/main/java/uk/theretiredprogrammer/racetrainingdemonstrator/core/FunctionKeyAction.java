@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2017 Richard Linsdale.
+ * Copyright 2014-2018 Richard Linsdale.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,7 +22,6 @@ import org.openide.awt.ActionReference;
 import org.openide.awt.ActionReferences;
 import org.openide.awt.ActionRegistration;
 import org.openide.util.NbBundle.Messages;
-import uk.theretiredprogrammer.nbpcglibrary.common.LogBuilder;
 
 /**
  * Function keystroke action - will pass to a defined keystroke action defined
@@ -53,7 +52,6 @@ public final class FunctionKeyAction implements ActionListener {
     @Override
     public void actionPerformed(ActionEvent e) {
         String key = e.getActionCommand();
-        LogBuilder.writeLog("racetrainingdemonstrator", this, "actionPerformed", key);
         ScenarioSimulationDisplay simulationdisplayinfocus = ScenarioSimulationDisplay.getSimulationInFocus();
         if (simulationdisplayinfocus != null) {
             simulationdisplayinfocus.keyAction(key);

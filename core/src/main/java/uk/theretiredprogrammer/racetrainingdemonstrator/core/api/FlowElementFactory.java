@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2017 Richard Linsdale.
+ * Copyright 2014-2018 Richard Linsdale.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,6 @@
 package uk.theretiredprogrammer.racetrainingdemonstrator.core.api;
 
 import org.openide.util.Lookup;
-import uk.theretiredprogrammer.nbpcglibrary.common.LogBuilder;
 import uk.theretiredprogrammer.racetrainingdemonstrator.core.ScenarioElement;
 
 /**
@@ -51,7 +50,6 @@ public abstract class FlowElementFactory {
      * @return the new instance of the target class
      */
     public static FlowElement createInstance(String classrefname, String instancename, ScenarioElement scenario) {
-        LogBuilder.writeLog("racetrainingdemonstrator", "BoatFactory", "createInstance", instancename, classrefname);
         for (FlowElementFactory factory : Lookup.getDefault().lookupAll(FlowElementFactory.class)) {
             if (factory.getName().equals(classrefname)) {
                 return factory.createInstance(instancename, scenario);

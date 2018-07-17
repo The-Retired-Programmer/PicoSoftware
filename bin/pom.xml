@@ -5,64 +5,56 @@
     
     <parent>
         <groupId>uk.theretiredprogrammer</groupId>
-        <artifactId>nbp-aggregator-pom</artifactId>
-        <version>3.0.0-SNAPSHOT</version>
+        <artifactId>racetrainingdemonstrator</artifactId>
+        <version>2.0.0-SNAPSHOT</version>
     </parent>
     
-    <groupId>uk.theretiredprogrammer</groupId>
-    <artifactId>racetrainingdemonstrator</artifactId>
-    <version>2.0.0-SNAPSHOT</version>
+    <groupId>uk.theretiredprogrammer.racetrainingdemonstrator</groupId>
+    <artifactId>bin</artifactId>
     <packaging>nbm-application</packaging>
-
-    <name>Race Training Demonstrator - Aggregator</name>
-
-    <url>https://www.theretiredprogrammer.uk/?Project=${projectId}</url>
     
-    <scm>
-        <connection>scm:git:git://github.com/The-Retired-Programmer/${projectId}.git</connection>
-        <developerConnection>scm:git:ssh://github.com:The-Retired-Programmer/${projectId}.git</developerConnection>
-        <url>http://github.com/The-Retired-Programmer/${projectId}/tree/master</url>
-    </scm>
-
-    <developers>
-        <developer>
-            <name>Richard Linsdale</name>
-            <email>richard@theretiredprogrammer.uk</email>
-            <organization>The-Retired-Programmer</organization>
-            <organizationUrl>https://www.theretiredprogrammer.uk</organizationUrl>
-        </developer>
-    </developers>
-  
-    <licenses>
-        <license>
-            <name>The Apache License, Version 2.0</name>
-            <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
-        </license>
-    </licenses>
-
-    <properties>
-        <projectId>racetrainingdemonstrator</projectId>
-        <nbm.license.file>../LICENSE</nbm.license.file>
-        <nbm.license.name>The Apache License, Version 2.0</nbm.license.name>
-        <netbeans.version>RELEASE82</netbeans.version>
-        <maven.compiler.source>1.8</maven.compiler.source>
-        <maven.compiler.target>1.8</maven.compiler.target>
-    </properties>
-    
-    <build>
-        <plugins>
-            <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>nbm-maven-plugin</artifactId>
-            </plugin>
-        </plugins>
-    </build>
+    <name>Race Training Demonstrator - Binary Release Artifacts</name>
     
     <dependencies>
         <dependency>
             <groupId>org.netbeans.cluster</groupId>
             <artifactId>platform</artifactId>
+            <version>${netbeans.version}</version>
             <type>pom</type>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.netbeans.api</groupId>
+                    <artifactId>org-netbeans-api-visual</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.netbeans.api</groupId>
+                    <artifactId>org-netbeans-core-netigso</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.netbeans.modules</groupId>
+                    <artifactId>org-netbeans-core-osgi</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.netbeans.modules</groupId>
+                    <artifactId>org-netbeans-libs-felix</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.netbeans.api</groupId>
+                    <artifactId>org-netbeans-libs-osgi</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.netbeans.api</groupId>
+                    <artifactId>org-netbeans-libs-testng</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.netbeans.api</groupId>
+                    <artifactId>org-netbeans-modules-netbinox</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.netbeans.modules</groupId>
+                    <artifactId>org-netbeans-modules-core-kit</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>uk.theretiredprogrammer.racetrainingdemonstrator</groupId>
@@ -71,7 +63,7 @@
         </dependency>
         <dependency>
             <groupId>uk.theretiredprogrammer.racetrainingdemonstrator</groupId>
-            <artifactId>main</artifactId>
+            <artifactId>lifecycle</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
@@ -104,11 +96,11 @@
             <artifactId>laser2</artifactId>
             <version>${project.version}</version>
         </dependency>
-        
         <!-- NbModuleSuite functional in RELEASE70 or later: -->
         <dependency>
             <groupId>org.netbeans.api</groupId>
             <artifactId>org-netbeans-modules-nbjunit</artifactId>
+            <version>${netbeans.version}</version>
             <scope>test</scope> <!-- beyond platform cluster, this often needs to be dropped down to compile/runtime, some other modules in IDE clusters depend on it -->
         </dependency>
         <!-- To use Jelly Tools in your functional tests, add or replace with:

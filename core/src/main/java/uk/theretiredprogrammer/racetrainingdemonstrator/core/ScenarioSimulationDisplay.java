@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2017 Richard Linsdale.
+ * Copyright 2014-2018 Richard Linsdale.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,7 +26,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
-import java.util.logging.Level;
 import javax.swing.Action;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
@@ -49,7 +48,6 @@ import org.openide.util.NbBundle.Messages;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ProxyLookup;
 import org.openide.windows.TopComponent;
-import uk.theretiredprogrammer.nbpcglibrary.common.LogBuilder;
 import uk.theretiredprogrammer.racetrainingdemonstrator.core.api.Boat;
 import uk.theretiredprogrammer.racetrainingdemonstrator.core.api.FlowElement;
 import uk.theretiredprogrammer.racetrainingdemonstrator.core.api.FlowElementFactory;
@@ -112,7 +110,6 @@ public final class ScenarioSimulationDisplay extends JPanel implements MultiView
         dataobj.getPrimaryFile().addFileChangeListener(new FileChangeAdapter() {
             @Override
             public void fileChanged(FileEvent fe) {
-                LogBuilder.writeLog("racetrainingdemonstrator", this, "fileChanged");
                 reset();
             }
         });
@@ -138,7 +135,6 @@ public final class ScenarioSimulationDisplay extends JPanel implements MultiView
         if (isRunning) {
             return;
         }
-        LogBuilder.writeLog("racetrainingdemonstrator", this, "start");
         int rate = (int) (scenario.getSecondsPerDisplay() * 1000 / scenario.getSpeedup());
         timer = new Timer();
         runner = new TimeStepsRunner();
@@ -151,7 +147,6 @@ public final class ScenarioSimulationDisplay extends JPanel implements MultiView
      */
     public void reset() {
         terminate();
-        LogBuilder.writeLog("racetrainingdemonstrator", this, "reset");
         removeAll();
         boats.values().stream().forEach((boat) -> {
             boat.finish();
@@ -172,7 +167,6 @@ public final class ScenarioSimulationDisplay extends JPanel implements MultiView
         if (!isRunning) {
             return;
         }
-        LogBuilder.writeLog("racetrainingdemonstrator", this, "terminate");
         isRunning = false;
         timer.cancel();
     }
@@ -348,7 +342,6 @@ public final class ScenarioSimulationDisplay extends JPanel implements MultiView
                 timeinfo.setText("Time: " + mmssformat(simulationtime));
                 dp.updateDisplay();
             } catch (Exception ex) {
-                LogBuilder.create("racetrainingdemonstrator", Level.SEVERE).addExceptionMessage(ex);
             }
         }
     }

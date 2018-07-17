@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2017 Richard Linsdale.
+ * Copyright 2014-2018 Richard Linsdale.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,7 +18,6 @@ package uk.theretiredprogrammer.racetrainingdemonstrator.core;
 import java.awt.event.ActionEvent;
 import javax.swing.AbstractAction;
 import org.openide.util.ImageUtilities;
-import uk.theretiredprogrammer.nbpcglibrary.common.LogBuilder;
 
 /**
  * The Pause action.
@@ -42,7 +41,6 @@ public final class PauseAction extends AbstractAction {
 
     @Override
     public void actionPerformed(ActionEvent ev) {
-        LogBuilder.writeLog("racetrainingdemonstrator", this, "actionPerformed");
         element.terminate();
     }
 }

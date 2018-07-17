@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2017 Richard Linsdale.
+ * Copyright 2014-2018 Richard Linsdale.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,6 @@ package uk.theretiredprogrammer.racetrainingdemonstrator.core.api;
 
 import java.util.Map;
 import org.openide.util.Lookup;
-import uk.theretiredprogrammer.nbpcglibrary.common.LogBuilder;
 import uk.theretiredprogrammer.racetrainingdemonstrator.core.ScenarioElement;
 import uk.theretiredprogrammer.racetrainingdemonstrator.mark.Mark;
 
@@ -61,7 +60,6 @@ public abstract class BoatFactory<B extends Boat> {
      * @return the new instance of the target class
      */
     public static Boat createInstance(String classrefname, String instancename, ScenarioElement scenario, FlowElement wind, FlowElement water, Map<String, Mark> marks) {
-        LogBuilder.writeLog("racetrainingdemonstrator", "BoatFactory", "createInstance", instancename, classrefname);
         for (BoatFactory factory : Lookup.getDefault().lookupAll(BoatFactory.class)) {
             if (factory.getName().equals(classrefname)) {
                 return factory.createInstance(instancename, scenario, wind, water, marks);

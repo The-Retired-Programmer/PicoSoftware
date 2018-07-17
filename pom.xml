@@ -3,8 +3,8 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>uk.theretiredprogrammer.racetrainingdemonstrator</groupId>
-    <artifactId>parent</artifactId>
+    <groupId>uk.theretiredprogrammer</groupId>
+    <artifactId>racetrainingdemonstrator</artifactId>
     <version>2.0.0-SNAPSHOT</version>
     <packaging>pom</packaging>
 
@@ -12,9 +12,9 @@
     
     <modules>
         <module>branding</module>
-        <module>main</module>
+        <module>lifecycle</module>
         <module>updater</module>
-        <module>aggregator</module>
+        <module>bin</module>
         <module>core</module>
         <module>boat</module>
         <module>laser2</module>
@@ -25,13 +25,18 @@
         <module>northsouthgradientflow</module>
     </modules>
     
-    <url>https://www.theretiredprogrammer.uk/?Project=${projectId}</url>
+    <url>https://www.theretiredprogrammer.uk/racetrainingdemonstrator/index.html</url>
     
     <scm>
-        <connection>scm:git:git://github.com/The-Retired-Programmer/${projectId}.git</connection>
-        <developerConnection>scm:git:ssh://github.com:The-Retired-Programmer/${projectId}.git</developerConnection>
-        <url>http://github.com/The-Retired-Programmer/${projectId}/tree/master</url>
+        <connection>scm:git:git://github.com/The-Retired-Programmer/racetrainingdemonstrator.git</connection>
+        <developerConnection>scm:git:ssh://github.com:The-Retired-Programmer/racetrainingdemonstrator.git</developerConnection>
+        <url>http://github.com/The-Retired-Programmer/racetrainingdemonstrator/tree/master</url>
     </scm>
+    
+    <issueManagement>
+        <system>Github</system>
+        <url>https://github.com/The-Retired-Programmer/racetrainingdemonstrator/issues</url>
+    </issueManagement>
 
     <developers>
         <developer>
@@ -49,7 +54,136 @@
         </license>
     </licenses>
 
+    
+    <repositories>
+        <repository>
+            <id>netbeans</id>
+            <name>NetBeans</name>
+            <url>http://bits.netbeans.org/nexus/content/groups/netbeans</url>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+        </repository>
+    </repositories>
+    
+    <distributionManagement>
+        <repository>
+            <id>ossrh</id>
+            <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+        </repository>
+    </distributionManagement>
+    
     <properties>
-        <projectId>racetrainingdemonstrator</projectId>
+        <netbeans.version>RELEASE82</netbeans.version>
+        <maven.compiler.source>1.8</maven.compiler.source>
+        <maven.compiler.target>1.8</maven.compiler.target>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <nbpcglibrary.version>4.0.1-SNAPSHOT</nbpcglibrary.version>
     </properties>
+    
+    <build>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>org.codehaus.mojo</groupId>
+                    <artifactId>nbm-maven-plugin</artifactId>
+                    <version>3.14.1</version>
+                    <extensions>true</extensions>
+                    <configuration>
+                        <cluster>racetrainingdemonstrator</cluster>
+                        <homePageUrl>${project.url}</homePageUrl>
+                        <licenseFile>../LICENSE</licenseFile>
+                        <licenseName>The Apache License, Version 2.0</licenseName>
+                        <brandingToken>racetrainingdemonstrator</brandingToken>
+                    </configuration>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-jar-plugin</artifactId>
+                    <version>3.0.2</version>
+                    <configuration>
+                        <archive>
+                            <manifestFile>${project.build.outputDirectory}/META-INF/MANIFEST.MF</manifestFile>
+                        </archive>
+                    </configuration>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-surefire-plugin</artifactId>
+                    <version>2.19.1</version>
+                    <configuration>
+                        <systemPropertyVariables>
+                            <branding.token>racetrainingdemonstrator</branding.token>
+                            <all.clusters>${project.build.directory}/mailer</all.clusters>
+                        </systemPropertyVariables>
+                    </configuration>
+                </plugin>
+            </plugins>
+        </pluginManagement>
+        <plugins>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>nbm-maven-plugin</artifactId>
+            </plugin>
+        </plugins>
+    </build>
+    
+    <profiles>
+        <profile>
+            <id>release</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <artifactId>maven-javadoc-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>attach-javadocs</id>
+                                <goals>
+                                    <goal>jar</goal>
+                                </goals>
+                            </execution>
+                            <execution>
+                                <id>aggregate-javadocs</id>
+                                <phase>package</phase>
+                                <inherited>false</inherited>
+                                <goals>
+                                    <goal>aggregate-jar</goal>
+                                </goals>
+                                <configuration>
+                                    <attach>true</attach>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <artifactId>maven-source-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>attach-sources</id>
+                                <phase>package</phase>
+                                <goals>
+                                    <goal>jar-no-fork</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <artifactId>maven-gpg-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>sign-artifacts</id>
+                                <phase>verify</phase>
+                                <goals>
+                                    <goal>sign</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
 </project>
