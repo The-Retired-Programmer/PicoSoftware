@@ -15,22 +15,9 @@
  */
 
 //
-// PIO is used to read the logic pins 
+// Logic Analyser Probe - top level UI
 //
-#include <stdio.h>
-#include <stdlib.h>
 
-#include "pico/stdlib.h"
-
-enum pinwidthname { ONE = 1, TWO =2, FOUR=4, EIGHT=8, SIXTEEN=16, THIRTYTWO=32 };
-
-
-void pio_init(uint pin_base, int pin_width, uint32_t frequency);
-
-void pio_init_fullspeed(uint pin_base, int pin_width);
-
-void pio_arm(uint trigger_pin, bool trigger_level);
-
-uint get_read_dreq();
-
-io_ro_32 *getPIOsource();
+void printresponse3(char* message, double value, char* units);
+void printresponse1(char* message);
+void info_response(char* statusmessage);

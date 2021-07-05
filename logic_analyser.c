@@ -15,48 +15,84 @@
  */
 
 //
-// LOGIC ANALYSER - using Pico as Probe
+// Logic Analyser Probe - top level UI
 //
 
-#include "pio.h"
-#include "storage.h"
-#include "sourcesignal.h"
-
 #include <stdio.h>
+#include <string.h>
 #include <stdlib.h>
 #include "pico/stdlib.h"
+#include "logic_probe.h"
+#include "logic_analyser.h"
 
-const uint PIN_BASE = 16;
-const uint PIN_COUNT = 2;
-const uint SAMPLES = 96;
+#define CMD_GO "+"
+#define CMD_STOP "-"
+#define CMD_HZ "H"
+#define CMD_KHZ "K"
+#define CMD_MHZ "M"
 
-void print_capture_buf(uint32_t *buf, uint pin_base, uint pin_count, uint32_t n_samples);
+#define RESPONSE_COLLECTING_ARMED "Probe Collecting Armed"
+#define RESPONSE_COLLECTING_DONE "Probe Collecting Done"
+#define RESPONSE_FREQUENCY  "Probe Frequency set: %d %s"
+#define RESPONSE_UNKNOWN "Unknown Command"
 
-int main() {
-    stdio_init_all();
-    printf("Initialising ...\n");
-    storage_init(SAMPLES, PIN_COUNT);
-    pio_init(PIN_BASE, PIN_COUNT, 1.f);
-    printf("Arming ...\n");
-    pio_arm(PIN_BASE, true);
-    storage_arm();
-    printf("Capturing ...\n");
-    source_run(PIN_BASE);
-    storage_waituntilcompleted();
-    printf("Completed\n");
-    print_capture_buf(get_capturebuf(), PIN_BASE, PIN_COUNT, SAMPLES);
+void getcommandline(char* linebuffer) {
+    while (true) {
+        char ch = getchar();
+        if (ch == '\n' || ch == '\r') {
+            *linebuffer='\0';
+            return;
+        } else if ( ch=='\t' || (ch>= '\32' && ch <= '\126')) {
+            *linebuffer++ = ch;
+        }
+    }
 }
 
-void print_capture_buf(uint32_t *buf, uint pin_base, uint pin_count, uint32_t n_samples) {
-    printf("Output:\n");
-    for (int pin = 0; pin < pin_count; ++pin) {
-        printf("%02d: ", pin + pin_base);
-        for (int sample = 0; sample < n_samples; ++sample) {
-            uint bit_index = pin + sample * pin_count;
-            uint word_index = bit_index / 32;
-            uint word_mask = 1u << (bit_index % 32);
-            printf(buf[word_index] & word_mask ? "-" : "_");
+int main() {
+    char linebuffer[200];
+    stdio_init_all();
+    probe_init();
+    printf("CMD - running\n");
+    while ( true ) {
+        //if (gets(linebuffer) == NULL) {
+        //    printf("CMD - finished\n");
+        //    exit(1);
+        // }
+        getcommandline(linebuffer);
+        char* tokenbuffer = strtok(linebuffer," =,:\t");
+        if (strcmp(tokenbuffer,CMD_GO)==0) {
+            printresponse1(RESPONSE_COLLECTING_ARMED);
+            probe_go();
+        } else if (strcmp(tokenbuffer,CMD_STOP)==0) {
+            printresponse1(RESPONSE_COLLECTING_DONE);
+        } else if (strcmp(tokenbuffer,CMD_HZ)==0) {
+            double value = atof(strtok(NULL," =,:\t"));
+            probe_set_HZsamplerate(value);
+            printresponse3(RESPONSE_FREQUENCY, value,"Hz");
+        } else if (strcmp(tokenbuffer,CMD_KHZ)==0) {
+            double value = atof(strtok(NULL," =,:\t"));
+            probe_set_KHZsamplerate(value);
+            printresponse3(RESPONSE_FREQUENCY, value, "KHz");
+        } else if (strcmp(tokenbuffer,CMD_MHZ)==0) {
+            double value = atof(strtok(NULL," =,:\t"));
+            probe_set_MHZsamplerate(value);
+            printresponse3(RESPONSE_FREQUENCY, value, "MHz");
+        } else {
+            printresponse1(RESPONSE_UNKNOWN);
         }
-        printf("\n");
     }
+}
+
+void printresponse3(char* message, double value, char* units) {
+    printf(message, value, units);
+    printf("\n");
+}
+
+void printresponse1(char* message) {
+    printf(message);
+    printf("\n");
+}
+    
+void info_response(char* statusmessage) {
+    printresponse1(statusmessage);
 }

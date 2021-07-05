@@ -18,12 +18,16 @@
 // logical analyser - storage manager
 //
 
-void storage_init(uint samplesize, uint pinspersample);
+void storage_init(uint samplesize, uint firstpin, uint pinspersample);
 
 void storage_arm();
 
 void storage_waituntilcompleted();
 
-uint32_t *get_capturebuf();
+uint32_t *get_capturebuf(uint logicalindex);
 
 uint get_capturebuf_size();
+
+uint get_bufs_count();
+
+char *get_RLE_encoded_sample(uint pin);

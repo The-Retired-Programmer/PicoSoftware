@@ -11,12 +11,12 @@ pico_sdk_init()
 add_executable(logic_analyser)
 
 pico_set_program_name(logic_analyser "logic_analyser")
-pico_set_program_version(logic_analyser "0.1")
+pico_set_program_version(logic_analyser "0.2")
 
-#pico_enable_stdio_uart(logic_analyser 1)
-#pico_enable_stdio_usb(logic_analyser 1)
+pico_enable_stdio_uart(logic_analyser 1)
+pico_enable_stdio_usb(logic_analyser 0)
 
-target_sources(logic_analyser PRIVATE logic_analyser.c pio.c dma.c storage.c sourcesignal.c)
+target_sources(logic_analyser PRIVATE logic_analyser.c logic_probe.c pio.c storage.c sourcesignal.c)
 
 target_link_libraries(logic_analyser PRIVATE pico_stdlib hardware_pio hardware_dma)
 pico_add_extra_outputs(logic_analyser)

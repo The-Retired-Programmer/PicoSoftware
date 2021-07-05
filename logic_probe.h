@@ -14,10 +14,14 @@
  * limitations under the License.
  */
 
-// DMA management - to copy all PIO generated capture data to memory buffers
+//
+// LOGIC ANALYSER PROBE - using Pico as Probe
+//
 
-void dma_init();
+void probe_init();
 
-void dma_arm(uint32_t *capture_buf, size_t capture_size_words);
+void probe_go();
 
-void dma_waituntilcompleted();
+void probe_set_HZsamplerate(double rate);
+void probe_set_KHZsamplerate(double rate);
+void probe_set_MHZsamplerate(double rate);

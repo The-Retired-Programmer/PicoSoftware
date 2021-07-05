@@ -20,12 +20,17 @@
 
 #include "pio.h"
 #include "hardware/pio.h"
+#include "hardware/clocks.h"
 
 const PIO pio = pio0;
 const uint sm = 0;
 
-void pio_init(uint pin_base, uint pin_count, float div) {
-    uint16_t capture_prog_instr = pio_encode_in(pio_pins, pin_count);
+void pio_init_fullspeed(uint pin_base, int pin_width) {
+    pio_init(pin_base, pin_width, clock_get_hz(clk_sys));
+}
+
+void pio_init(uint pin_base, int pin_width, uint32_t frequency) {
+    uint16_t capture_prog_instr = pio_encode_in(pio_pins, pin_width);
     struct pio_program capture_prog = {
             .instructions = &capture_prog_instr,
             .length = 1,
@@ -35,6 +40,8 @@ void pio_init(uint pin_base, uint pin_count, float div) {
     pio_sm_config c = pio_get_default_sm_config();
     sm_config_set_in_pins(&c, pin_base);
     sm_config_set_wrap(&c, offset, offset);
+    //printf("div: %i div %i is %i\n",clock_get_hz(clk_sys), frequency, clock_get_hz(clk_sys)/frequency);
+    float div = (float) clock_get_hz(clk_sys)/frequency;
     sm_config_set_clkdiv(&c, div);
     sm_config_set_in_shift(&c, true, true, 32);
     sm_config_set_fifo_join(&c, PIO_FIFO_JOIN_RX);
