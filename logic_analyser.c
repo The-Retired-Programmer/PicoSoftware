@@ -23,18 +23,6 @@
 #include <stdlib.h>
 #include "pico/stdlib.h"
 #include "logic_probe.h"
-#include "logic_analyser.h"
-
-#define CMD_GO "+"
-#define CMD_STOP "-"
-#define CMD_HZ "H"
-#define CMD_KHZ "K"
-#define CMD_MHZ "M"
-
-#define RESPONSE_COLLECTING_ARMED "Probe Collecting Armed"
-#define RESPONSE_COLLECTING_DONE "Probe Collecting Done"
-#define RESPONSE_FREQUENCY  "Probe Frequency set: %d %s"
-#define RESPONSE_UNKNOWN "Unknown Command"
 
 void getcommandline(char* linebuffer) {
     while (true) {
@@ -42,7 +30,7 @@ void getcommandline(char* linebuffer) {
         if (ch == '\n' || ch == '\r') {
             *linebuffer='\0';
             return;
-        } else if ( ch=='\t' || (ch>= '\32' && ch <= '\126')) {
+        } else if (ch>= '\x20' && ch <= '\x7e') {
             *linebuffer++ = ch;
         }
     }
@@ -51,48 +39,28 @@ void getcommandline(char* linebuffer) {
 int main() {
     char linebuffer[200];
     stdio_init_all();
-    probe_init();
-    printf("CMD - running\n");
     while ( true ) {
-        //if (gets(linebuffer) == NULL) {
-        //    printf("CMD - finished\n");
-        //    exit(1);
-        // }
         getcommandline(linebuffer);
-        char* tokenbuffer = strtok(linebuffer," =,:\t");
-        if (strcmp(tokenbuffer,CMD_GO)==0) {
-            printresponse1(RESPONSE_COLLECTING_ARMED);
-            probe_go();
-        } else if (strcmp(tokenbuffer,CMD_STOP)==0) {
-            printresponse1(RESPONSE_COLLECTING_DONE);
-        } else if (strcmp(tokenbuffer,CMD_HZ)==0) {
-            double value = atof(strtok(NULL," =,:\t"));
-            probe_set_HZsamplerate(value);
-            printresponse3(RESPONSE_FREQUENCY, value,"Hz");
-        } else if (strcmp(tokenbuffer,CMD_KHZ)==0) {
-            double value = atof(strtok(NULL," =,:\t"));
-            probe_set_KHZsamplerate(value);
-            printresponse3(RESPONSE_FREQUENCY, value, "KHz");
-        } else if (strcmp(tokenbuffer,CMD_MHZ)==0) {
-            double value = atof(strtok(NULL," =,:\t"));
-            probe_set_MHZsamplerate(value);
-            printresponse3(RESPONSE_FREQUENCY, value, "MHz");
-        } else {
-            printresponse1(RESPONSE_UNKNOWN);
+        if (strchr(linebuffer,'!') == NULL) {
+            switch (linebuffer[0]) {
+            case 'p': // ping
+                puts(GOOD);
+                break;
+            case '?': // status
+                probe_writestate();
+                break;
+            case 'g': // start probe sampling (go)
+                probe_go(linebuffer);
+                break;
+            case 's': // stop probe sampling
+                probe_stop();
+                break;
+            case 'd': // transfer probe sample
+                probe_writesample();
+                break;
+            default: // unknown command
+                puts(BAD);
+            }
         }
     }
-}
-
-void printresponse3(char* message, double value, char* units) {
-    printf(message, value, units);
-    printf("\n");
-}
-
-void printresponse1(char* message) {
-    printf(message);
-    printf("\n");
-}
-    
-void info_response(char* statusmessage) {
-    printresponse1(statusmessage);
 }

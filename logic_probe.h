@@ -18,10 +18,10 @@
 // LOGIC ANALYSER PROBE - using Pico as Probe
 //
 
-void probe_init();
+#define GOOD "Y"
+#define BAD "N"
 
-void probe_go();
-
-void probe_set_HZsamplerate(double rate);
-void probe_set_KHZsamplerate(double rate);
-void probe_set_MHZsamplerate(double rate);
+void probe_writestate();
+void probe_go(char* cmdbuffer);
+void probe_stop();
+void probe_writesample();

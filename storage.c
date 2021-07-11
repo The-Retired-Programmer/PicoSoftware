@@ -155,7 +155,7 @@ char *rle_encode_as_string() {
     *res = '\0';
     while (next != NULL) {
         char rleelement[10];
-        sprintf(rleelement, "%i%c", next->count,next->logic_level?'+':'-');
+        sprintf(rleelement, "%i%c", next->count,next->logic_level?'H':'L');
         strcat(res, rleelement);
         next = next->next;
     }

@@ -20,56 +20,117 @@
 
 #include "pio.h"
 #include "storage.h"
-#include "sourcesignal.h"
 #include "logic_probe.h"
-#include "logic_analyser.h"
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include "pico/stdlib.h"
 #include "hardware/gpio.h"
 #include "hardware/clocks.h"
 
-const uint PIN_BASE = 16;
-//const int PIN_WIDTH = TWO;
-const int PIN_WIDTH = ONE;
-const uint SAMPLES = 96;
-
-
-// configuration data
+// config variables
+uint pinbase;
+uint pinwidth;
 uint32_t frequency;
+bool st_enabled;
+uint st_pin;
+uint st_level;
+bool ev_enabled;
+uint ev_pin;
+uint ev_level;
+uint sampleendmode;
+uint32_t samplesize;
+//
+enum probestate { STATE_IDLE, STATE_SAMPLING, STATE_SAMPLING_DONE } state = STATE_IDLE;
 
-void print_capture_buf(uint pin_base, int pin_width, uint32_t n_samples) {
-    printf("%s\n", get_RLE_encoded_sample(pin_base));
+bool getUint(uint* varptr) {
+    char* varstring = strtok(NULL,"-");
+    if (varstring == NULL) {
+        return false;
+    }
+    *varptr = (uint) atoi(varstring);
+    return true;
 }
 
-void probe_set_HZsamplerate(double rate) {
-    frequency = rate;
+bool getUint32(uint32_t* varptr) {
+    char* varstring = strtok(NULL,"-");
+    if (varstring == NULL) {
+        return false;
+    }
+    *varptr = (uint32_t) atol(varstring);
+    return true;
 }
 
-void probe_set_KHZsamplerate(double rate) {
-    frequency = rate*1000;
-}
-void probe_set_MHZsamplerate(double rate) {
-    frequency = rate*1000000;
-}
-
-void probe_init() {
-    frequency = clock_get_hz(clk_sys);
+bool getBool(bool* varptr) {
+    char* varstring = strtok(NULL,"-");
+    if (varstring == NULL) {
+        return false;
+    }
+    *varptr = varstring[0]=='1';
+    return true;
 }
 
-void probe_go() {
-    info_response("Initialising ...");
-    storage_init(SAMPLES, PIN_BASE, PIN_WIDTH);
-    pio_init(PIN_BASE, PIN_WIDTH, 9600*2);
-    info_response("Arming ...");
-    //pio_arm(PIN_BASE, true);
-    pio_arm(PIN_BASE, false);
+bool parse_parameters(char* cmdbuffer) {
+    // command format: <command>-<pinbase>-<pinwidth>-<frequency>\
+    //                          -<startenabled>-<startpin>-<startlevel>\
+    //                          -<eventenabled>-<eventpin>-<eventlevel>\
+    //                          -<sampleendmode>-<samplesize>
+    char* cmd = strtok(cmdbuffer,"-");
+    return  getUint(&pinbase) && getUint(&pinwidth)&& getUint32(&frequency)
+        && getBool(&st_enabled)&& getUint(&st_pin) && getUint(&st_level)
+        && getBool(&ev_enabled)&& getUint(&ev_pin) && getUint(&ev_level)
+        && getUint(&sampleendmode)&&getUint32(&samplesize);
+}
+
+//=============================================================================
+//
+// the "public" API for the probe
+//
+//=============================================================================
+
+void probe_writestate() {
+    printf("%i\n", state);
+    puts(GOOD);
+}
+
+void probe_go(char* cmdbuffer) {
+    if (state != STATE_IDLE) {
+        puts("N illegal state");
+        return; 
+    }
+    if (!parse_parameters(cmdbuffer) ) {
+        puts("N command parse failure");
+        return; 
+    }
+    storage_init(samplesize, pinbase, pinwidth);
+    pio_init(pinbase, pinwidth, frequency);
+    pio_arm(pinbase, false);
     storage_arm();
-    info_response("Capturing ...");
-    storage_waituntilcompleted();
-    info_response("Completed");
-    print_capture_buf(PIN_BASE, PIN_WIDTH, SAMPLES);
+    //storage_waituntilcompleted();
+    state = STATE_SAMPLING;
+    puts(GOOD);
+}
+
+void probe_stop() {
+    if (state != STATE_SAMPLING) {
+        puts(BAD);
+        return;
+    }
+    // needs to do stop action ; let the real stop change status
+    //  *********for debug purposes - do the state change here *******
+    state = STATE_SAMPLING_DONE; 
+    puts(GOOD);
+}
+
+void probe_writesample() {
+    if (state != STATE_SAMPLING_DONE) {
+        puts(BAD);
+        return;
+    }
+    puts(get_RLE_encoded_sample(pinbase));
+    puts(GOOD);
+    state = STATE_IDLE;
 }
 
 uint32_t *get_buf_wordptr(uint word_index) {

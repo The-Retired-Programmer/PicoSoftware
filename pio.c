@@ -40,7 +40,6 @@ void pio_init(uint pin_base, int pin_width, uint32_t frequency) {
     pio_sm_config c = pio_get_default_sm_config();
     sm_config_set_in_pins(&c, pin_base);
     sm_config_set_wrap(&c, offset, offset);
-    //printf("div: %i div %i is %i\n",clock_get_hz(clk_sys), frequency, clock_get_hz(clk_sys)/frequency);
     float div = (float) clock_get_hz(clk_sys)/frequency;
     sm_config_set_clkdiv(&c, div);
     sm_config_set_in_shift(&c, true, true, 32);
