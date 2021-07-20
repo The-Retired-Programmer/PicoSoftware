@@ -24,6 +24,7 @@
 #include "hardware/dma.h"
 #include "hardware/irq.h"
 #include "pio.h"
+#include "probe_controls.h"
 #include "hardware/structs/bus_ctrl.h"
 
 void config_dma_channel(uint dmachannel, uint32_t *buffer, uint transfersizewords, uint nextdmachannel);
@@ -40,15 +41,11 @@ uint capture_size_words;
 uint irq0_count = 0;
 bool dmafinished;
 
-uint pinbase;
-uint pincount;
-uint sample_size;
+struct probe_controls* controls;
 
-void storage_init(uint samplesize, uint firstpin, int pinspersample) {
-    capture_size_words = (samplesize * pinspersample + 31) / 32;
-    sample_size = samplesize;
-    pinbase = firstpin;
-    pincount = pinspersample;
+void storage_init(struct probe_controls* probecontrols) {
+    controls = probecontrols;
+    capture_size_words = (controls->samplesize * controls->pinwidth + 31) / 32;
 
     for (int i = 0; i< NUMBER_OF_BUFFERS; i++) {  // looks like we can get total of 64KBytes easily
         capture_bufs[i]=malloc(BUFFERSIZEWORDS* sizeof(uint32_t));
@@ -113,75 +110,46 @@ uint get_bufs_count() {
 //
 // ========================================================================
 
-struct rleitem {
-    struct rleitem *next;
-    int count;
-    bool logic_level;
-};
+int count = 0;
+bool logic_level;
 
-struct rleitem *head;
-struct rleitem *tail;
-char* res;
+char rlebuffer[200];
+char* insertptr = rlebuffer;
 
-struct rleitem *getnewitem(bool logic_level) {
-    struct rleitem *item = malloc(sizeof(struct rleitem));
-    item->next = NULL;
-    item->count = 1;
-    item->logic_level = logic_level;
-    return item;
-}
-
-void rle_init() {
-    head = NULL;
-    tail = NULL;
-    res = malloc(sample_size+1);
-}
-
-void rle_add_point(bool logic_level) {
-    if (head == NULL) {
-        head = getnewitem(logic_level);
-        tail = head;
-    } else if (logic_level == tail->logic_level) {
-        (tail->count)++;
+void writetobuffer() {
+    int n;
+    if (count == 1 ) {
+        n = sprintf(insertptr, "%c", logic_level?'H':'L');
     } else {
-        struct rleitem *newitem = getnewitem(logic_level);
-        tail->next=newitem;
-        tail = newitem;
+        n= sprintf(insertptr, "%i%c", count,logic_level?'H':'L');
+    }
+    insertptr+=n;
+}
+
+void rle_add_point(bool logic_value) {
+    if (count == 0) {
+        logic_level =logic_value;
+        count = 1;
+    } else if (logic_value == logic_level) {
+        count++;
+    } else {
+        writetobuffer();
+        count = 1;
+        logic_level = logic_value;
     }
 }
 
-char *rle_encode_as_string() {
-    struct rleitem *next = head;
-    *res = '\0';
-    while (next != NULL) {
-        char rleelement[10];
-        sprintf(rleelement, "%i%c", next->count,next->logic_level?'H':'L');
-        strcat(res, rleelement);
-        next = next->next;
-    }
-    return res;
-}
-
-void rle_free() {
-    struct rleitem *item = head;
-    while (item != NULL) {
-        struct rleitem *nextitem = item->next;
-        free(item);
-        item = nextitem;
-    }
-    free(res);
-}
 
 // ========================================================================
 //
 //  extracting data bits from dma buffers and creating run length encoded
-//  data for each ssmaple pin
+//  data for each sample pin
 //
 // ========================================================================
 
 char *get_RLE_encoded_sample(uint pin) {
-    rle_init();
-    assert(pincount ==1 );  // base implementation
+    insertptr = rlebuffer;
+    assert(controls->pinwidth ==1 );  // base implementation
     for (uint bufferno = 0; bufferno < NUMBER_OF_BUFFERS; bufferno++){
         for (uint wordno = 0; wordno < 1 ; wordno++) {
             uint32_t wordvalue = capture_bufs[bufferno][wordno];
@@ -191,9 +159,8 @@ char *get_RLE_encoded_sample(uint pin) {
             }
         }
     }
-    char *rlestring = rle_encode_as_string();
-    rle_free();
-    return rlestring;
+    writetobuffer(); // flush final rle component
+    return rlebuffer;
 }
 
 

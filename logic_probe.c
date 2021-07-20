@@ -21,122 +21,60 @@
 #include "pio.h"
 #include "storage.h"
 #include "logic_probe.h"
+#include "probe_controls.h"
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include "pico/stdlib.h"
 #include "hardware/gpio.h"
-#include "hardware/clocks.h"
 
-// config variables
-uint pinbase;
-uint pinwidth;
-uint32_t frequency;
-bool st_enabled;
-uint st_pin;
-uint st_level;
-bool ev_enabled;
-uint ev_pin;
-uint ev_level;
-uint sampleendmode;
-uint32_t samplesize;
-//
-enum probestate { STATE_IDLE, STATE_SAMPLING, STATE_SAMPLING_DONE } state = STATE_IDLE;
+struct probe_controls probecontrols;
 
-bool getUint(uint* varptr) {
-    char* varstring = strtok(NULL,"-");
-    if (varstring == NULL) {
-        return false;
-    }
-    *varptr = (uint) atoi(varstring);
-    return true;
+void probe_init() {
+    probecontrols.state = STATE_IDLE;
 }
-
-bool getUint32(uint32_t* varptr) {
-    char* varstring = strtok(NULL,"-");
-    if (varstring == NULL) {
-        return false;
-    }
-    *varptr = (uint32_t) atol(varstring);
-    return true;
-}
-
-bool getBool(bool* varptr) {
-    char* varstring = strtok(NULL,"-");
-    if (varstring == NULL) {
-        return false;
-    }
-    *varptr = varstring[0]=='1';
-    return true;
-}
-
-bool parse_parameters(char* cmdbuffer) {
-    // command format: <command>-<pinbase>-<pinwidth>-<frequency>\
-    //                          -<startenabled>-<startpin>-<startlevel>\
-    //                          -<eventenabled>-<eventpin>-<eventlevel>\
-    //                          -<sampleendmode>-<samplesize>
-    char* cmd = strtok(cmdbuffer,"-");
-    return  getUint(&pinbase) && getUint(&pinwidth)&& getUint32(&frequency)
-        && getBool(&st_enabled)&& getUint(&st_pin) && getUint(&st_level)
-        && getBool(&ev_enabled)&& getUint(&ev_pin) && getUint(&ev_level)
-        && getUint(&sampleendmode)&&getUint32(&samplesize);
-}
-
-//=============================================================================
-//
-// the "public" API for the probe
-//
-//=============================================================================
 
 void probe_writestate() {
-    printf("%i\n", state);
-    puts(GOOD);
+    printf("%i\n", probecontrols.state);
+    puts("Y");
 }
 
 void probe_go(char* cmdbuffer) {
-    if (state != STATE_IDLE) {
-        puts("N illegal state");
+    if (probecontrols.state != STATE_IDLE) {
+        printf("N Bad state - expecting STATE_IDLE(0) - was %i\n", probecontrols.state);
         return; 
     }
-    if (!parse_parameters(cmdbuffer) ) {
-        puts("N command parse failure");
+    if (!parse_control_parameters(&probecontrols, cmdbuffer) ) {
+        printf("N command parse failure - testcount=%i - cmd=%s\n",getTestnumber(),getCmd());
         return; 
     }
-    storage_init(samplesize, pinbase, pinwidth);
-    pio_init(pinbase, pinwidth, frequency);
-    pio_arm(pinbase, false);
+    storage_init(&probecontrols);
+    pio_init(&probecontrols);
+    pio_arm();
     storage_arm();
     //storage_waituntilcompleted();
-    state = STATE_SAMPLING;
-    puts(GOOD);
+    probecontrols.state = STATE_SAMPLING;
+    puts("Y");
 }
 
 void probe_stop() {
-    if (state != STATE_SAMPLING) {
-        puts(BAD);
+    if (probecontrols.state != STATE_SAMPLING) {
+        printf("N Bad state - expecting STATE_SAMPLING(1) - was %i\n", probecontrols.state);
         return;
     }
     // needs to do stop action ; let the real stop change status
     //  *********for debug purposes - do the state change here *******
-    state = STATE_SAMPLING_DONE; 
-    puts(GOOD);
+    probecontrols.state = STATE_SAMPLING_DONE; 
+    puts("Y");
 }
 
 void probe_writesample() {
-    if (state != STATE_SAMPLING_DONE) {
-        puts(BAD);
+    if (probecontrols.state != STATE_SAMPLING_DONE) {
+        printf("N Bad state - expecting STATE_SAMPLING_DONE(2) - was %i\n", probecontrols.state);
         return;
     }
-    puts(get_RLE_encoded_sample(pinbase));
-    puts(GOOD);
-    state = STATE_IDLE;
-}
-
-uint32_t *get_buf_wordptr(uint word_index) {
-    uint pageindex = word_index/get_capturebuf_size();
-    //hard_assert(pageindex < get_bufs_count());
-    uint pageoffset = word_index%get_capturebuf_size();
-    return get_capturebuf(pageindex); 
-
+    puts(get_RLE_encoded_sample(probecontrols.pinbase));
+    puts("Y");
+    probecontrols.state = STATE_IDLE;
 }

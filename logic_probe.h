@@ -18,8 +18,9 @@
 // LOGIC ANALYSER PROBE - using Pico as Probe
 //
 
-#define GOOD "Y"
 #define BAD "N"
+
+void probe_init();
 
 void probe_writestate();
 void probe_go(char* cmdbuffer);

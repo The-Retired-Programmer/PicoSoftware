@@ -18,7 +18,7 @@
 // logical analyser - storage manager
 //
 
-void storage_init(uint samplesize, uint firstpin, uint pinspersample);
+void storage_init(struct probe_controls* probecontrols);
 
 void storage_arm();
 

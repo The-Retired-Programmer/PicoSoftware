@@ -24,14 +24,14 @@
 #include "pico/stdlib.h"
 #include "logic_probe.h"
 
-void getcommandline(char* linebuffer) {
+void getcommandline(char* ptr) {
     while (true) {
         char ch = getchar();
         if (ch == '\n' || ch == '\r') {
-            *linebuffer='\0';
+            *ptr='\0';
             return;
         } else if (ch>= '\x20' && ch <= '\x7e') {
-            *linebuffer++ = ch;
+            *ptr++ = ch;
         }
     }
 }
@@ -39,12 +39,13 @@ void getcommandline(char* linebuffer) {
 int main() {
     char linebuffer[200];
     stdio_init_all();
+    probe_init();
     while ( true ) {
         getcommandline(linebuffer);
         if (strchr(linebuffer,'!') == NULL) {
             switch (linebuffer[0]) {
             case 'p': // ping
-                puts(GOOD);
+                puts("Y");
                 break;
             case '?': // status
                 probe_writestate();
@@ -59,7 +60,7 @@ int main() {
                 probe_writesample();
                 break;
             default: // unknown command
-                puts(BAD);
+                printf("N Unknown command %s\n",linebuffer);
             }
         }
     }

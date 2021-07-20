@@ -19,17 +19,12 @@
 //
 #include <stdio.h>
 #include <stdlib.h>
-
+#include "probe_controls.h"
 #include "pico/stdlib.h"
 
-enum pinwidthname { ONE = 1, TWO =2, FOUR=4, EIGHT=8, SIXTEEN=16, THIRTYTWO=32 };
+void pio_init(struct probe_controls* probecontrols);
 
-
-void pio_init(uint pin_base, int pin_width, uint32_t frequency);
-
-void pio_init_fullspeed(uint pin_base, int pin_width);
-
-void pio_arm(uint trigger_pin, bool trigger_level);
+void pio_arm();
 
 uint get_read_dreq();
 
