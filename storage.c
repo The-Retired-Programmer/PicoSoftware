@@ -131,7 +131,6 @@ void writetobuffer(int(*writesegment)(const char*)) {
         n= sprintf(insertptr, "%i%c", count,logic_level?'H':'L');
     }
     insertptr+=n;
-    printf("**DEBUG: rlebuffer is :'%s'\n", rlebuffer);
 }
 
 void rle_add_point(bool logic_value, int(*writesegment)(const char*)) {
