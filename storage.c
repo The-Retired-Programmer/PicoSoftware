@@ -32,7 +32,8 @@ void dma_irq_handler();
 
 // data buffers - chained to form the storage
 #define NUMBER_OF_BUFFERS 5
-#define BUFFERSIZEWORDS 3
+#define BUFFERSIZEWORDS 5
+#define USBTRANSFERBUFFERSIZE 128
 
 // buffer(s) to hold the captured data 
 
@@ -57,11 +58,11 @@ void storage_init(struct probe_controls* probecontrols) {
 
 void storage_arm() {
     dmafinished = false;
-    config_dma_channel(0,capture_bufs[0], 1, 1);
-    config_dma_channel(1,capture_bufs[1], 1, 2);
-    config_dma_channel(2,capture_bufs[2], 1, 3);
-    config_dma_channel(3,capture_bufs[3], 1, 4);
-    config_dma_channel(4,capture_bufs[4], 1, 4);
+    config_dma_channel(0,capture_bufs[0], BUFFERSIZEWORDS, 1);
+    config_dma_channel(1,capture_bufs[1], BUFFERSIZEWORDS, 2);
+    config_dma_channel(2,capture_bufs[2], BUFFERSIZEWORDS, 3);
+    config_dma_channel(3,capture_bufs[3], BUFFERSIZEWORDS, 4);
+    config_dma_channel(4,capture_bufs[4], BUFFERSIZEWORDS, 4);
     irq_set_exclusive_handler(DMA_IRQ_0, dma_irq_handler);
     irq_set_enabled(DMA_IRQ_0, true);
     dma_channel_start(0);
@@ -99,7 +100,7 @@ uint32_t *get_capturebuf(uint logicalindex) {
 }
 
 uint get_capturebuf_size() {
-    return 1;
+    return BUFFERSIZEWORDS;
 }
 
 uint get_bufs_count() {
@@ -115,32 +116,40 @@ uint get_bufs_count() {
 int count = 0;
 bool logic_level;
 
-char rlebuffer[200];
+char rlebuffer[USBTRANSFERBUFFERSIZE];
 char* insertptr = rlebuffer;
 
-void writetobuffer() {
+void writetobuffer(int(*writesegment)(const char*)) {
     int n;
+    if (insertptr -rlebuffer > USBTRANSFERBUFFERSIZE - 8 ) {
+        writesegment(rlebuffer);
+        insertptr = rlebuffer;
+    }
     if (count == 1 ) {
         n = sprintf(insertptr, "%c", logic_level?'H':'L');
     } else {
         n= sprintf(insertptr, "%i%c", count,logic_level?'H':'L');
     }
     insertptr+=n;
+    printf("**DEBUG: rlebuffer is :'%s'\n", rlebuffer);
 }
 
-void rle_add_point(bool logic_value) {
+void rle_add_point(bool logic_value, int(*writesegment)(const char*)) {
     if (count == 0) {
         logic_level =logic_value;
         count = 1;
     } else if (logic_value == logic_level) {
         count++;
+        if (count == 999999) {
+            writetobuffer(writesegment);
+            count=0;
+        }
     } else {
-        writetobuffer();
+        writetobuffer(writesegment);
         count = 1;
         logic_level = logic_value;
     }
 }
-
 
 // ========================================================================
 //
@@ -149,7 +158,7 @@ void rle_add_point(bool logic_value) {
 //
 // ========================================================================
 
-char *get_RLE_encoded_sample(uint pin) {
+void create_RLE_encoded_sample(uint pin, int(*writesegment)(const char*)){
     insertptr = rlebuffer;
     assert(controls->pinwidth ==1 );  // base implementation
     for (uint bufferno = 0; bufferno < NUMBER_OF_BUFFERS; bufferno++){
@@ -157,12 +166,12 @@ char *get_RLE_encoded_sample(uint pin) {
             uint32_t wordvalue = capture_bufs[bufferno][wordno];
             for (uint bitcount = 0; bitcount < 32 ; bitcount++) {
                 uint32_t mask = 1u<<bitcount;
-                rle_add_point((wordvalue&mask) > 0);
+                rle_add_point((wordvalue&mask) > 0,writesegment );
             }
         }
     }
-    writetobuffer(); // flush final rle component
-    return rlebuffer;
+    writetobuffer(writesegment); // flush final rle component
+    writesegment(rlebuffer);
 }
 
 

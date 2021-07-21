@@ -30,4 +30,4 @@ uint get_capturebuf_size();
 
 uint get_bufs_count();
 
-char *get_RLE_encoded_sample(uint pin);
+void create_RLE_encoded_sample(uint pin, int(*writesegment)(const char*));
