@@ -45,6 +45,7 @@ int main() {
         if (strchr(linebuffer,'!') == NULL) {
             switch (linebuffer[0]) {
             case 'p': // ping
+                puts("PICO-1");
                 puts("Y");
                 break;
             case '?': // status
