@@ -31,7 +31,7 @@ void config_dma_channel(uint dmachannel, uint32_t *buffer, uint transfersizeword
 void dma_irq_handler();
 
 // data buffers - chained to form the storage
-#define NUMBER_OF_BUFFERS 3
+#define NUMBER_OF_BUFFERS 5
 #define BUFFERSIZEWORDS 3
 
 // buffer(s) to hold the captured data 
@@ -51,9 +51,7 @@ void storage_init(struct probe_controls* probecontrols) {
         capture_bufs[i]=malloc(BUFFERSIZEWORDS* sizeof(uint32_t));
         hard_assert(capture_bufs[i]);
     }
-    // Grant high bus priority to the DMA, so it can shove the processors out
-    // of the way. This should only be needed if you are pushing things up to
-    // >16bits/clk here, i.e. if you need to saturate the bus completely.
+    // Grant high bus priority to the DMA
     bus_ctrl_hw->priority = BUSCTRL_BUS_PRIORITY_DMA_W_BITS | BUSCTRL_BUS_PRIORITY_DMA_R_BITS;
 }
 
@@ -61,7 +59,9 @@ void storage_arm() {
     dmafinished = false;
     config_dma_channel(0,capture_bufs[0], 1, 1);
     config_dma_channel(1,capture_bufs[1], 1, 2);
-    config_dma_channel(2,capture_bufs[2], 1, 2);
+    config_dma_channel(2,capture_bufs[2], 1, 3);
+    config_dma_channel(3,capture_bufs[3], 1, 4);
+    config_dma_channel(4,capture_bufs[4], 1, 4);
     irq_set_exclusive_handler(DMA_IRQ_0, dma_irq_handler);
     irq_set_enabled(DMA_IRQ_0, true);
     dma_channel_start(0);
@@ -90,6 +90,8 @@ void storage_waituntilcompleted(){
     dma_channel_wait_for_finish_blocking(0);
     dma_channel_wait_for_finish_blocking(1);
     dma_channel_wait_for_finish_blocking(2);
+    dma_channel_wait_for_finish_blocking(3);
+    dma_channel_wait_for_finish_blocking(4);
 }
 
 uint32_t *get_capturebuf(uint logicalindex) {
@@ -101,7 +103,7 @@ uint get_capturebuf_size() {
 }
 
 uint get_bufs_count() {
-    return 3;
+    return NUMBER_OF_BUFFERS;
 }
 
 // ========================================================================
