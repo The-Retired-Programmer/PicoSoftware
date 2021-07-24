@@ -16,6 +16,6 @@
 
 #include "probe_controls.h"
 
-void digitalsampling_start(struct probe_controls* probecontrols);
+char* digitalsampling_start(struct probe_controls* probecontrols);
 
-void create_RLE_encoded_sample(uint pin, int(*writesegment)(const char*));
+void create_RLE_encoded_sample(struct probe_controls* probecontrols, int(*writesegment)(const char*));

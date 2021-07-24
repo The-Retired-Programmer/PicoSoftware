@@ -44,10 +44,6 @@ struct probe_controls {
     enum probestate state;
 };
 
-bool parse_control_parameters(struct probe_controls* controls, char* cmdbuffer);
-
-int getTestnumber();
-
-char* getCmd();
+char* parse_control_parameters(struct probe_controls* controls, char* cmdbuffer);
 
 #endif

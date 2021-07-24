@@ -23,78 +23,192 @@
 #include <string.h>
 #include "probe_controls.h"
 
-int testnumber = 0;
-char* cmd;
+char* errormessage;
+uint32_t lastint;
 
-bool getUint(uint* varptr, char* s) {
-    testnumber++;
+bool parse_int(char* s) {
+    lastint = 0;
+    while (true) {
+        char c = *s++;
+        if (c == '\0') {
+            return true;
+        } else if ( c == ' ' ) {
+            // skip any spaces
+        } else if ( c >= '0' && c <= '9') {
+            lastint = lastint*10 + (uint32_t) (c - '0');
+        } else {
+            return false;
+        }
+    }
+}
+
+bool parse_pinbase(struct probe_controls* controls, char* s) {
     if (s == NULL) {
+        errormessage = "missing base pin value";
         return false;
     }
-    *varptr = (uint) atoi(s);
-    return true;
-}
-
-bool getUint32(uint32_t* varptr, char* s) {
-    testnumber++;
-    if (s == NULL) {
+    if (parse_int(s)){
+        controls->pinbase = (uint) lastint;
+        return true;
+    } else {
+        errormessage = "illegal integer - base pin value";
         return false;
     }
-    *varptr = (uint32_t) atol(s);
-    return true;
 }
 
-bool getBool(bool* varptr, char* s) {
-    testnumber++;
+bool parse_pinwidth(struct probe_controls* controls, char* s) {
     if (s == NULL) {
+        errormessage = "missing pin width value";
         return false;
     }
-    *varptr = s[0]=='1';
-    return true;
-}
-
-bool getTrigger(enum trigger_on* varptr, char* s) {
-    testnumber++;
-    if (s == NULL) {
+    if (parse_int(s)){
+        controls->pinwidth = (uint) lastint;
+        return true;
+    } else {
+        errormessage = "illegal integer - pin width value";
         return false;
     }
-    *varptr = (enum trigger_on) atoi(s);
-    return true;
 }
 
-bool getSampleEndMode(enum sample_end_mode* varptr, char* s) {
-    testnumber++;
+bool parse_frequency(struct probe_controls* controls, char* s) {
     if (s == NULL) {
+        errormessage = "missing frequency value";
         return false;
     }
-    *varptr = (enum sample_end_mode) atoi(s);
-    return true;
+    if (parse_int(s)){
+        controls->frequency = lastint;
+        return true;
+    } else {
+        errormessage = "illegal integer - frequency value";
+        return false;
+    }
 }
 
-bool parse_control_parameters(struct probe_controls* controls, char* cmdbuffer) {
-    // command format: <command>-<pinbase>-<pinwidth>-<frequency>\
-    //                          -<startenabled>-<startpin>-<startlevel>\
-    //                          -<eventenabled>-<eventpin>-<eventlevel>\
-    //                          -<sampleendmode>-<samplesize>
-    cmd = strtok(cmdbuffer,"-");
-    testnumber = 0;
-    return  getUint(&controls->pinbase, strtok(cmdbuffer,"-")) &&
-            getUint(&controls->pinwidth, strtok(cmdbuffer,"-")) &&
-            getUint32(&controls->frequency, strtok(cmdbuffer,"-")) &&
-            getBool(&controls->st_enabled, strtok(cmdbuffer,"-")) &&
-            getUint(&controls->st_pin, strtok(cmdbuffer,"-")) &&
-            getTrigger(&controls->st_trigger, strtok(cmdbuffer,"-")) &&
-            getBool(&controls->ev_enabled, strtok(cmdbuffer,"-")) &&
-            getUint(&controls->ev_pin, strtok(cmdbuffer,"-")) &&
-            getTrigger(&controls->ev_trigger, strtok(cmdbuffer,"-")) &&
-            getSampleEndMode(&controls->sampleendmode, strtok(cmdbuffer,"-")) &&
-            getUint32(&controls->samplesize, strtok(cmdbuffer,"-"));
+bool parse_startenabled(struct probe_controls* controls, char* s) {
+    if (s == NULL) {
+        errormessage = "missing start enabled value";
+        return false;
+    }
+    if (parse_int(s)){
+        controls->st_enabled = lastint == '1';
+        return true;
+    } else {
+        errormessage = "illegal integer - start enabled value";
+        return false;
+    }
 }
 
-int getTestnumber() {
-    return testnumber;
+bool parse_startpin(struct probe_controls* controls, char* s) {
+    if (s == NULL) {
+        errormessage = "missing start pin value";
+        return false;
+    }
+    if (parse_int(s)){
+        controls->st_pin = (uint) lastint;
+        return true;
+    } else {
+        errormessage = "illegal integer - start pin value";
+        return false;
+    }
 }
 
-char* getCmd() {
-    return cmd;
+bool parse_starttrigger(struct probe_controls* controls, char* s) {
+    if (s == NULL) {
+        errormessage = "missing start trigger value";
+        return false;
+    }
+    if (parse_int(s)){
+        controls->st_trigger = (enum trigger_on) lastint;
+        return true;
+    } else {
+        errormessage = "illegal integer - start trigger value";
+        return false;
+    }
+}
+
+bool parse_eventenabled(struct probe_controls* controls, char* s) {
+    if (s == NULL) {
+        errormessage = "missing event enabled value";
+        return false;
+    }
+    if (parse_int(s)){
+        controls->ev_enabled = lastint == '1';
+        return true;
+    } else {
+        errormessage = "illegal integer - event enabled value";
+        return false;
+    }
+}
+
+bool parse_eventpin(struct probe_controls* controls, char* s) {
+    if (s == NULL) {
+        errormessage = "missing event pin value";
+        return false;
+    }
+    if (parse_int(s)){
+        controls->ev_pin = (uint) lastint;
+        return true;
+    } else {
+        errormessage = "illegal integer - event pin value";
+        return false;
+    }
+}
+
+bool parse_eventtrigger(struct probe_controls* controls, char* s) {
+    if (s == NULL) {
+        errormessage = "missing event trigger value";
+        return false;
+    }
+    if (parse_int(s)){
+        controls->ev_trigger = (enum trigger_on) lastint;
+        return true;
+    } else {
+        errormessage = "illegal integer - event trigger value";
+        return false;
+    }
+}
+
+bool parse_sampleendmode(struct probe_controls* controls, char* s) {
+    if (s == NULL) {
+        errormessage = "missing sample end mode value";
+        return false;
+    }
+    if (parse_int(s)){
+        controls->sampleendmode = (enum sample_end_mode) lastint;
+        return true;
+    } else {
+        errormessage = "illegal integer - sample end mode value";
+        return false;
+    }
+}
+
+bool parse_samplesize(struct probe_controls* controls, char* s) {
+    if (s == NULL) {
+        errormessage = "missing sample size value";
+        return false;
+    }
+    if (parse_int(s)){
+        controls->samplesize = lastint;
+        return true;
+    } else {
+        errormessage = "illegal integer - sample size value";
+        return false;
+    }
+}
+
+char* parse_control_parameters(struct probe_controls* controls, char* cmdbuffer) {
+    errormessage = "Unknown error";
+    char* cmd = strtok(cmdbuffer,"-");
+    return  parse_pinbase(controls, strtok(NULL,"-")) &&
+            parse_pinwidth(controls, strtok(NULL,"-")) &&
+            parse_frequency(controls, strtok(NULL,"-")) &&
+            parse_startenabled(controls, strtok(NULL,"-")) &&
+            parse_startpin(controls, strtok(NULL,"-")) &&
+            parse_starttrigger(controls, strtok(NULL,"-")) &&
+            parse_eventenabled(controls, strtok(NULL,"-")) &&
+            parse_eventpin(controls, strtok(NULL,"-")) &&
+            parse_eventtrigger(controls, strtok(NULL,"-")) &&
+            parse_sampleendmode(controls, strtok(NULL,"-")) &&
+            parse_samplesize(controls, strtok(NULL,"-"))
+            ? NULL : errormessage; 
 }

@@ -30,31 +30,32 @@
 const PIO pio = pio0;
 const uint sm = 0;
 
-struct probe_controls* controls;
-
 // data buffers - chained to form the storage
 #define NUMBER_OF_BUFFERS 5
-#define BUFFERSIZEWORDS 5
+#define WORDSIZE 32
 
 // buffer(s) to hold the captured data 
 
 uint32_t *capture_bufs[NUMBER_OF_BUFFERS];
-uint capture_size_words;
+uint32_t buffer_size_words;
 uint irq0_count = 0;
 bool dmafinished;
 
 void config_dma_channel(uint dmachannel, uint32_t *buffer, uint transfersizewords, uint nextdmachannel);
 void dma_irq_handler();
 
-
-void digitalsampling_start(struct probe_controls* probecontrols) {
-    controls = probecontrols;
-    // calculate any setup parameters
-    capture_size_words = (controls->samplesize * controls->pinwidth + 31) / 32;
+char* digitalsampling_start(struct probe_controls* controls) {
+    // calculate any setup parameters - no validation here - it's been done prior.
+    uint samplesperword = WORDSIZE/controls->pinwidth;
+    uint usedbitsperword = samplesperword*controls->pinwidth;
+    uint32_t capture_size_words = controls->samplesize / samplesperword;
+    buffer_size_words = capture_size_words / NUMBER_OF_BUFFERS;
     // dma & capture buffer setup
-    for (int i = 0; i< NUMBER_OF_BUFFERS; i++) {  // looks like we can get total of 64KBytes easily
-        capture_bufs[i]=malloc(BUFFERSIZEWORDS* sizeof(uint32_t));
-        hard_assert(capture_bufs[i]);
+    for (int i = 0; i< NUMBER_OF_BUFFERS; i++) {
+        capture_bufs[i]=malloc(buffer_size_words * sizeof(uint32_t));
+        if ( capture_bufs[i] == NULL ) {
+            return "could not obtain buffer space for samples";
+        }
     }
     bus_ctrl_hw->priority = BUSCTRL_BUS_PRIORITY_DMA_W_BITS | BUSCTRL_BUS_PRIORITY_DMA_R_BITS;
     // pio setup
@@ -70,16 +71,16 @@ void digitalsampling_start(struct probe_controls* probecontrols) {
     sm_config_set_wrap(&c, offset, offset);
     float div = (float) clock_get_hz(clk_sys)/controls->frequency;
     sm_config_set_clkdiv(&c, div);
-    sm_config_set_in_shift(&c, true, true, 32);
+    sm_config_set_in_shift(&c, true, true, usedbitsperword);
     sm_config_set_fifo_join(&c, PIO_FIFO_JOIN_RX);
     pio_sm_init(pio, sm, offset, &c);
 
     dmafinished = false;
-    config_dma_channel(0,capture_bufs[0], BUFFERSIZEWORDS, 1);
-    config_dma_channel(1,capture_bufs[1], BUFFERSIZEWORDS, 2);
-    config_dma_channel(2,capture_bufs[2], BUFFERSIZEWORDS, 3);
-    config_dma_channel(3,capture_bufs[3], BUFFERSIZEWORDS, 4);
-    config_dma_channel(4,capture_bufs[4], BUFFERSIZEWORDS, 4);
+    config_dma_channel(0,capture_bufs[0], buffer_size_words, 1);
+    config_dma_channel(1,capture_bufs[1], buffer_size_words, 2);
+    config_dma_channel(2,capture_bufs[2], buffer_size_words, 3);
+    config_dma_channel(3,capture_bufs[3], buffer_size_words, 4);
+    config_dma_channel(4,capture_bufs[4], buffer_size_words, 4);
     irq_set_exclusive_handler(DMA_IRQ_0, dma_irq_handler);
     irq_set_enabled(DMA_IRQ_0, true);
     //
@@ -90,6 +91,7 @@ void digitalsampling_start(struct probe_controls* probecontrols) {
     pio_sm_set_enabled(pio, sm, true);
     //
     dma_channel_start(0);
+    return NULL;
 }
 
 void config_dma_channel(uint dmachannel, uint32_t *buffer, uint transfersizewords, uint nextdmachannel) {
@@ -172,11 +174,11 @@ void rle_add_point(bool logic_value, int(*writesegment)(const char*)) {
 //
 // ========================================================================
 
-void create_RLE_encoded_sample(uint pin, int(*writesegment)(const char*)){
+void create_RLE_encoded_sample(struct probe_controls* controls, int(*writesegment)(const char*)){
     insertptr = rlebuffer;
     assert(controls->pinwidth ==1 );  // base implementation
     for (uint bufferno = 0; bufferno < NUMBER_OF_BUFFERS; bufferno++){
-        for (uint wordno = 0; wordno < 1 ; wordno++) {
+        for (uint wordno = 0; wordno < buffer_size_words ; wordno++) {
             uint32_t wordvalue = capture_bufs[bufferno][wordno];
             for (uint bitcount = 0; bitcount < 32 ; bitcount++) {
                 uint32_t mask = 1u<<bitcount;

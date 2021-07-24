@@ -18,11 +18,10 @@
 // LOGIC ANALYSER PROBE - using Pico as Probe
 //
 
-#define BAD "N"
-
 void probe_init();
 
-void probe_writestate();
+void probe_ping();
+void probe_getstate();
 void probe_go(char* cmdbuffer);
 void probe_stop();
-void probe_writesample();
+void probe_getsample();

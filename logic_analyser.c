@@ -44,21 +44,20 @@ int main() {
         getcommandline(linebuffer);
         if (strchr(linebuffer,'!') == NULL) {
             switch (linebuffer[0]) {
-            case 'p': // ping
-                puts("PICO-1");
-                puts("Y");
+            case 'p': 
+                probe_ping();
                 break;
-            case '?': // status
-                probe_writestate();
+            case '?': 
+                probe_getstate();
                 break;
-            case 'g': // start probe sampling (go)
+            case 'g': 
                 probe_go(linebuffer);
                 break;
-            case 's': // stop probe sampling
+            case 's': 
                 probe_stop();
                 break;
-            case 'd': // transfer probe sample
-                probe_writesample();
+            case 'd':
+                probe_getsample();
                 break;
             default: // unknown command
                 printf("N Unknown command %s\n",linebuffer);

@@ -34,7 +34,13 @@ void probe_init() {
     probecontrols.state = STATE_IDLE;
 }
 
-void probe_writestate() {
+void probe_ping() {
+    puts("PICO-1");
+    puts("Y");
+}
+
+
+void probe_getstate() {
     printf("%i\n", probecontrols.state);
     puts("Y");
 }
@@ -44,16 +50,16 @@ void probe_go(char* cmdbuffer) {
         printf("N Bad state - expecting STATE_IDLE(0) - was %i\n", probecontrols.state);
         return; 
     }
-    if (!parse_control_parameters(&probecontrols, cmdbuffer) ) {
-        printf("N command parse failure - testcount=%i - cmd=%s\n",getTestnumber(),getCmd());
+    char* errormessage = parse_control_parameters(&probecontrols, cmdbuffer);
+    if (errormessage != NULL ) {
+        printf("N command parse failure - %s\n",errormessage);
         return; 
     }
-    //storage_init(&probecontrols);
-    //pio_init(&probecontrols);
-    //pio_arm();
-    //storage_arm();
-    //storage_waituntilcompleted();
-    digitalsampling_start(&probecontrols);
+    errormessage = digitalsampling_start(&probecontrols);
+    if (errormessage != NULL ) {
+        printf("N failure initiating digital sampling- %s\n",errormessage);
+        return; 
+    }
     probecontrols.state = STATE_SAMPLING;
     puts("Y");
 }
@@ -69,12 +75,12 @@ void probe_stop() {
     puts("Y");
 }
 
-void probe_writesample() {
+void probe_getsample() {
     if (probecontrols.state != STATE_SAMPLING_DONE) {
         printf("N Bad state - expecting STATE_SAMPLING_DONE(2) - was %i\n", probecontrols.state);
         return;
     }
-    create_RLE_encoded_sample(probecontrols.pinbase, puts);
+    create_RLE_encoded_sample(&probecontrols, puts);
     puts("Y");
     probecontrols.state = STATE_IDLE;
 }
