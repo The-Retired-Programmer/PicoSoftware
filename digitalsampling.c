@@ -13,27 +13,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 //
-// storage manager
+// PIO and DMA management
 //
 
 #include <stdlib.h>
 #include <string.h>
-#include "pico/stdlib.h"
+#include "hardware/pio.h"
+#include "hardware/clocks.h"
 #include "hardware/dma.h"
 #include "hardware/irq.h"
-#include "pio.h"
-#include "probe_controls.h"
 #include "hardware/structs/bus_ctrl.h"
+#include "digitalsampling.h"
 
-void config_dma_channel(uint dmachannel, uint32_t *buffer, uint transfersizewords, uint nextdmachannel);
-void dma_irq_handler();
+const PIO pio = pio0;
+const uint sm = 0;
+
+struct probe_controls* controls;
 
 // data buffers - chained to form the storage
 #define NUMBER_OF_BUFFERS 5
 #define BUFFERSIZEWORDS 5
-#define USBTRANSFERBUFFERSIZE 128
 
 // buffer(s) to hold the captured data 
 
@@ -42,21 +43,37 @@ uint capture_size_words;
 uint irq0_count = 0;
 bool dmafinished;
 
-struct probe_controls* controls;
+void config_dma_channel(uint dmachannel, uint32_t *buffer, uint transfersizewords, uint nextdmachannel);
+void dma_irq_handler();
 
-void storage_init(struct probe_controls* probecontrols) {
+
+void digitalsampling_start(struct probe_controls* probecontrols) {
     controls = probecontrols;
+    // calculate any setup parameters
     capture_size_words = (controls->samplesize * controls->pinwidth + 31) / 32;
-
+    // dma & capture buffer setup
     for (int i = 0; i< NUMBER_OF_BUFFERS; i++) {  // looks like we can get total of 64KBytes easily
         capture_bufs[i]=malloc(BUFFERSIZEWORDS* sizeof(uint32_t));
         hard_assert(capture_bufs[i]);
     }
-    // Grant high bus priority to the DMA
     bus_ctrl_hw->priority = BUSCTRL_BUS_PRIORITY_DMA_W_BITS | BUSCTRL_BUS_PRIORITY_DMA_R_BITS;
-}
+    // pio setup
+    uint16_t capture_prog_instr = pio_encode_in(controls->pinbase, controls->pinwidth);
+    struct pio_program capture_prog = {
+            .instructions = &capture_prog_instr,
+            .length = 1,
+            .origin = -1
+    };
+    uint offset = pio_add_program(pio, &capture_prog);
+    pio_sm_config c = pio_get_default_sm_config();
+    sm_config_set_in_pins(&c, controls->pinbase);
+    sm_config_set_wrap(&c, offset, offset);
+    float div = (float) clock_get_hz(clk_sys)/controls->frequency;
+    sm_config_set_clkdiv(&c, div);
+    sm_config_set_in_shift(&c, true, true, 32);
+    sm_config_set_fifo_join(&c, PIO_FIFO_JOIN_RX);
+    pio_sm_init(pio, sm, offset, &c);
 
-void storage_arm() {
     dmafinished = false;
     config_dma_channel(0,capture_bufs[0], BUFFERSIZEWORDS, 1);
     config_dma_channel(1,capture_bufs[1], BUFFERSIZEWORDS, 2);
@@ -65,6 +82,13 @@ void storage_arm() {
     config_dma_channel(4,capture_bufs[4], BUFFERSIZEWORDS, 4);
     irq_set_exclusive_handler(DMA_IRQ_0, dma_irq_handler);
     irq_set_enabled(DMA_IRQ_0, true);
+    //
+    pio_sm_set_enabled(pio, sm, false);
+    pio_sm_clear_fifos(pio, sm);
+    pio_sm_restart(pio, sm);
+    pio_sm_exec(pio, sm, pio_encode_wait_gpio(controls->st_trigger==TRIGGER_ON_HIGH, controls->st_pin));
+    pio_sm_set_enabled(pio, sm, true);
+    //
     dma_channel_start(0);
 }
 
@@ -72,11 +96,11 @@ void config_dma_channel(uint dmachannel, uint32_t *buffer, uint transfersizeword
     dma_channel_config c = dma_channel_get_default_config(dmachannel);
     channel_config_set_read_increment(&c, false);
     channel_config_set_write_increment(&c, true);
-    channel_config_set_dreq(&c, get_read_dreq());
+    channel_config_set_dreq(&c, pio_get_dreq(pio, sm, false));
     channel_config_set_chain_to(&c, nextdmachannel);
     dma_channel_configure(dmachannel, &c,
         buffer,        // Destination pointer
-        getPIOsource(),      // Source pointer
+        &pio->rxf[sm],      // Source pointer
         transfersizewords, // Number of transfers 
         false
     );
@@ -95,23 +119,14 @@ void storage_waituntilcompleted(){
     dma_channel_wait_for_finish_blocking(4);
 }
 
-uint32_t *get_capturebuf(uint logicalindex) {
-    return capture_bufs[logicalindex];
-}
-
-uint get_capturebuf_size() {
-    return BUFFERSIZEWORDS;
-}
-
-uint get_bufs_count() {
-    return NUMBER_OF_BUFFERS;
-}
-
 // ========================================================================
 //
-//   Run length encoding section
+//   Run length encoding - is how the sampled data is presented by the probe
 //
 // ========================================================================
+
+// define max size of RLE text segment that is returned
+#define USBTRANSFERBUFFERSIZE 128 
 
 int count = 0;
 bool logic_level;
@@ -172,6 +187,3 @@ void create_RLE_encoded_sample(uint pin, int(*writesegment)(const char*)){
     writetobuffer(writesegment); // flush final rle component
     writesegment(rlebuffer);
 }
-
-
-

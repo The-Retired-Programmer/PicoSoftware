@@ -14,20 +14,8 @@
  * limitations under the License.
  */
 
-//
-// logical analyser - storage manager
-//
+#include "probe_controls.h"
 
-void storage_init(struct probe_controls* probecontrols);
-
-void storage_arm();
-
-void storage_waituntilcompleted();
-
-uint32_t *get_capturebuf(uint logicalindex);
-
-uint get_capturebuf_size();
-
-uint get_bufs_count();
+void digitalsampling_start(struct probe_controls* probecontrols);
 
 void create_RLE_encoded_sample(uint pin, int(*writesegment)(const char*));

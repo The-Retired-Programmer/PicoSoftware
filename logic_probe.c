@@ -18,8 +18,7 @@
 // LOGIC ANALYSER PROBE - using Pico as Probe
 //
 
-#include "pio.h"
-#include "storage.h"
+#include "digitalsampling.h"
 #include "logic_probe.h"
 #include "probe_controls.h"
 
@@ -49,11 +48,12 @@ void probe_go(char* cmdbuffer) {
         printf("N command parse failure - testcount=%i - cmd=%s\n",getTestnumber(),getCmd());
         return; 
     }
-    storage_init(&probecontrols);
-    pio_init(&probecontrols);
-    pio_arm();
-    storage_arm();
+    //storage_init(&probecontrols);
+    //pio_init(&probecontrols);
+    //pio_arm();
+    //storage_arm();
     //storage_waituntilcompleted();
+    digitalsampling_start(&probecontrols);
     probecontrols.state = STATE_SAMPLING;
     puts("Y");
 }
