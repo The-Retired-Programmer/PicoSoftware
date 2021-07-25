@@ -38,6 +38,8 @@ const uint sm = 0;
 
 uint32_t *capture_bufs[NUMBER_OF_BUFFERS];
 uint32_t buffer_size_words;
+uint samplesperword;
+uint usedbitsperword;
 uint irq0_count = 0;
 bool dmafinished;
 
@@ -46,15 +48,14 @@ void dma_irq_handler();
 
 char* digitalsampling_start(struct probe_controls* controls) {
     // calculate any setup parameters - no validation here - it's been done prior.
-    uint samplesperword = WORDSIZE/controls->pinwidth;
-    uint usedbitsperword = samplesperword*controls->pinwidth;
-    uint32_t capture_size_words = controls->samplesize / samplesperword;
-    buffer_size_words = capture_size_words / NUMBER_OF_BUFFERS;
+    samplesperword = WORDSIZE/controls->pinwidth;
+    usedbitsperword = samplesperword*controls->pinwidth;
+    buffer_size_words = (controls->samplesize / samplesperword) / NUMBER_OF_BUFFERS;
     // dma & capture buffer setup
     for (int i = 0; i< NUMBER_OF_BUFFERS; i++) {
         capture_bufs[i]=malloc(buffer_size_words * sizeof(uint32_t));
         if ( capture_bufs[i] == NULL ) {
-            return "could not obtain buffer space for samples";
+            return "could not obtain memory for sample storage";
         }
     }
     bus_ctrl_hw->priority = BUSCTRL_BUS_PRIORITY_DMA_W_BITS | BUSCTRL_BUS_PRIORITY_DMA_R_BITS;
@@ -71,7 +72,7 @@ char* digitalsampling_start(struct probe_controls* controls) {
     sm_config_set_wrap(&c, offset, offset);
     float div = (float) clock_get_hz(clk_sys)/controls->frequency;
     sm_config_set_clkdiv(&c, div);
-    sm_config_set_in_shift(&c, true, true, usedbitsperword);
+    sm_config_set_in_shift(&c, false, true, usedbitsperword);
     sm_config_set_fifo_join(&c, PIO_FIFO_JOIN_RX);
     pio_sm_init(pio, sm, offset, &c);
 
@@ -136,10 +137,10 @@ bool logic_level;
 char rlebuffer[USBTRANSFERBUFFERSIZE];
 char* insertptr = rlebuffer;
 
-void writetobuffer(int(*writesegment)(const char*)) {
+void writetobuffer() {
     int n;
     if (insertptr -rlebuffer > USBTRANSFERBUFFERSIZE - 8 ) {
-        writesegment(rlebuffer);
+        puts(rlebuffer);
         insertptr = rlebuffer;
     }
     if (count == 1 ) {
@@ -150,18 +151,18 @@ void writetobuffer(int(*writesegment)(const char*)) {
     insertptr+=n;
 }
 
-void rle_add_point(bool logic_value, int(*writesegment)(const char*)) {
+void rle_add_point(bool logic_value) {
     if (count == 0) {
         logic_level =logic_value;
         count = 1;
     } else if (logic_value == logic_level) {
         count++;
         if (count == 999999) {
-            writetobuffer(writesegment);
+            writetobuffer();
             count=0;
         }
     } else {
-        writetobuffer(writesegment);
+        writetobuffer();
         count = 1;
         logic_level = logic_value;
     }
@@ -174,18 +175,21 @@ void rle_add_point(bool logic_value, int(*writesegment)(const char*)) {
 //
 // ========================================================================
 
-void create_RLE_encoded_sample(struct probe_controls* controls, int(*writesegment)(const char*)){
-    insertptr = rlebuffer;
-    assert(controls->pinwidth ==1 );  // base implementation
-    for (uint bufferno = 0; bufferno < NUMBER_OF_BUFFERS; bufferno++){
-        for (uint wordno = 0; wordno < buffer_size_words ; wordno++) {
-            uint32_t wordvalue = capture_bufs[bufferno][wordno];
-            for (uint bitcount = 0; bitcount < 32 ; bitcount++) {
-                uint32_t mask = 1u<<bitcount;
-                rle_add_point((wordvalue&mask) > 0,writesegment );
+void create_RLE_encoded_sample(struct probe_controls* controls){
+    for(uint pinoffset = 0; pinoffset < controls->pinwidth; pinoffset++) {
+        printf("# %i\n", pinoffset+controls->pinbase);
+        insertptr = rlebuffer;
+        count = 0;
+        for (uint bufferno = 0; bufferno < NUMBER_OF_BUFFERS; bufferno++){
+            for (uint wordno = 0; wordno < buffer_size_words ; wordno++) {
+                uint32_t wordvalue = capture_bufs[bufferno][wordno];
+                for (int bitcount = usedbitsperword -controls->pinwidth + pinoffset; bitcount >=0 ; bitcount-=controls->pinwidth) {
+                    uint32_t mask = 1u<<bitcount;
+                    rle_add_point((wordvalue&mask) > 0);
+                }
             }
         }
+        writetobuffer(); // flush final rle component into the buffer
+        puts(rlebuffer); // .. and write the buffer
     }
-    writetobuffer(writesegment); // flush final rle component
-    writesegment(rlebuffer);
 }
