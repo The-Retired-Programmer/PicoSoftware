@@ -29,6 +29,8 @@
 
 const PIO pio = pio0;
 const uint sm = 0;
+const uint control_dma = 0;
+const uint transfer_dma = 1;
 
 // data buffers - chained to form the storage
 #define NUMBER_OF_BUFFERS 5
@@ -43,7 +45,9 @@ uint usedbitsperword;
 uint irq0_count = 0;
 bool dmafinished;
 
-void config_dma_channel(uint dmachannel, uint32_t *buffer, uint transfersizewords, uint nextdmachannel);
+// the command list for use by the control DMA
+uint32_t *commandlist[NUMBER_OF_BUFFERS + 1];
+
 void dma_irq_handler();
 
 char* digitalsampling_start(struct probe_controls* controls) {
@@ -57,7 +61,9 @@ char* digitalsampling_start(struct probe_controls* controls) {
         if ( capture_bufs[i] == NULL ) {
             return "could not obtain memory for sample storage";
         }
+        commandlist[i] = capture_bufs[i];
     }
+    commandlist[NUMBER_OF_BUFFERS] = NULL; // termination of the list - cause DMA to stop
     bus_ctrl_hw->priority = BUSCTRL_BUS_PRIORITY_DMA_W_BITS | BUSCTRL_BUS_PRIORITY_DMA_R_BITS;
     // pio setup
     uint16_t capture_prog_instr = pio_encode_in(controls->pinbase, controls->pinwidth);
@@ -77,13 +83,32 @@ char* digitalsampling_start(struct probe_controls* controls) {
     pio_sm_init(pio, sm, offset, &c);
 
     dmafinished = false;
-    config_dma_channel(0,capture_bufs[0], buffer_size_words, 1);
-    config_dma_channel(1,capture_bufs[1], buffer_size_words, 2);
-    config_dma_channel(2,capture_bufs[2], buffer_size_words, 3);
-    config_dma_channel(3,capture_bufs[3], buffer_size_words, 4);
-    config_dma_channel(4,capture_bufs[4], buffer_size_words, 4);
-    irq_set_exclusive_handler(DMA_IRQ_0, dma_irq_handler);
-    irq_set_enabled(DMA_IRQ_0, true);
+    // setup the control DMA
+    dma_channel_config cc = dma_channel_get_default_config(control_dma);
+    channel_config_set_read_increment(&cc, true);
+    channel_config_set_write_increment(&cc, false);
+    dma_channel_configure(control_dma, &cc,
+        &dma_hw->ch[transfer_dma].al2_write_addr_trig,        // Destination pointer
+        commandlist,      // Source pointer
+        1, // Number of transfers 
+        false
+    );
+    // setup the transfer DMA
+    dma_channel_config ct = dma_channel_get_default_config(transfer_dma);
+    channel_config_set_read_increment(&ct, false);
+    channel_config_set_write_increment(&ct, true);
+    channel_config_set_dreq(&ct, pio_get_dreq(pio, sm, false));
+    channel_config_set_chain_to(&ct, control_dma);
+    dma_channel_configure(transfer_dma, &ct,
+        NULL,        // this will be added by the control dma
+        &pio->rxf[sm],      // Source pointer
+        buffer_size_words, // Number of transfers 
+        false
+    );
+    //dma_channel_set_irq0_enabled(dmachannel,true);
+
+    //irq_set_exclusive_handler(DMA_IRQ_0, dma_irq_handler);
+    //irq_set_enabled(DMA_IRQ_0, true);
     //
     pio_sm_set_enabled(pio, sm, false);
     pio_sm_clear_fifos(pio, sm);
@@ -91,23 +116,8 @@ char* digitalsampling_start(struct probe_controls* controls) {
     pio_sm_exec(pio, sm, pio_encode_wait_gpio(controls->st_trigger==TRIGGER_ON_HIGH, controls->st_pin));
     pio_sm_set_enabled(pio, sm, true);
     //
-    dma_channel_start(0);
+    dma_channel_start(control_dma);
     return NULL;
-}
-
-void config_dma_channel(uint dmachannel, uint32_t *buffer, uint transfersizewords, uint nextdmachannel) {
-    dma_channel_config c = dma_channel_get_default_config(dmachannel);
-    channel_config_set_read_increment(&c, false);
-    channel_config_set_write_increment(&c, true);
-    channel_config_set_dreq(&c, pio_get_dreq(pio, sm, false));
-    channel_config_set_chain_to(&c, nextdmachannel);
-    dma_channel_configure(dmachannel, &c,
-        buffer,        // Destination pointer
-        &pio->rxf[sm],      // Source pointer
-        transfersizewords, // Number of transfers 
-        false
-    );
-    dma_channel_set_irq0_enabled(dmachannel,true);
 }
 
 void dma_irq_handler() {
