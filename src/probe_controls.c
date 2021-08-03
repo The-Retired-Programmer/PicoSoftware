@@ -196,6 +196,12 @@ bool parse_samplesize(struct probe_controls* controls, char* s) {
     }
 }
 
+//------------------------------------------------------------------------------
+//
+//  PUBLIC API
+//
+//------------------------------------------------------------------------------
+
 char* parse_control_parameters(struct probe_controls* controls, char* cmdbuffer) {
     errormessage = "Unknown error";
     char* cmd = strtok(cmdbuffer,"-");

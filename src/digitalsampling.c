@@ -33,12 +33,23 @@ const uint control_dma = 0;
 const uint transfer_dma = 1;
 
 // data buffers - chained to form the storage
-#define NUMBER_OF_BUFFERS 5
+// number of buffers must be a power of 2
+#define BUFFERSPOWEROF2 2
+#define NUMBER_OF_BUFFERS 4 
+// ring buffer mask used to search for a suitable start address for a DMA ring
+// so  2 bits (word aligned) plus NUMBER_OF_BUFFERS size as a bit pattern
+// so  0x03 for the word alignment and 0xc0 for a 4 buffer ring
+#define RINGBASEMASK 0x0000000f
 #define WORDSIZE 32
+
+static uint32_t *capture_bufs[NUMBER_OF_BUFFERS];
+// the command list for use by the control DMA
+// twice Number of BUFFERS to allow for space to get alignment for DMA ring
+static uint32_t *commandlistbase[NUMBER_OF_BUFFERS*2];
+static uint32_t **commandlist;
 
 // buffer(s) to hold the captured data 
 
-uint32_t *capture_bufs[NUMBER_OF_BUFFERS];
 uint32_t buffer_size_words;
 uint samplesperword;
 uint usedbitsperword;
@@ -46,7 +57,8 @@ uint irq0_count = 0;
 bool dmafinished;
 
 // the command list for use by the control DMA
-uint32_t *commandlist[NUMBER_OF_BUFFERS + 1];
+static uint32_t *commandlistbase[NUMBER_OF_BUFFERS*2];
+static uint32_t **commandlist;
 
 void dma_irq_handler();
 
@@ -56,14 +68,33 @@ char* digitalsampling_start(struct probe_controls* controls) {
     usedbitsperword = samplesperword*controls->pinwidth;
     buffer_size_words = (controls->samplesize / samplesperword) / NUMBER_OF_BUFFERS;
     // dma & capture buffer setup
+    if (controls->sampleendmode == BUFFER_FULL ) {
+        commandlist = commandlistbase;
+    } else {
+        uint  lowbits = 1;
+        commandlist = commandlistbase;
+        for (int i = 0 ; i < NUMBER_OF_BUFFERS ; i++) {
+            lowbits = ((uint32_t) commandlist)&RINGBASEMASK;
+            if (lowbits == 0) {
+                break;
+            }
+            commandlist++;
+        }
+        if (lowbits != 0 ) {
+            return "can't align DMA ring buffer - system failure";
+        }
+    }
+    uint32_t **commandlistinsert = commandlist;
     for (int i = 0; i< NUMBER_OF_BUFFERS; i++) {
         capture_bufs[i]=malloc(buffer_size_words * sizeof(uint32_t));
         if ( capture_bufs[i] == NULL ) {
             return "could not obtain memory for sample storage";
         }
-        commandlist[i] = capture_bufs[i];
+        *commandlistinsert++ = capture_bufs[i];
     }
-    commandlist[NUMBER_OF_BUFFERS] = NULL; // termination of the list - cause DMA to stop
+    if (controls->sampleendmode == BUFFER_FULL) {
+        *commandlistinsert = NULL; // termination of the list - cause DMA to stop
+    }
     bus_ctrl_hw->priority = BUSCTRL_BUS_PRIORITY_DMA_W_BITS | BUSCTRL_BUS_PRIORITY_DMA_R_BITS;
     // pio setup
     uint16_t capture_prog_instr = pio_encode_in(controls->pinbase, controls->pinwidth);
@@ -87,6 +118,9 @@ char* digitalsampling_start(struct probe_controls* controls) {
     dma_channel_config cc = dma_channel_get_default_config(control_dma);
     channel_config_set_read_increment(&cc, true);
     channel_config_set_write_increment(&cc, false);
+    if (controls->sampleendmode != BUFFER_FULL) {
+        channel_config_set_ring(&cc, false, BUFFERSPOWEROF2);
+    }
     dma_channel_configure(control_dma, &cc,
         &dma_hw->ch[transfer_dma].al2_write_addr_trig,        // Destination pointer
         commandlist,      // Source pointer
@@ -139,7 +173,7 @@ void storage_waituntilcompleted(){
 // ========================================================================
 
 // define max size of RLE text segment that is returned
-#define USBTRANSFERBUFFERSIZE 128 
+#define USBTRANSFERBUFFERSIZE 72 
 
 int count = 0;
 bool logic_level;

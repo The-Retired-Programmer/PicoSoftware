@@ -15,7 +15,7 @@
  */
 
 //
-// Logic Analyser Probe - top level UI
+// Logic Analyser Probe - top level initialisation and command UI
 //
 
 #include <stdio.h>
@@ -36,10 +36,14 @@ void getcommandline(char* ptr) {
     }
 }
 
-int main() {
+void logic_analyser_init() {
     char linebuffer[200];
     stdio_init_all();
     probe_init();
+}
+
+void logic_analyser_handle_commands() {
+    char linebuffer[200];
     while ( true ) {
         getcommandline(linebuffer);
         if (strchr(linebuffer,'!') == NULL) {

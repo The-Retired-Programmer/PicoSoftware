@@ -7,17 +7,38 @@ set(PICO_SDK_PATH "/home/pi/pico/pico-sdk")
 include(/home/pi/pico/pico-sdk/external/pico_sdk_import.cmake)
 
 project(logic_analyser C CXX ASM)
+
 pico_sdk_init()
-add_executable(logic_analyser)
 
-pico_set_program_name(logic_analyser "logic_analyser")
-pico_set_program_version(logic_analyser "0.4")
+#
+#     build the application image
+#
 
-pico_enable_stdio_uart(logic_analyser 1)
-pico_enable_stdio_usb(logic_analyser 1)
+add_executable(app)
 
-target_sources(logic_analyser PRIVATE logic_analyser.c logic_probe.c probe_controls.c digitalsampling.c)
+pico_set_program_name(app "logic_analyser")
+pico_set_program_version(app "0.4")
 
-target_link_libraries(logic_analyser PRIVATE pico_stdlib hardware_pio hardware_dma)
-pico_add_extra_outputs(logic_analyser)
+pico_enable_stdio_uart(app 1)
+pico_enable_stdio_usb(app 1)
 
+target_sources(app PRIVATE src/main.c src/logic_analyser.c src/logic_probe.c src/probe_controls.c src/digitalsampling.c)
+
+target_link_libraries(app pico_stdlib hardware_pio hardware_dma)
+
+pico_add_extra_outputs(app)
+
+#
+#     build the testing image
+#
+
+add_executable(tests)
+
+pico_set_program_name(tests "logic_analyser tests")
+pico_set_program_version(tests "0.4")
+
+target_sources(tests PRIVATE test/main.c test/ptest.c test/test_probe_controls.c src/probe_controls.c)
+
+target_link_libraries(tests pico_stdlib)
+
+pico_add_extra_outputs(tests)
