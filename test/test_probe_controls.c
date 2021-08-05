@@ -19,17 +19,40 @@
 //
 
 #include <stdlib.h>
+#include <string.h>
 #include "pico/stdlib.h"
 #include "ptest.h"
 #include "../src/probe_controls.h"
+#include "../src/probe_controls_internal.h"
 
 void test_probe_controls() {
+    char cmdbuffer[255]; 
     char* cmd ="g-16-1-19200-1-16-0-0-16-0-1-320";
     struct probe_controls controls;
-    char* result = parse_control_parameters(&controls, cmd);
-    pass_if_null(result);
+    char* result = parse_control_parameters(&controls, strcpy(cmdbuffer,cmd));
+    pass_if_null("return", result);
+    pass_if_equal_uint("pinbase", 16, controls.pinbase);
+    pass_if_equal_uint("pinwidth", 1, controls.pinwidth);
+    pass_if_equal_uint32("frequency", 19200, controls.frequency);
+    pass_if_true("st_enabled", controls.st_enabled);
+    pass_if_equal_uint("st_pin", 16, controls.st_pin);
+    pass_if_equal_uint("st_trigger", TRIGGER_ON_LOW, controls.st_trigger);
+    pass_if_false("ev_enabled", controls.ev_enabled);
+    pass_if_equal_uint("ev_pin", 16, controls.ev_pin);
+    pass_if_equal_uint("ev_trigger", TRIGGER_ON_LOW, controls.ev_trigger);
+    pass_if_equal_uint("sampleendmode", BUFFER_FULL, controls.sampleendmode);
+    pass_if_equal_uint32("samplesize", 320, controls.samplesize);
+}
+
+void test_probe_pinbase() {
+    char* cmd ="16";
+    struct probe_controls controls;
+    bool res = parse_pinbase(&controls, cmd);
+    pass_if_true_with_message("return", res, get_errormessage());
+    pass_if_equal_uint("pinbase", 16, controls.pinbase);
 }
 
 void test_probe_controls_init() {
-    add_test(test_probe_controls);
+    add_test("parse_control_parameters", test_probe_controls);
+    add_test("parse_pinbase", test_probe_pinbase);
 }

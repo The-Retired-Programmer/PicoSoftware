@@ -26,6 +26,7 @@
 
 int main() {
     stdio_init_all();
+    ptest_init();
     // define all tests
     test_probe_controls_init();
     // run the tests

@@ -25,18 +25,30 @@
 //
 
 struct test_control_block {
+    char* name;
     void (*testfunction)();
-    bool success;
+    int passcount;
+    int failcount;
 };
 
-bool add_test( void (*testfunction)());
+void ptest_init();
+
+bool add_test(char* name, void (*testfunction)());
 
 void execute_tests();
 
 void summary_of_tests();
 
-void pass_if_null(void* value);
+void pass_if_null(char* id, char* value);
 
-void pass_if_equal_string(char* expected, char* actual);
+void pass_if_equal_string(char* id, char* expected, char* value);
+void pass_if_equal_uint(char* id, uint expected, uint value);
+void pass_if_equal_uint32(char* id, uint32_t expected, uint32_t value);
+
+void pass_if_true_with_message(char* id, bool value, char* message);
+void pass_if_true(char* id, bool value);
+
+void pass_if_false_with_message(char* id, bool value, char* message);
+void pass_if_false(char* id, bool value);
 
 #endif

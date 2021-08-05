@@ -26,11 +26,17 @@ static struct test_control_block tcbs[MAXTESTS];
 static uint testcount = 0;
 static struct test_control_block *current_tcb;
 
-bool add_test(void (*testfunction)() ) {
+void ptest_init() {
+    testcount = 0;
+}
+
+bool add_test(char* name, void (*testfunction)() ) {
     if (testcount >= MAXTESTS) {
         return false;
     }
-    tcbs[testcount].success = false;
+    tcbs[testcount].name = name;
+    tcbs[testcount].passcount = 0;
+    tcbs[testcount].failcount = 0;
     tcbs[testcount++].testfunction = testfunction;
     return true;
 }
@@ -42,36 +48,97 @@ void execute_tests() {
     }
 }
 
-void pass_if_null(void* value){
-    bool success = NULL == value;
-    current_tcb->success = success;
-    if (!success) {
-        printf("Test failed: expected NULL - actual \"%s\"\n", value);
-    }
-}
-
-void pass_if_equal_string(char* expected, char* actual) {
-    bool success = strcmp(expected,actual) == 0;
-    current_tcb->success = success;
-    if (!success) {
-        printf("Test failed: expected \"%s\" - actual \"%s\"\n", expected, actual);
-    }
-}
-
 void summary_of_tests() {
     uint tno = 0;
     uint sno = 0;
     uint fno = 0;
     for (uint i = 0; i < testcount; i++) {
-        bool success = tcbs[i].success;
         tno++;
-        if (success) sno++;
-        if (!success) fno++;
+        sno+=tcbs[i].passcount;
+        fno+=tcbs[i].failcount;
     }
-    if (tno == sno) {
+    if (fno == 0) {
         puts("\nTEST STATUS: GREEN");
     } else {
         puts("\nTEST STATUS: RED");
     }
-    printf("Tests: %i; Successful: %i; Failed: %i\n", tno, sno, fno);
+    printf("Tests: %i; Checks: passed: %i, failed: %i;\n", tno, sno, fno);
+}
+
+// ----------------------------------------------------------------------------
+//
+// The various pass tests for use in tests
+//
+// ----------------------------------------------------------------------------
+
+void pass_if_null(char* id, char* value){
+    if (NULL == value) {
+        current_tcb->passcount++;
+    } else {
+        current_tcb->failcount++;
+        printf("Test %s - Check %s failed: expected NULL, was %s\n", current_tcb->name, id,  value);
+    }
+}
+
+void pass_if_equal_string(char* id, char* expected, char* value) {
+    if (strcmp(expected,value) == 0) {
+        current_tcb->passcount++;
+    } else {
+        current_tcb->failcount++;
+        printf("Test %s - Check %s failed: expected %s, was %s\n", current_tcb->name, id, expected, value);
+    }
+}
+
+void pass_if_equal_uint(char* id, uint expected, uint value) {
+    if (expected == value) {
+        current_tcb->passcount++;
+    } else {
+        current_tcb->failcount++;
+        printf("Test %s - Check %s failed: expected %i, was %i\n", current_tcb->name, id, expected, value);
+    }
+}
+
+void pass_if_equal_uint32(char* id, uint32_t expected, uint32_t value) {
+    if (expected == value) {
+        current_tcb->passcount++;
+    } else {
+        current_tcb->failcount++;
+        printf("Test %s - Check %s failed: expected %i, was %i\n", current_tcb->name, id, expected, value);
+    }
+}
+
+void pass_if_true_with_message(char* id, bool value, char* message) {
+    if (value) {
+        current_tcb->passcount++;
+    } else {
+        current_tcb->failcount++;
+        printf("Test %s - Check %s failed: expected true, was false - %s\n",current_tcb->name, id, message);
+    }
+}
+
+void pass_if_true(char* id, bool value) {
+    if (value) {
+        current_tcb->passcount++;
+    } else {
+        current_tcb->failcount++;
+        printf("Test %s - Check %s failed: expected true, was false\n",current_tcb->name, id);
+    }
+}
+
+void pass_if_false_with_message(char* id, bool value, char* message) {
+    if (!value) {
+        current_tcb->passcount++;
+    } else {
+        current_tcb->failcount++;
+        printf("Test %s - Check %s failed: expected false, was true - %s\n",current_tcb->name, id, message);
+    }
+}
+
+void pass_if_false(char* id, bool value) {
+    if (!value) {
+        current_tcb->passcount++;
+    } else {
+        current_tcb->failcount++;
+        printf("Test %s - Check %s failed: expected false, was true\n",current_tcb->name, id);
+    }
 }
