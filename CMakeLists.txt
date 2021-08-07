@@ -37,8 +37,8 @@ add_executable(tests)
 pico_set_program_name(tests "logic_analyser tests")
 pico_set_program_version(tests "0.4")
 
-target_sources(tests PRIVATE test/main.c test/ptest.c test/test_probe_controls.c src/probe_controls.c)
+target_sources(tests PRIVATE test/main.c test/ptest.c test/test_probe_controls.c src/probe_controls.c test/test_digitalsampling.c src/digitalsampling.c)
 
-target_link_libraries(tests pico_stdlib)
+target_link_libraries(tests pico_stdlib hardware_pio hardware_dma)
 
 pico_add_extra_outputs(tests)

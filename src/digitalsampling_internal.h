@@ -14,8 +14,12 @@
  * limitations under the License.
  */
 
-#include "probe_controls.h"
-
-char* digitalsampling_start(struct probe_controls* probecontrols);
-
-void create_RLE_encoded_sample(struct probe_controls* probecontrols, void (*outputfunction)(const char *line));
+//data capture
+void dma_irq_handler();
+void storage_waituntilcompleted();
+// Run length encoding
+void init_rle(uint maxdigits, uint _maxlinelength, void (*outputfunction)(const char *line));
+void writetobuffer();
+void rle_insertvalue(bool logic_value);
+// testing only - Run Length encoding
+char* get_linebuffer();

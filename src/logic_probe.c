@@ -80,7 +80,7 @@ void probe_getsample() {
         printf("N Bad state - expecting STATE_SAMPLING_DONE(2) - was %i\n", probecontrols.state);
         return;
     }
-    create_RLE_encoded_sample(&probecontrols);
+    create_RLE_encoded_sample(&probecontrols, puts);
     puts("Y");
     probecontrols.state = STATE_IDLE;
 }

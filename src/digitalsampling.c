@@ -26,6 +26,7 @@
 #include "hardware/irq.h"
 #include "hardware/structs/bus_ctrl.h"
 #include "digitalsampling.h"
+#include "digitalsampling_internal.h"
 
 const PIO pio = pio0;
 const uint sm = 0;
@@ -173,35 +174,66 @@ void storage_waituntilcompleted(){
 // ========================================================================
 
 // define max size of RLE text segment that is returned
-#define USBTRANSFERBUFFERSIZE 72 
+#define MAXUSBTRANSFERBUFFERSIZE 72 
 
-int count = 0;
+uint32_t maxcount;
+uint spaceformaxcount;
+uint maxlinelength;
+void (*outputfunction)(const char *line);
+
+char rlebuffer[MAXUSBTRANSFERBUFFERSIZE];
+char* insertptr;
 bool logic_level;
+uint32_t count;
 
-char rlebuffer[USBTRANSFERBUFFERSIZE];
-char* insertptr = rlebuffer;
+// ========================================================================
+//
+//  extracting data bits from dma buffers and creating run length encoded
+//  data for each sample pin
+//
+// ========================================================================
 
-void writetobuffer() {
-    int n;
-    if (insertptr -rlebuffer > USBTRANSFERBUFFERSIZE - 8 ) {
-        puts(rlebuffer);
+void create_RLE_encoded_sample(struct probe_controls* controls, void (*outputfunction)(const char *line)){
+    init_rle(6, 72, outputfunction);
+    for(uint pinoffset = 0; pinoffset < controls->pinwidth; pinoffset++) {
+        printf("# %i\n", pinoffset+controls->pinbase);
         insertptr = rlebuffer;
+        count = 0;
+        for (uint bufferno = 0; bufferno < NUMBER_OF_BUFFERS; bufferno++){
+            for (uint wordno = 0; wordno < buffer_size_words ; wordno++) {
+                uint32_t wordvalue = capture_bufs[bufferno][wordno];
+                for (int bitcount = usedbitsperword -controls->pinwidth + pinoffset; bitcount >=0 ; bitcount-=controls->pinwidth) {
+                    uint32_t mask = 1u<<bitcount;
+                    rle_insertvalue((wordvalue&mask) > 0);
+                }
+            }
+        }
+        writetobuffer(); // flush final rle component into the buffer
+        outputfunction(rlebuffer); // .. and write the buffer
     }
-    if (count == 1 ) {
-        n = sprintf(insertptr, "%c", logic_level?'H':'L');
-    } else {
-        n= sprintf(insertptr, "%i%c", count,logic_level?'H':'L');
-    }
-    insertptr+=n;
 }
 
-void rle_add_point(bool logic_value) {
+void init_rle(uint maxdigits, uint _maxlinelength, void (*_outputfunction)(const char *line)) {
+    insertptr = rlebuffer;
+    count = 0;
+    spaceformaxcount = maxdigits + 2;
+    maxcount = 0;
+    while (maxdigits > 0 ) {
+        maxcount = maxcount*10 + 9;
+        maxdigits--;
+    }
+    maxlinelength = _maxlinelength;
+    assert(maxlinelength <= MAXUSBTRANSFERBUFFERSIZE);
+    outputfunction = _outputfunction;
+}
+
+void rle_insertvalue(bool logic_value) {
     if (count == 0) {
         logic_level =logic_value;
         count = 1;
     } else if (logic_value == logic_level) {
         count++;
-        if (count == 999999) {
+        if (count == maxcount) {
             writetobuffer();
             count=0;
         }
@@ -212,28 +244,22 @@ void rle_add_point(bool logic_value) {
     }
 }
 
-// ========================================================================
-//
-//  extracting data bits from dma buffers and creating run length encoded
-//  data for each sample pin
-//
-// ========================================================================
-
-void create_RLE_encoded_sample(struct probe_controls* controls){
-    for(uint pinoffset = 0; pinoffset < controls->pinwidth; pinoffset++) {
-        printf("# %i\n", pinoffset+controls->pinbase);
+void writetobuffer() {
+    int n;
+    if (insertptr -rlebuffer >= maxlinelength - spaceformaxcount ) {
+       *insertptr = '\0';
+        outputfunction(rlebuffer);
         insertptr = rlebuffer;
-        count = 0;
-        for (uint bufferno = 0; bufferno < NUMBER_OF_BUFFERS; bufferno++){
-            for (uint wordno = 0; wordno < buffer_size_words ; wordno++) {
-                uint32_t wordvalue = capture_bufs[bufferno][wordno];
-                for (int bitcount = usedbitsperword -controls->pinwidth + pinoffset; bitcount >=0 ; bitcount-=controls->pinwidth) {
-                    uint32_t mask = 1u<<bitcount;
-                    rle_add_point((wordvalue&mask) > 0);
-                }
-            }
-        }
-        writetobuffer(); // flush final rle component into the buffer
-        puts(rlebuffer); // .. and write the buffer
     }
+    if (count == 1 ) {
+        n = sprintf(insertptr, "%c", logic_level?'H':'L');
+    } else {
+        n= sprintf(insertptr, "%i%c", count,logic_level?'H':'L');
+    }
+    insertptr+=n;
+}
+
+// for testing only
+char* get_linebuffer() {
+    return rlebuffer;
 }

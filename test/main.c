@@ -23,12 +23,14 @@
 #include "pico/stdlib.h"
 #include "ptest.h"
 #include "test_probe_controls.h"
+#include "test_digitalsampling.h"
 
 int main() {
     stdio_init_all();
     ptest_init();
     // define all tests
     test_probe_controls_init();
+    test_digitalsampling_init();
     // run the tests
     puts("\nTESTING STARTING ...\n");
     execute_tests();

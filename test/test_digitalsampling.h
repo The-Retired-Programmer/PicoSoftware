@@ -14,8 +14,15 @@
  * limitations under the License.
  */
 
-#include "probe_controls.h"
+//
+// test - logical analyser/digitalsampling
+//
 
-char* digitalsampling_start(struct probe_controls* probecontrols);
+void test_digitalsampling_init();
 
-void create_RLE_encoded_sample(struct probe_controls* probecontrols, void (*outputfunction)(const char *line));
+// internal
+void test_digitalsampling_rle_internals();
+void rlelinereceiver(const char *line);
+void rlelinereceiverunused(const char *line);
+void rlelinereceiver9chars(const char *line);
+
