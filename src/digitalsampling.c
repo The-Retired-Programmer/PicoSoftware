@@ -28,43 +28,53 @@
 #include "digitalsampling.h"
 #include "digitalsampling_internal.h"
 
+// ----------------------------------------------------------------------------
+//    devices to be used for digital sampling
+//
 const PIO pio = pio0;
 const uint sm = 0;
 const uint control_dma = 0;
 const uint transfer_dma = 1;
 
-// data buffers - chained to form the storage
-// number of buffers must be a power of 2
+char* errormessage;
+
+char* digitalsampling_start(struct probe_controls* controls) {
+    bus_ctrl_hw->priority = BUSCTRL_BUS_PRIORITY_DMA_W_BITS | BUSCTRL_BUS_PRIORITY_DMA_R_BITS;
+    if (!(
+            setuptransferbuffers(controls)
+            && setupPIOandSM(controls)
+            && setupDMAcontrollers(controls)
+            && waitforstartevent(controls)
+        )) {
+        return errormessage;
+    };
+    pio_sm_set_enabled(pio, sm, true);
+    dma_channel_start(control_dma);
+    return NULL;
+}
+
+// ----------------------------------------------------------------------------
+//   Data storage - data capture buffers, DMA control word buffers
+//
 #define BUFFERSPOWEROF2 2
+//NUMBER_OF_BUFFERS= pow(2,BUFFERSPOWEROF2)
 #define NUMBER_OF_BUFFERS 4 
 // ring buffer mask used to search for a suitable start address for a DMA ring
 // so  2 bits (word aligned) plus NUMBER_OF_BUFFERS size as a bit pattern
 // so  0x03 for the word alignment and 0xc0 for a 4 buffer ring
 #define RINGBASEMASK 0x0000000f
 #define WORDSIZE 32
-
-static uint32_t *capture_bufs[NUMBER_OF_BUFFERS];
+uint32_t buffer_size_words;
+uint samplesperword;
+uint usedbitsperword;
 // the command list for use by the control DMA
 // twice Number of BUFFERS to allow for space to get alignment for DMA ring
 static uint32_t *commandlistbase[NUMBER_OF_BUFFERS*2];
 static uint32_t **commandlist;
+// the DMA buffers
+static uint32_t *capture_bufs[NUMBER_OF_BUFFERS];
 
-// buffer(s) to hold the captured data 
-
-uint32_t buffer_size_words;
-uint samplesperword;
-uint usedbitsperword;
-uint irq0_count = 0;
-bool dmafinished;
-
-// the command list for use by the control DMA
-static uint32_t *commandlistbase[NUMBER_OF_BUFFERS*2];
-static uint32_t **commandlist;
-
-void dma_irq_handler();
-
-char* digitalsampling_start(struct probe_controls* controls) {
-    // calculate any setup parameters - no validation here - it's been done prior.
+bool setuptransferbuffers(struct probe_controls* controls) {
     samplesperword = WORDSIZE/controls->pinwidth;
     usedbitsperword = samplesperword*controls->pinwidth;
     buffer_size_words = (controls->samplesize / samplesperword) / NUMBER_OF_BUFFERS;
@@ -82,38 +92,29 @@ char* digitalsampling_start(struct probe_controls* controls) {
             commandlist++;
         }
         if (lowbits != 0 ) {
-            return "can't align DMA ring buffer - system failure";
+            errormessage = "can't align DMA ring buffer - system failure";
+            return false;
         }
     }
     uint32_t **commandlistinsert = commandlist;
     for (int i = 0; i< NUMBER_OF_BUFFERS; i++) {
         capture_bufs[i]=malloc(buffer_size_words * sizeof(uint32_t));
         if ( capture_bufs[i] == NULL ) {
-            return "could not obtain memory for sample storage";
+            errormessage = "could not obtain memory for sample storage";
+            return false;
         }
         *commandlistinsert++ = capture_bufs[i];
     }
     if (controls->sampleendmode == BUFFER_FULL) {
         *commandlistinsert = NULL; // termination of the list - cause DMA to stop
     }
-    bus_ctrl_hw->priority = BUSCTRL_BUS_PRIORITY_DMA_W_BITS | BUSCTRL_BUS_PRIORITY_DMA_R_BITS;
-    // pio setup
-    uint16_t capture_prog_instr = pio_encode_in(controls->pinbase, controls->pinwidth);
-    struct pio_program capture_prog = {
-            .instructions = &capture_prog_instr,
-            .length = 1,
-            .origin = -1
-    };
-    uint offset = pio_add_program(pio, &capture_prog);
-    pio_sm_config c = pio_get_default_sm_config();
-    sm_config_set_in_pins(&c, controls->pinbase);
-    sm_config_set_wrap(&c, offset, offset);
-    float div = (float) clock_get_hz(clk_sys)/controls->frequency;
-    sm_config_set_clkdiv(&c, div);
-    sm_config_set_in_shift(&c, false, true, usedbitsperword);
-    sm_config_set_fifo_join(&c, PIO_FIFO_JOIN_RX);
-    pio_sm_init(pio, sm, offset, &c);
+    return true;
+}
 
+uint irq0_count = 0;
+bool dmafinished;
+
+bool setupDMAcontrollers(struct probe_controls* controls) {
     dmafinished = false;
     // setup the control DMA
     dma_channel_config cc = dma_channel_get_default_config(control_dma);
@@ -144,15 +145,7 @@ char* digitalsampling_start(struct probe_controls* controls) {
 
     //irq_set_exclusive_handler(DMA_IRQ_0, dma_irq_handler);
     //irq_set_enabled(DMA_IRQ_0, true);
-    //
-    pio_sm_set_enabled(pio, sm, false);
-    pio_sm_clear_fifos(pio, sm);
-    pio_sm_restart(pio, sm);
-    pio_sm_exec(pio, sm, pio_encode_wait_gpio(controls->st_trigger==TRIGGER_ON_HIGH, controls->st_pin));
-    pio_sm_set_enabled(pio, sm, true);
-    //
-    dma_channel_start(control_dma);
-    return NULL;
+    return true;
 }
 
 void dma_irq_handler() {
@@ -165,6 +158,33 @@ void storage_waituntilcompleted(){
     dma_channel_wait_for_finish_blocking(2);
     dma_channel_wait_for_finish_blocking(3);
     dma_channel_wait_for_finish_blocking(4);
+}
+
+bool setupPIOandSM(struct probe_controls* controls) {
+    uint16_t capture_prog_instr = pio_encode_in(controls->pinbase, controls->pinwidth);
+    struct pio_program capture_prog = {
+            .instructions = &capture_prog_instr,
+            .length = 1,
+            .origin = -1
+    };
+    uint offset = pio_add_program(pio, &capture_prog);
+    pio_sm_config c = pio_get_default_sm_config();
+    sm_config_set_in_pins(&c, controls->pinbase);
+    sm_config_set_wrap(&c, offset, offset);
+    float div = (float) clock_get_hz(clk_sys)/controls->frequency;
+    sm_config_set_clkdiv(&c, div);
+    sm_config_set_in_shift(&c, false, true, usedbitsperword);
+    sm_config_set_fifo_join(&c, PIO_FIFO_JOIN_RX);
+    pio_sm_init(pio, sm, offset, &c);
+    pio_sm_set_enabled(pio, sm, false);
+    pio_sm_clear_fifos(pio, sm);
+    pio_sm_restart(pio, sm);
+    return true;
+}
+
+bool waitforstartevent(struct probe_controls* controls) {
+    pio_sm_exec(pio, sm, pio_encode_wait_gpio(controls->st_trigger==TRIGGER_ON_HIGH, controls->st_pin));
+    return true;
 }
 
 // ========================================================================
