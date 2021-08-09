@@ -17,6 +17,7 @@
 //
 // test - logical analyser/digitalsampling
 //
+#include "../src/probe_controls.h"
 
 void test_digitalsampling_init();
 
@@ -26,3 +27,5 @@ void rlelinereceiver(const char *line);
 void rlelinereceiverunused(const char *line);
 void rlelinereceiver9chars(const char *line);
 
+void test_digitalsampling_dma_internals();
+char* setup_controls(struct probe_controls* controls, char * cmd);

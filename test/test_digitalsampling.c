@@ -19,6 +19,7 @@
 //
 
 #include <stdlib.h>
+#include <string.h>
 #include "pico/stdlib.h"
 #include "ptest.h"
 #include "../src/digitalsampling.h"
@@ -27,6 +28,7 @@
 
 void test_digitalsampling_init() {
     add_test("test_digitalsampling_rle_internals", test_digitalsampling_rle_internals);
+    add_test("test_digitalsampling_dma_internals", test_digitalsampling_dma_internals);
 }
 
 void test_digitalsampling_rle_internals() {
@@ -81,4 +83,30 @@ void rlelinereceiverunused(const char *line) {
 void rlelinereceiver9chars(const char *line) {
     pass_if_equal_string("small line receiver - 9 alternating", "HLHLHLHLH", get_linebuffer());
 }
+
+const volatile uint32_t readdata = 0xcccccccc;
+
+void test_digitalsampling_dma_internals() {
+    struct probe_controls controls;
+    char* res = setup_controls(&controls,"g-16-1-19200-1-16-0-0-16-0-1-320");
+    if ( res != NULL ) {
+        fail(res);
+        return;
+    }
+    if (!( 
+            setuptransferbuffers(&controls)
+            && setupDMAcontrollers(&controls, &readdata, 0x3f)
+        )) {
+        fail(geterrormessage());
+        return;
+    };
+    puts("dma - OK to this point");
+    // dma_channel_start(control_dma);
+}
+
+char* setup_controls(struct probe_controls* controls, char * cmd) {
+    char cmdbuffer[255]; 
+    return parse_control_parameters(controls, strcpy(cmdbuffer,cmd));
+}
+
 

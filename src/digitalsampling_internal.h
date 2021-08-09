@@ -16,11 +16,13 @@
 
 //data capture
 bool setuptransferbuffers(struct probe_controls* controls);
-bool setupDMAcontrollers(struct probe_controls* controls);
+bool setupDMAcontrollers(struct probe_controls* controls, const volatile uint32_t *readaddress, uint dreq);
 void dma_irq_handler();
 void storage_waituntilcompleted();
 bool setupPIOandSM(struct probe_controls* controls);
 bool waitforstartevent(struct probe_controls* controls);
+// testing only
+char* geterrormessage();
 // Run length encoding
 void init_rle(uint maxdigits, uint _maxlinelength, void (*outputfunction)(const char *line));
 void writetobuffer();

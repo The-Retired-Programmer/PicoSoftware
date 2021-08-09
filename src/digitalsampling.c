@@ -43,7 +43,7 @@ char* digitalsampling_start(struct probe_controls* controls) {
     if (!(
             setuptransferbuffers(controls)
             && setupPIOandSM(controls)
-            && setupDMAcontrollers(controls)
+            && setupDMAcontrollers(controls, &pio->rxf[sm], pio_get_dreq(pio, sm, false))
             && waitforstartevent(controls)
         )) {
         return errormessage;
@@ -114,7 +114,7 @@ bool setuptransferbuffers(struct probe_controls* controls) {
 uint irq0_count = 0;
 bool dmafinished;
 
-bool setupDMAcontrollers(struct probe_controls* controls) {
+bool setupDMAcontrollers(struct probe_controls* controls, const volatile uint32_t *readaddress, uint dreq) {
     dmafinished = false;
     // setup the control DMA
     dma_channel_config cc = dma_channel_get_default_config(control_dma);
@@ -133,11 +133,11 @@ bool setupDMAcontrollers(struct probe_controls* controls) {
     dma_channel_config ct = dma_channel_get_default_config(transfer_dma);
     channel_config_set_read_increment(&ct, false);
     channel_config_set_write_increment(&ct, true);
-    channel_config_set_dreq(&ct, pio_get_dreq(pio, sm, false));
+    channel_config_set_dreq(&ct, dreq);
     channel_config_set_chain_to(&ct, control_dma);
     dma_channel_configure(transfer_dma, &ct,
         NULL,        // this will be added by the control dma
-        &pio->rxf[sm],      // Source pointer
+        readaddress,      // Source pointer
         buffer_size_words, // Number of transfers 
         false
     );
@@ -185,6 +185,11 @@ bool setupPIOandSM(struct probe_controls* controls) {
 bool waitforstartevent(struct probe_controls* controls) {
     pio_sm_exec(pio, sm, pio_encode_wait_gpio(controls->st_trigger==TRIGGER_ON_HIGH, controls->st_pin));
     return true;
+}
+
+// for testing only
+char* geterrormessage() {
+    return errormessage;
 }
 
 // ========================================================================
