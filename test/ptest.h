@@ -52,5 +52,6 @@ void pass_if_false_with_message(char* id, bool value, char* message);
 void pass_if_false(char* id, bool value);
 
 void fail(char* id);
+void pass(char* id);
 
 #endif

@@ -156,3 +156,7 @@ void fail(char* id) {
     printf("Test %s - Check %s failed\n", current_tcb->name, id);
     puts("    fail");
 }
+
+void pass(char* id) {
+    current_tcb->passcount++;
+}

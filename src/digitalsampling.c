@@ -43,13 +43,13 @@ char* digitalsampling_start(struct probe_controls* controls) {
     if (!(
             setuptransferbuffers(controls)
             && setupPIOandSM(controls)
-            && setupDMAcontrollers(controls, &pio->rxf[sm], pio_get_dreq(pio, sm, false))
+            && setupDMAcontrollers(controls, &pio->rxf[sm], pio_get_dreq(pio, sm, false), null_function, null_function)
             && waitforstartevent(controls)
         )) {
         return errormessage;
     };
     pio_sm_set_enabled(pio, sm, true);
-    dma_channel_start(control_dma);
+    dma_start();
     return NULL;
 }
 
@@ -111,11 +111,20 @@ bool setuptransferbuffers(struct probe_controls* controls) {
     return true;
 }
 
-uint irq0_count = 0;
-bool dmafinished;
+// for testing only
+uint32_t **getcapturebuffers() {
+    return capture_bufs;
+}
 
-bool setupDMAcontrollers(struct probe_controls* controls, const volatile uint32_t *readaddress, uint dreq) {
+bool dmafinished;
+void (*on_dma_irq0)();
+void (*on_dma_irq1)();
+
+bool setupDMAcontrollers(struct probe_controls* controls, const volatile uint32_t *readaddress,
+        uint dreq, void (*irq0callback)(),void (*irq1callback)()) {
     dmafinished = false;
+    on_dma_irq0 = irq0callback;
+    on_dma_irq1 = irq1callback;
     // setup the control DMA
     dma_channel_config cc = dma_channel_get_default_config(control_dma);
     channel_config_set_read_increment(&cc, true);
@@ -135,29 +144,42 @@ bool setupDMAcontrollers(struct probe_controls* controls, const volatile uint32_
     channel_config_set_write_increment(&ct, true);
     channel_config_set_dreq(&ct, dreq);
     channel_config_set_chain_to(&ct, control_dma);
+    channel_config_set_irq_quiet (&ct, true);
     dma_channel_configure(transfer_dma, &ct,
         NULL,        // this will be added by the control dma
         readaddress,      // Source pointer
         buffer_size_words, // Number of transfers 
         false
     );
-    //dma_channel_set_irq0_enabled(dmachannel,true);
-
-    //irq_set_exclusive_handler(DMA_IRQ_0, dma_irq_handler);
-    //irq_set_enabled(DMA_IRQ_0, true);
+    dma_channel_set_irq0_enabled(control_dma,true);
+    irq_set_exclusive_handler(DMA_IRQ_0, dma_irq0_handler);
+    irq_set_enabled(DMA_IRQ_0, true);
+    dma_channel_set_irq1_enabled(transfer_dma,true);
+    irq_set_exclusive_handler(DMA_IRQ_1, dma_irq1_handler);
+    irq_set_enabled(DMA_IRQ_1, true);
     return true;
 }
 
-void dma_irq_handler() {
-    dma_channel_acknowledge_irq0(irq0_count++);
+void dma_start() {
+    dma_channel_start(control_dma);
 }
 
-void storage_waituntilcompleted(){
-    dma_channel_wait_for_finish_blocking(0);
-    dma_channel_wait_for_finish_blocking(1);
-    dma_channel_wait_for_finish_blocking(2);
-    dma_channel_wait_for_finish_blocking(3);
-    dma_channel_wait_for_finish_blocking(4);
+void dma_irq0_handler() {
+    dma_channel_acknowledge_irq0(control_dma);
+    on_dma_irq0();
+}
+
+void dma_irq1_handler() {
+    dma_channel_acknowledge_irq1(transfer_dma);
+    on_dma_irq1();
+    dmafinished = true;
+}
+
+void null_function() {
+}
+
+bool is_completed(){
+    return dmafinished;
 }
 
 bool setupPIOandSM(struct probe_controls* controls) {
@@ -185,6 +207,10 @@ bool setupPIOandSM(struct probe_controls* controls) {
 bool waitforstartevent(struct probe_controls* controls) {
     pio_sm_exec(pio, sm, pio_encode_wait_gpio(controls->st_trigger==TRIGGER_ON_HIGH, controls->st_pin));
     return true;
+}
+
+void pio_start() {
+    pio_sm_set_enabled(pio, sm, true);
 }
 
 // for testing only

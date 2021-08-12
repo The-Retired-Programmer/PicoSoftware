@@ -29,3 +29,5 @@ void rlelinereceiver9chars(const char *line);
 
 void test_digitalsampling_dma_internals();
 char* setup_controls(struct probe_controls* controls, char * cmd);
+void dma_buffer_callback();
+void dma_transfer_finished_callback();

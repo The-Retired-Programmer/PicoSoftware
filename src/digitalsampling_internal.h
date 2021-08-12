@@ -16,10 +16,17 @@
 
 //data capture
 bool setuptransferbuffers(struct probe_controls* controls);
-bool setupDMAcontrollers(struct probe_controls* controls, const volatile uint32_t *readaddress, uint dreq);
-void dma_irq_handler();
-void storage_waituntilcompleted();
+// testing only
+uint32_t **getcapturebuffers();
+bool setupDMAcontrollers(struct probe_controls* controls, const volatile uint32_t *readaddress,
+    uint dreq, void (*irq0callback)(), void (*irq1callback)());
+void dma_start();
+void dma_irq0_handler();
+void dma_irq1_handler();
+void null_function();
+bool is_completed();
 bool setupPIOandSM(struct probe_controls* controls);
+void pio_start();
 bool waitforstartevent(struct probe_controls* controls);
 // testing only
 char* geterrormessage();
