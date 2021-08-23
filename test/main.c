@@ -24,16 +24,36 @@
 #include "ptest.h"
 #include "test_probe_controls.h"
 #include "test_digitalsampling.h"
+#include "test_square_wave_generator.h"
+#include "test_pio_program.h"
 
 int main() {
     stdio_init_all();
     ptest_init();
     // define all tests
+    test_pio_program_init();
+    test_square_wave_generator_init();
     test_probe_controls_init();
     test_digitalsampling_init();
     // run the tests
     puts("\nTESTING STARTING ...\n");
-    execute_tests();
-    summary_of_tests();
+    if (test_if_selection_mode()){
+        while (true) {
+            int selectedtest = getselectionid();
+            if (selectedtest == 0) break;
+            if (selectedtest == out_of_range) {
+                continue;
+            } else if (selectedtest > 0) {
+                execute_test(selectedtest);
+                summary_of_test();
+            } else {
+                execute_tests();
+                summary_of_tests();
+            }
+        }
+    } else {
+        execute_tests();
+        summary_of_tests();
+    }
     puts("\n ...TESTING COMPLETED\n");
 }

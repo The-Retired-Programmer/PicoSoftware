@@ -1,0 +1,73 @@
+; =========================================================================
+;
+;  LOGIC PROBE - Digital Sampling
+;
+;   Collects sample data from pins
+;
+;   as the 16 bit divisor for frequency speed is not enough to cover a range
+;   as high as clock frequency down to 1s, there are two PIO programs to
+;   cover the full range.  There is an overlap in the ranges, so the 10KHz point
+;   has been selected as the change over point.
+;
+;   high frequency program
+;   cycles per wrap = 1; frequency range: <= 125MHz  >1.907KHz
+;
+;   low frequency program 
+;   cycles per wrap = 2176; frequency range: <= 57.445KHz  >0.877Hz 
+;
+; =========================================================================
+.program probe_highspeed
+    nop ; substitute with wait as required
+    nop ;   ditto
+.wrap_target
+    nop ; substitute with in as required
+.wrap
+
+.program probe_lowspeed
+    nop ; substitute with wait as required
+    nop ; ditto
+.wrap_target
+    nop ; substitute with in as required
+    set y, 1 [31]
+y1: set x, 31 [31]
+x1: jmp x--, x1 [31]
+    jmp y--, y1 [31]
+.wrap   
+
+
+.program components
+    wait 0 gpio 0 ; need to "or" the actual gpio before use
+    wait 1 gpio 0 ;   ditto
+    in pins,32    ; need to "or" the actual pin_width
+    in pins,32 [31] ;    ditto
+
+% c-sdk {
+static inline void probepio_init(PIO pio, uint sm, uint pin, float frequency
+         uint usedbitsperword ) {
+    pio_sm_config c;
+    uint offset;
+    float prog_length;
+    pio_clear_instruction_memory(pio);
+    if (frequency > 10000) {
+        offset = pio_add_program(pio, &probe_highspeed_program);
+        c = probe_highspeed_program_get_default_config(offset);
+        prog_length = 1.0;
+    } else {
+        offset = pio_add_program(pio, &probe_lowspeed_program);
+        c = probe_lowspeed_program_get_default_config(offset);
+        prog_length = 32;
+    }
+    sm_config_set_in_pins(&c, pin);
+    sm_config_set_wrap(&c, offset, offset);
+    float freq= (float) clock_get_hz(clk_sys);
+    float div = freq/(prog_length*frequency);
+    printf("div=%f (sys frequency=%f; frequency=%f; prog_length=%f)\n",div, freq, frequency, prog_length);
+    sm_config_set_clkdiv(&c, div);
+    sm_config_set_in_shift(&c, false, true, usedbitsperword);
+    sm_config_set_fifo_join(&c, PIO_FIFO_JOIN_RX);
+    pio_sm_init(pio, sm, offset, &c);
+    pio_sm_set_enabled(pio, sm, false);
+    pio_sm_clear_fifos(pio, sm);
+    pio_sm_restart(pio, sm);
+}
+%}

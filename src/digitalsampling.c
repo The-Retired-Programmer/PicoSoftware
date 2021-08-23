@@ -1,4 +1,4 @@
-/**
+ /**
  * Copyright 2021 Richard Linsdale (richard at theretiredprogrammer.uk).
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -33,6 +33,7 @@
 //
 const PIO pio = pio0;
 const uint sm = 0;
+const uint sm_test = 1;
 const uint control_dma = 0;
 const uint transfer_dma = 1;
 
@@ -48,7 +49,7 @@ char* digitalsampling_start(struct probe_controls* controls) {
         )) {
         return errormessage;
     };
-    pio_sm_set_enabled(pio, sm, true);
+    pio_start();
     dma_start();
     return NULL;
 }
@@ -183,17 +184,31 @@ bool is_completed(){
 }
 
 bool setupPIOandSM(struct probe_controls* controls) {
-    uint16_t capture_prog_instr = pio_encode_in(controls->pinbase, controls->pinwidth);
-    struct pio_program capture_prog = {
-            .instructions = &capture_prog_instr,
-            .length = 1,
-            .origin = -1
-    };
-    uint offset = pio_add_program(pio, &capture_prog);
-    pio_sm_config c = pio_get_default_sm_config();
-    sm_config_set_in_pins(&c, controls->pinbase);
+    //probepio_init(pio, sm, controls->pinbase, controls->frequency);
+    return true;
+}
+
+/*
+void probepio_init(PIO pio, uint sm, uint pin, float frequency,
+         uint usedbitsperword ) {
+    pio_sm_config c;
+    uint offset;
+    float prog_length;
+    pio_clear_instruction_memory(pio);
+    if (frequency > 10000) {
+        offset = pio_add_program(pio, &probe_highspeed_program);
+        c = probe_highspeed_program_get_default_config(offset);
+        prog_length = 1.0;
+    } else {
+        offset = pio_add_program(pio, &probe_lowspeed_program);
+        c = probe_lowspeed_program_get_default_config(offset);
+        prog_length = 32;
+    }
+    sm_config_set_in_pins(&c, pin);
     sm_config_set_wrap(&c, offset, offset);
-    float div = (float) clock_get_hz(clk_sys)/controls->frequency;
+    float freq= (float) clock_get_hz(clk_sys);
+    float div = freq/(prog_length*frequency);
+    printf("div=%f (sys frequency=%f; frequency=%f; prog_length=%f)\n",div, freq, frequency, prog_length);
     sm_config_set_clkdiv(&c, div);
     sm_config_set_in_shift(&c, false, true, usedbitsperword);
     sm_config_set_fifo_join(&c, PIO_FIFO_JOIN_RX);
@@ -201,8 +216,8 @@ bool setupPIOandSM(struct probe_controls* controls) {
     pio_sm_set_enabled(pio, sm, false);
     pio_sm_clear_fifos(pio, sm);
     pio_sm_restart(pio, sm);
-    return true;
 }
+*/
 
 bool waitforstartevent(struct probe_controls* controls) {
     pio_sm_exec(pio, sm, pio_encode_wait_gpio(controls->st_trigger==TRIGGER_ON_HIGH, controls->st_pin));
@@ -213,7 +228,12 @@ void pio_start() {
     pio_sm_set_enabled(pio, sm, true);
 }
 
+
 // for testing only
+uint32_t pioread() {
+    return  pio_sm_get_blocking(pio, sm);
+}
+
 char* geterrormessage() {
     return errormessage;
 }
@@ -230,7 +250,7 @@ char* geterrormessage() {
 uint32_t maxcount;
 uint spaceformaxcount;
 uint maxlinelength;
-void (*outputfunction)(const char *line);
+int (*outputfunction)(const char *line);
 
 char rlebuffer[MAXUSBTRANSFERBUFFERSIZE];
 char* insertptr;
@@ -244,7 +264,7 @@ uint32_t count;
 //
 // ========================================================================
 
-void create_RLE_encoded_sample(struct probe_controls* controls, void (*outputfunction)(const char *line)){
+void create_RLE_encoded_sample(struct probe_controls* controls, int (*outputfunction)(const char *line)){
     init_rle(6, 72, outputfunction);
     for(uint pinoffset = 0; pinoffset < controls->pinwidth; pinoffset++) {
         printf("# %i\n", pinoffset+controls->pinbase);
@@ -264,7 +284,7 @@ void create_RLE_encoded_sample(struct probe_controls* controls, void (*outputfun
     }
 }
 
-void init_rle(uint maxdigits, uint _maxlinelength, void (*_outputfunction)(const char *line)) {
+void init_rle(uint maxdigits, uint _maxlinelength, int (*_outputfunction)(const char *line)) {
     insertptr = rlebuffer;
     count = 0;
     spaceformaxcount = maxdigits + 2;

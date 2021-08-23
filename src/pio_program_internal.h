@@ -14,8 +14,18 @@
  * limitations under the License.
  */
 
-#include "probe_controls.h"
+#include <stdlib.h>
 
-char* digitalsampling_start(struct probe_controls* probecontrols);
+static void ppb_init(uint smnum);
 
-void create_RLE_encoded_sample(struct probe_controls* probecontrols, int (*outputfunction)(const char *line));
+// internal functions - for testing
+
+int ppb_get_wraptarget();
+
+int ppb_get_wrap();
+
+uint16_t *ppb_getprograminstructions();
+
+uint ppb_getprogramsize();
+
+uint ppb_getprogramoffset();

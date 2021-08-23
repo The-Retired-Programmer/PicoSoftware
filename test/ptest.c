@@ -17,7 +17,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <ctype.h>
 #include "pico/stdlib.h"
+#include "hardware/gpio.h"
 #include "ptest.h"
 
 #define MAXTESTS 20 
@@ -30,11 +32,12 @@ void ptest_init() {
     testcount = 0;
 }
 
-bool add_test(char* name, void (*testfunction)() ) {
+bool add_test(char* name, char* alias, void (*testfunction)() ) {
     if (testcount >= MAXTESTS) {
         return false;
     }
     tcbs[testcount].name = name;
+    tcbs[testcount].alias = alias;
     tcbs[testcount].passcount = 0;
     tcbs[testcount].failcount = 0;
     tcbs[testcount++].testfunction = testfunction;
@@ -42,9 +45,8 @@ bool add_test(char* name, void (*testfunction)() ) {
 }
 
 void execute_tests() {
-    for (uint i = 0; i < testcount; i++) {
-        current_tcb = &tcbs[i];
-        current_tcb->testfunction();
+    for (uint i = 1; i <= testcount; i++) {
+       execute_test(i);
     }
 }
 
@@ -63,6 +65,108 @@ void summary_of_tests() {
         puts("\nTEST STATUS: RED");
     }
     printf("Tests: %i; Checks: passed: %i, failed: %i;\n", tno, sno, fno);
+}
+
+//  and selective testing
+
+uint singletestnumber=1;
+
+bool test_if_selection_mode() {
+    gpio_init(22);
+    gpio_pull_up(22);
+    return gpio_get(22)==0;
+}
+
+void gettestresponse(char* ptr) {
+    putchar('>');
+    while (true) {
+        char ch = getchar();
+        if (ch == '\n' || ch == '\r') {
+            *ptr='\0';
+            return;
+        } else if (ch>= '\x20' && ch <= '\x7e') {
+            *ptr++ = ch;
+        }
+    }
+}
+
+bool isint(char *line) {
+    while(*line != '\0') {
+        if (!isdigit(*line++)) {
+            return false;
+        }
+    }
+    return true;
+}
+
+void writemenu() {
+    for (int i=0; i < testcount; i++) {
+        printf("%s(%i) - %s\n", tcbs[i].alias, i+1, tcbs[i].name);
+    }
+}
+
+int getselectionid() {
+    // 1-n => test number ; 0 is  exit ; -1 is all
+    // user command format: decimal digits (nn= test number or 0 = quit)
+    //   + = next test number ; empty (ie just \n ) is repeat; - = previous
+    //  Q or q is quit ; alias string  = run test; ? write the menu
+    //  # = run all tests
+    //
+    char linebuffer[120];
+    gettestresponse(linebuffer);
+    if ( strcmp(linebuffer,"Q") == 0) {
+        return 0;     
+    } else if ( strcmp(linebuffer,"q") == 0) {
+        return 0;
+    } else if ( strcmp(linebuffer,"#") == 0) {
+
+    } else if ( strcmp(linebuffer,"?") == 0) {
+        writemenu();
+        return getselectionid();
+    } else if ( strcmp(linebuffer,"") == 0) {
+        return singletestnumber;
+    } else if ( strcmp(linebuffer,"+") == 0) {
+        if (singletestnumber < testcount) {
+            return ++singletestnumber;
+        }
+        return out_of_range;
+    } else if ( strcmp(linebuffer,"-") == 0) {
+        if (singletestnumber > 1) {
+            return --singletestnumber;
+        } 
+        return out_of_range;
+    } else if ( isint(linebuffer)) {
+        int val = atoi(linebuffer);
+        if (val>0 && val<=testcount) {
+            return (singletestnumber = val);
+        }
+        return out_of_range;
+    } else {
+        for (int i=0; i < testcount; i++) {
+            if (strcmp(linebuffer, tcbs[i].alias)== 0) {
+                return (singletestnumber = i+1);
+            }
+        }
+        return out_of_range;
+    }
+}
+
+void execute_test(int selectionid) {
+    current_tcb = &tcbs[selectionid-1];
+    current_tcb->passcount = 0;
+    current_tcb->failcount = 0;
+    printf("RUNNING (%i) %s\n",selectionid, current_tcb->name);
+    current_tcb->testfunction();
+}
+
+void summary_of_test() {
+    if (tcbs[singletestnumber-1].failcount == 0) {
+        puts("\nTEST STATUS: GREEN");
+    } else {
+        puts("\nTEST STATUS: RED");
+    }
+    printf("Checks: passed: %i, failed: %i;\n",
+        tcbs[singletestnumber-1].passcount, tcbs[singletestnumber-1].failcount);
 }
 
 // ----------------------------------------------------------------------------
@@ -98,6 +202,16 @@ void pass_if_equal_uint(char* id, uint expected, uint value) {
         current_tcb->failcount++;
         printf("Test %s - Check %s failed\n", current_tcb->name, id);
         printf("    expected %i, was %i\n", expected, value);
+    }
+}
+
+void pass_if_equal_uintx(char* id, uint expected, uint value) {
+    if (expected == value) {
+        current_tcb->passcount++;
+    } else {
+        current_tcb->failcount++;
+        printf("Test %s - Check %s failed\n", current_tcb->name, id);
+        printf("    expected %x, was %x\n", expected, value);
     }
 }
 

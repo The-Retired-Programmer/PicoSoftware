@@ -23,11 +23,15 @@ void test_digitalsampling_init();
 
 // internal
 void test_digitalsampling_rle_internals();
-void rlelinereceiver(const char *line);
-void rlelinereceiverunused(const char *line);
-void rlelinereceiver9chars(const char *line);
+int rlelinereceiver(const char *line);
+int rlelinereceiverunused(const char *line);
+int rlelinereceiver9chars(const char *line);
 
 void test_digitalsampling_dma_internals();
 char* setup_controls(struct probe_controls* controls, char * cmd);
 void dma_buffer_callback();
 void dma_transfer_finished_callback();
+
+void test_digitalsampling_pio_internals();
+uint32_t pioread();
+

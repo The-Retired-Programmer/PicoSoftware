@@ -14,8 +14,4 @@
  * limitations under the License.
  */
 
-#include "probe_controls.h"
-
-char* digitalsampling_start(struct probe_controls* probecontrols);
-
-void create_RLE_encoded_sample(struct probe_controls* probecontrols, int (*outputfunction)(const char *line));
+void test_square_wave_generator_init();

@@ -14,6 +14,9 @@
  * limitations under the License.
  */
 
+#include "probe_controls.h"
+#include "hardware/pio.h"
+
 //data capture
 bool setuptransferbuffers(struct probe_controls* controls);
 // testing only
@@ -30,8 +33,9 @@ void pio_start();
 bool waitforstartevent(struct probe_controls* controls);
 // testing only
 char* geterrormessage();
+uint32_t pioread();
 // Run length encoding
-void init_rle(uint maxdigits, uint _maxlinelength, void (*outputfunction)(const char *line));
+void init_rle(uint maxdigits, uint _maxlinelength, int (*outputfunction)(const char *line));
 void writetobuffer();
 void rle_insertvalue(bool logic_value);
 // testing only - Run Length encoding

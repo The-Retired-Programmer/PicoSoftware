@@ -26,6 +26,7 @@
 
 struct test_control_block {
     char* name;
+    char* alias; // short for single test UI use
     void (*testfunction)();
     int passcount;
     int failcount;
@@ -33,16 +34,26 @@ struct test_control_block {
 
 void ptest_init();
 
-bool add_test(char* name, void (*testfunction)());
+bool add_test(char* name, char* alias, void (*testfunction)());
 
 void execute_tests();
 
 void summary_of_tests();
 
+bool test_if_selection_mode();
+
+int getselectionid();
+#define out_of_range -2
+
+void execute_test(int selectionid);
+
+void summary_of_test();
+
 void pass_if_null(char* id, char* value);
 
 void pass_if_equal_string(char* id, char* expected, char* value);
 void pass_if_equal_uint(char* id, uint expected, uint value);
+void pass_if_equal_uintx(char* id, uint expected, uint value);
 void pass_if_equal_uint32(char* id, uint32_t expected, uint32_t value);
 
 void pass_if_true_with_message(char* id, bool value, char* message);
