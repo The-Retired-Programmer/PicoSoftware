@@ -21,6 +21,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include "hardware/pio.h"
+#include "hardware/clocks.h"
 #include "pio_program.h"
 #include "pio_program_internal.h"
 
@@ -104,19 +105,18 @@ char *ppb_build() {
     return NULL;
 }
 
-pio_sm_config ppb_load() {
+pio_sm_config ppb_load(float piofrequency) {
     offset = pio_add_program(pio, &program);
     pio_sm_config c = pio_get_default_sm_config();
     sm_config_set_wrap(&c, offset + wraptarget, offset + wrap);
+    float sysfreq= (float) clock_get_hz(clk_sys);
+    sm_config_set_clkdiv(&c, sysfreq/piofrequency);
     return c;
 }
 
-pio_sm_config ppb_clear_and_load() {
+pio_sm_config ppb_clear_and_load(float piofrequency) {
     pio_clear_instruction_memory(pio);
-    offset = pio_add_program(pio, &program);
-    pio_sm_config c = pio_get_default_sm_config();
-    sm_config_set_wrap(&c, offset + wraptarget, offset + wrap);
-    return c;
+    return ppb_load(piofrequency);
 }
 
 void ppb_configure(pio_sm_config *c) {

@@ -20,7 +20,6 @@
 
 #include <stdlib.h>
 #include "pico/stdlib.h"
-#include "hardware/clocks.h"
 #include "pio_program.h"
 
 // =========================================================================
@@ -93,10 +92,7 @@ void square_wave_generator(uint pinbase, uint pinwidth, float frequency) {
         wrap_program_cycles = 8704;
     }
     ppb_build();
-    pio_sm_config c = ppb_clear_and_load();
-    float sysfreq= (float) clock_get_hz(clk_sys);
-    float div = sysfreq/(wrap_program_cycles*frequency);
-    sm_config_set_clkdiv(&c, div);
+    pio_sm_config c = ppb_clear_and_load(wrap_program_cycles*frequency);
     sm_config_set_set_pins(&c, pinbase, pinwidth);
     pio_gpio_init(pio1, pinbase);
     pio_gpio_init(pio1, pinbase+1);

@@ -32,9 +32,9 @@ void ppb_add_instruction(uint16_t instruction);
 
 char *ppb_build();
 
-pio_sm_config ppb_load();
+pio_sm_config ppb_load(float piofrequency);
 
-pio_sm_config ppb_clear_and_load();
+pio_sm_config ppb_clear_and_load(float piofrequency);
 
 void ppb_configure(pio_sm_config *c);
 

@@ -39,7 +39,7 @@ void test_pio_program() {
     ppb_add_instruction(pio_encode_jmp_condition(piojmp_Xnot0_minus,ppb_here())|pio_encode_delay(31));
     //
     ppb_build();
-    pio_sm_config c = ppb_clear_and_load();
+    pio_sm_config c = ppb_clear_and_load(10000.0);
     pass_if_equal_uint("wraptarget",  0 , ppb_get_wraptarget());
     pass_if_equal_uint( "wrap", 7, ppb_get_wrap());
     pass_if_equal_uint( "program size", 9, ppb_getprogramsize());
