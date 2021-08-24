@@ -51,13 +51,13 @@ void test_pio_program() {
     for (uint i = 0; i< ppb_getprogramsize(); i++) {
        pass_if_equal_uintx("instruction", expected_instructions[i], instructions[i]); 
     }
-    c=ppb_load(); // load it again and check it's at a new location
+    c=ppb_load(10000.0); // load it again and check it's at a new location
     pass_if_equal_uint( "program offset(2)", 32-9-9, ppb_getprogramoffset());
     //
-    c=ppb_load(); // load it again and check it's at a new location
+    c=ppb_load(10000.0); // load it again and check it's at a new location
     pass_if_equal_uint( "program offset(3)", 32-9-9-9, ppb_getprogramoffset());
     //
-    c=ppb_clear_and_load(); // load it again and check it's at the start location
+    c=ppb_clear_and_load(10000.0); // load it again and check it's at the start location
     pass_if_equal_uint( "program offset(4)", 32-9, ppb_getprogramoffset());
 }
 
