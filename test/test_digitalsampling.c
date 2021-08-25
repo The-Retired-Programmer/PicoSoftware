@@ -24,6 +24,7 @@
 #include "hardware/clocks.h"
 #include "hardware/gpio.h"
 #include "ptest.h"
+#include "../src/square_wave_generator.h"
 #include "../src/digitalsampling.h"
 #include "../src/digitalsampling_internal.h"
 #include "../src/pio_program.h"
@@ -33,7 +34,7 @@
 void test_digitalsampling_init() {
     add_test("test_digitalsampling_rle_internals", "rle", test_digitalsampling_rle_internals);
     add_test("test_digitalsampling_dma_internals", "dma", test_digitalsampling_dma_internals);
-    //add_test("test_digitalsampling_pio_internals","pio", test_digitalsampling_pio_internals);
+    add_test("test_digitalsampling_pio_internals","pio", test_digitalsampling_pio_internals);
 }
 
 void test_digitalsampling_rle_internals() {
@@ -144,12 +145,9 @@ void dma_transfer_finished_callback() {
     // null for moment
 }
 
-// needs a link from pins 15 to 16 to connect squarewave generator output pin
-// to probe pin
 void test_digitalsampling_pio_internals() {
-    dma_buffer_fills = 0;
     struct probe_controls controls;
-    char* res = setup_controls(&controls,"g-16-1-3200-1-16-0-0-16-0-1-3200");
+    char* res = setup_controls(&controls,"g-13-3-20000-1-13-0-0-13-0-1-3200");
     if ( res != NULL ) {
         fail(res);
         return;
@@ -160,14 +158,14 @@ void test_digitalsampling_pio_internals() {
         fail(geterrormessage());
         return;
     };
-    waitforstartevent(&controls);
-    //squarewavegenerator_init(pio1, 0, 13, 100);
     pio_start();
+    square_wave_generator(13, 3, 1250);
     //read from pio fifo
-    #define READSIZE 10
+    #define READSIZE 100
     uint32_t databuffer[READSIZE];
     for (uint i = 0; i < READSIZE; i++ ) {
         databuffer[i] = pioread();
-        printf("%8X\n",databuffer[i]);
+        //printf("%8X\n",databuffer[i]);
     }
+    pass_if_equal_uintx("buffer read", 0x3B7693B2, databuffer[0]);
 }

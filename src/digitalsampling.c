@@ -21,19 +21,16 @@
 #include <stdlib.h>
 #include <string.h>
 #include "hardware/pio.h"
-#include "hardware/clocks.h"
 #include "hardware/dma.h"
 #include "hardware/irq.h"
 #include "hardware/structs/bus_ctrl.h"
 #include "digitalsampling.h"
 #include "digitalsampling_internal.h"
+#include "pio_program.h"
 
 // ----------------------------------------------------------------------------
 //    devices to be used for digital sampling
 //
-const PIO pio = pio0;
-const uint sm = 0;
-const uint sm_test = 1;
 const uint control_dma = 0;
 const uint transfer_dma = 1;
 
@@ -44,8 +41,7 @@ char* digitalsampling_start(struct probe_controls* controls) {
     if (!(
             setuptransferbuffers(controls)
             && setupPIOandSM(controls)
-            && setupDMAcontrollers(controls, &pio->rxf[sm], pio_get_dreq(pio, sm, false), null_function, null_function)
-            && waitforstartevent(controls)
+            && setupDMAcontrollers(controls, &pio0->rxf[0], pio_get_dreq(pio0, 0, false), null_function, null_function)
         )) {
         return errormessage;
     };
@@ -183,55 +179,66 @@ bool is_completed(){
     return dmafinished;
 }
 
-bool setupPIOandSM(struct probe_controls* controls) {
-    //probepio_init(pio, sm, controls->pinbase, controls->frequency);
-    return true;
-}
+// =========================================================================
+//
+//  LOGIC PROBE - Digital Sampling
+//
+//   Collects sample data from pins
+//
+//   as the 16 bit divisor for frequency speed is not enough to cover a range
+//   as high as clock frequency down to 1s, there are two PIO programs to
+//   cover the full range.  There is an overlap in the ranges, so the 10KHz point
+//   has been selected as the change over point.
+//
+//   high frequency program
+//   cycles per wrap = 1; frequency range: <= 125MHz  >1.907KHz
+//
+//   low frequency program 
+//   cycles per wrap = 2200; frequency range: <= 56.818KHz  >0.867Hz 
+//
+// =========================================================================
 
-/*
-void probepio_init(PIO pio, uint sm, uint pin, float frequency,
-         uint usedbitsperword ) {
-    pio_sm_config c;
-    uint offset;
-    float prog_length;
-    pio_clear_instruction_memory(pio);
+bool setupPIOandSM(struct probe_controls* controls) {
+    PIO pio = pio0;
+    uint sm = 0;
+    uint pin = controls->pinbase;
+    uint pinwidth = controls->pinwidth;
+    float frequency = controls->frequency;
+    uint usedbitsperword = 30;
+    uint wrap_program_cycles;
+    ppb_init_pio0();
+    ppb_add_instruction(pio_encode_wait_gpio(false,13));
+    ppb_add_instruction(pio_encode_wait_gpio(true,13));
+    ppb_set_wraptarget();
     if (frequency > 10000) {
-        offset = pio_add_program(pio, &probe_highspeed_program);
-        c = probe_highspeed_program_get_default_config(offset);
-        prog_length = 1.0;
+        ppb_add_instruction(pio_encode_in(pio_pins,pinwidth));
+        wrap_program_cycles = 1;
     } else {
-        offset = pio_add_program(pio, &probe_lowspeed_program);
-        c = probe_lowspeed_program_get_default_config(offset);
-        prog_length = 32;
+        ppb_add_instruction(pio_encode_in(pio_pins,pinwidth));
+        ppb_add_instruction(pio_encode_set(pio_y,1)|pio_encode_delay(22));
+        uint ylabel = ppb_here();
+        ppb_add_instruction(pio_encode_set(pio_x, 31)|pio_encode_delay(31));
+        ppb_add_instruction(pio_encode_jmp_condition(piojmp_Xnot0_minus,ppb_here())|pio_encode_delay(31));
+        ppb_add_instruction(pio_encode_jmp_condition(piojmp_Ynot0_minus,ylabel)|pio_encode_delay(31));
+        wrap_program_cycles = 2200;
     }
+    ppb_set_wrap();
+    ppb_build();
+    pio_sm_config c = ppb_clear_and_load(wrap_program_cycles*frequency);
     sm_config_set_in_pins(&c, pin);
-    sm_config_set_wrap(&c, offset, offset);
-    float freq= (float) clock_get_hz(clk_sys);
-    float div = freq/(prog_length*frequency);
-    printf("div=%f (sys frequency=%f; frequency=%f; prog_length=%f)\n",div, freq, frequency, prog_length);
-    sm_config_set_clkdiv(&c, div);
     sm_config_set_in_shift(&c, false, true, usedbitsperword);
     sm_config_set_fifo_join(&c, PIO_FIFO_JOIN_RX);
-    pio_sm_init(pio, sm, offset, &c);
-    pio_sm_set_enabled(pio, sm, false);
-    pio_sm_clear_fifos(pio, sm);
-    pio_sm_restart(pio, sm);
-}
-*/
-
-bool waitforstartevent(struct probe_controls* controls) {
-    pio_sm_exec(pio, sm, pio_encode_wait_gpio(controls->st_trigger==TRIGGER_ON_HIGH, controls->st_pin));
+    ppb_configure(&c);
     return true;
 }
 
 void pio_start() {
-    pio_sm_set_enabled(pio, sm, true);
+    ppb_start();
 }
-
 
 // for testing only
 uint32_t pioread() {
-    return  pio_sm_get_blocking(pio, sm);
+    return  pio_sm_get_blocking(pio0, 0);
 }
 
 char* geterrormessage() {

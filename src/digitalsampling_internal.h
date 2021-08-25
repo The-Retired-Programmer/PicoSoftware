@@ -30,7 +30,7 @@ void null_function();
 bool is_completed();
 bool setupPIOandSM(struct probe_controls* controls);
 void pio_start();
-bool waitforstartevent(struct probe_controls* controls);
+
 // testing only
 char* geterrormessage();
 uint32_t pioread();

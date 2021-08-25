@@ -45,9 +45,6 @@
 // =========================================================================
 
 void square_wave_generator(uint pinbase, uint pinwidth, float frequency) {
-    //float frequency = 0.25;
-    //uint pinbase = 13;
-    //uint pinwidth = 3;
     uint wrap_program_cycles;
     ppb_init_pio1();
     if (frequency > 1000) {

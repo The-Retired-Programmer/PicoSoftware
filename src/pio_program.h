@@ -14,6 +14,9 @@
  * limitations under the License.
  */
 
+#ifndef _PIO_PROGRAM_H
+#define _PIO_PROGRAM_H
+
 #include <stdlib.h>
 #include "hardware/pio.h"
 
@@ -54,3 +57,5 @@ enum pico_jmp_condition {
 inline static uint pio_encode_jmp_condition(enum pico_jmp_condition jmp_condition, uint addr) {
     return _pio_encode_instr_and_args(pio_instr_bits_jmp, jmp_condition, addr);
 }
+
+#endif
