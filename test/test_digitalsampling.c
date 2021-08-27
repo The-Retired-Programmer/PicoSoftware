@@ -27,59 +27,64 @@
 #include "../src/square_wave_generator.h"
 #include "../src/digitalsampling.h"
 #include "../src/digitalsampling_internal.h"
+#include "../src/run_length_encoder.h"
+#include "../src/run_length_encoder_internal.h"
 #include "../src/pio_program.h"
 #include "../src/pio_program_internal.h"
+#include "../src/pio_digitalsampling.h"
+#include "../src/pio_digitalsampling_internal.h"
+#include "../src/dma_digitalsampling.h"
 #include "test_digitalsampling.h"
 
 void test_digitalsampling_init() {
-    add_test("test_digitalsampling_rle_internals", "rle", test_digitalsampling_rle_internals);
-    add_test("test_digitalsampling_dma_internals", "dma", test_digitalsampling_dma_internals);
-    add_test("test_digitalsampling_pio_internals","pio", test_digitalsampling_pio_internals);
+    add_test("run length encoder", "rle", test_digitalsampling_rle_internals);
+    add_test("dma digitalsampling", "dma", test_digitalsampling_dma_internals);
+    add_test("pio digitalsampling","pio", test_digitalsampling_pio_internals);
 }
 
 void test_digitalsampling_rle_internals() {
     // basic alternating levels
-    init_rle(1,13,rlelinereceiverunused);
+    rle_init(1,13,rlelinereceiverunused);
     bool level = true;
     for (uint i = 0; i<10;i++) {
         rle_insertvalue(level);
         level = !level;
     }
-    writetobuffer(); // flush
-    pass_if_equal_string("basic alternating levels", "HLHLHLHLHL", get_linebuffer());
+    rle_writetobuffer(); // flush
+    pass_if_equal_string("basic alternating levels", "HLHLHLHLHL", get_rle_linebuffer());
     // basic alternating levels - split after 9
-    init_rle(1,12,rlelinereceiver9chars);
+    rle_init(1,12,rlelinereceiver9chars);
     level = true;
     for (uint i = 0; i<10;i++) {
         rle_insertvalue(level);
         level = !level;
     }
-    writetobuffer(); // flush
-    pass_if_equal_string("basic alternating levels - split after 9", "L", get_linebuffer());
+    rle_writetobuffer(); // flush
+    pass_if_equal_string("basic alternating levels - split after 9", "L", get_rle_linebuffer());
     // basic alternating levels bilevels
-    init_rle(1,30,rlelinereceiverunused);
+    rle_init(1,30,rlelinereceiverunused);
     level = true;
     for (uint i = 0; i<10;i++) {
         rle_insertvalue(level);
         rle_insertvalue(level);
         level = !level;
     }
-    writetobuffer(); // flush
-    pass_if_equal_string("basic alternating bilevels", "2H2L2H2L2H2L2H2L2H2L", get_linebuffer());
+    rle_writetobuffer(); // flush
+    pass_if_equal_string("basic alternating bilevels", "2H2L2H2L2H2L2H2L2H2L", get_rle_linebuffer());
     // very short line size
-    init_rle(1,11,rlelinereceiver);
+    rle_init(1,11,rlelinereceiver);
     level = true;
     for (uint i = 0; i<10;i++) {
         rle_insertvalue(level);
         rle_insertvalue(level);
         level = !level;
     }
-    writetobuffer(); // flush
-    pass_if_equal_string("final small line", "2H2L", get_linebuffer());
+    rle_writetobuffer(); // flush
+    pass_if_equal_string("final small line", "2H2L", get_rle_linebuffer());
 }
 
 int rlelinereceiver(const char *line) {
-    pass_if_equal_string("small line receiver", "2H2L2H2L", get_linebuffer());
+    pass_if_equal_string("small line receiver", "2H2L2H2L", get_rle_linebuffer());
     return 0;
 }
 
@@ -89,44 +94,53 @@ int rlelinereceiverunused(const char *line) {
 }
 
 int rlelinereceiver9chars(const char *line) {
-    pass_if_equal_string("small line receiver - 9 alternating", "HLHLHLHLH", get_linebuffer());
+    pass_if_equal_string("small line receiver - 9 alternating", "HLHLHLHLH", get_rle_linebuffer());
     return 0;
 }
 
 const volatile uint32_t readdata = 0xcccccccc;
 uint dma_buffer_fills = 0 ;
+volatile bool dma_completed = false;
 
 //
-//   you need approx 2micro secs per buffer fill to be able to count the individual
-//   irq0 (control dma) done interrupts
-//   -   so running at fully bus speed and system clock of 125Mhz and 4 capture buffers,
-//       32K samples is sufficient (min for full speed)
+//   you need approx 4micro secs per buffer fill to be able to count the individual
+//   irq0 (control dma) done interrupts - so running at fully bus speed and system
+//   clock of 125Mhz and 4 capture buffers, 64K samples is minimum (equates to
+//   individual buffer size of 500 words. 
 //
 //   max sample size (1 pin sample) is approx 1,920,000 bits - will obviously reduce as
-//   code base increases. ( a factor of 60 over minimum - at full speed).
+//   code base increases (a factor of 30 over sample test minimum).
 //
 void test_digitalsampling_dma_internals() {
     dma_buffer_fills = 0;
+    dma_completed = false;
     struct probe_controls controls;
-    char* res = setup_controls(&controls,"g-16-1-19200-1-16-0-0-16-0-1-960000");
+    char* res = setup_controls(&controls,"g-16-1-19200-0-16-0-0-16-0-1-64000"); // will only use samplesize/ pin_width
     if ( res != NULL ) {
         fail(res);
         return;
     }
-    if (!( 
-            setuptransferbuffers(&controls)
-            && setupDMAcontrollers(&controls, &readdata, 0x3f, dma_buffer_callback, dma_transfer_finished_callback)
-        )) {
-        fail(geterrormessage());
+    res = setuptransferbuffers(&controls);
+    if ( res != NULL ) {
+        fail(res);
         return;
-    };
+    }
+    res = setupDMAcontrollers(&controls, &readdata, 0x3f); // dma run at system clock speed
+    if ( res != NULL ) {
+        fail(res);
+        return;
+    }
+    // don't award dma bus priority else it graps all cycles (even from irq callbacks)
+    //dma_to_have_bus_priority();
+    dma_after_every_control(dma_buffer_callback);
+    dma_on_completed(dma_transfer_finished_callback);
     dma_start();
-    while (!is_completed());
+    uint32_t cyclecount = 0;
+    while (!dma_completed) cyclecount++;
     pass("transfer completed signalled");
-    uint32_t **b = getcapturebuffers();
-    for (uint i = 0; i < 4; i++) {
-        uint32_t *bp = *(b++);
-        pass_if_equal_uint32("buffer check", readdata, *bp);
+    struct sample_buffers samplebuffers = getsamplebuffers();
+    for (uint i = 0; i < samplebuffers.number_of_buffers; i++) {
+        pass_if_equal_uint32("buffer check", readdata, samplebuffers.buffers[i][0]);
     };
     pass_if_equal_uint("control count", 5, dma_buffer_fills);
 
@@ -142,30 +156,24 @@ void dma_buffer_callback() {
 }
 
 void dma_transfer_finished_callback() {
-    // null for moment
+    dma_completed = true;
 }
 
 void test_digitalsampling_pio_internals() {
     struct probe_controls controls;
-    char* res = setup_controls(&controls,"g-13-3-20000-1-13-0-0-13-0-1-3200");
+    char* res = setup_controls(&controls,"g-13-3-20000-1-13-3-0-13-0-1-3200");
     if ( res != NULL ) {
         fail(res);
         return;
     }
-    if (!( 
-            setupPIOandSM(&controls)
-        )) {
-        fail(geterrormessage());
-        return;
-    };
-    pio_start();
+    piodigitalsampling_init(&controls);
+    piodigitalsampling_start();
     square_wave_generator(13, 3, 1250);
     //read from pio fifo
     #define READSIZE 100
     uint32_t databuffer[READSIZE];
     for (uint i = 0; i < READSIZE; i++ ) {
-        databuffer[i] = pioread();
-        //printf("%8X\n",databuffer[i]);
+        databuffer[i] = piodigitalsampling_read();
     }
     pass_if_equal_uintx("buffer read", 0x3B7693B2, databuffer[0]);
 }

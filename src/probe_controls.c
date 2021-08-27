@@ -24,9 +24,9 @@
 #include "probe_controls.h"
 #include "probe_controls_internal.h"
 
+#define WORDSIZE 32
 char errormessage[256];
 uint32_t lastint;
-
 
 //------------------------------------------------------------------------------
 //
@@ -49,6 +49,14 @@ char* parse_control_parameters(struct probe_controls* controls, char* cmdbuffer)
             parse_sampleendmode(controls, strtok(NULL,"-")) &&
             parse_samplesize(controls, strtok(NULL,"-"))
             ? NULL : errormessage; 
+}
+
+uint samplesperword(struct probe_controls* controls) {
+    return WORDSIZE/controls->pinwidth;
+}
+
+uint usedbitsperword(struct probe_controls* controls) {
+    return samplesperword(controls)*controls->pinwidth;
 }
 
 //------------------------------------------------------------------------------

@@ -46,4 +46,7 @@ struct probe_controls {
 
 char* parse_control_parameters(struct probe_controls* controls, char* cmdbuffer);
 
+uint samplesperword(struct probe_controls* controls);
+uint usedbitsperword(struct probe_controls* controls);
+
 #endif

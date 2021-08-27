@@ -62,6 +62,6 @@ void test_pio_program() {
 }
 
 void test_pio_program_init() {
-    add_test("test_pio_program", "pioprog", test_pio_program);
+    add_test("pio_program", "pioprog", test_pio_program);
 }
 

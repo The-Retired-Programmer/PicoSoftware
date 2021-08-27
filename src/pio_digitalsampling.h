@@ -14,21 +14,10 @@
  * limitations under the License.
  */
 
-//
-// test - square wave generator
-//
+#include "probe_controls.h"
 
-#include <stdlib.h>
-#include "pico/stdlib.h"
-#include "../src/square_wave_generator.h"
-#include "ptest.h"
+void piodigitalsampling_init(struct probe_controls* controls);
 
-// no pass or fail - it needs a visual check on GPIO pins with a scope or leds
+void piodigitalsampling_start();
 
-void test_square_wave_generator() {
-    square_wave_generator(13,3,0.25);
-}
 
-void test_square_wave_generator_init() {
-    add_test("square_wave_generator", "sqwave", test_square_wave_generator);
-}

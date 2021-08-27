@@ -22,11 +22,9 @@ pico_set_program_version(app "0.4")
 pico_enable_stdio_uart(app 1)
 pico_enable_stdio_usb(app 1)
 
-pico_generate_pio_header(app ${CMAKE_SOURCE_DIR}/src/digitalsampling.pio)
-
-
 target_sources(app PRIVATE src/main.c src/logic_analyser.c src/logic_probe.c
-     src/probe_controls.c src/digitalsampling.c src/pio_program.c)
+     src/probe_controls.c src/digitalsampling.c src/run_length_encoder.c
+     src/pio_digitalsampling.c src/dma_digitalsampling.c src/pio_program.c)
 
 target_link_libraries(app pico_stdlib hardware_pio hardware_dma)
 
@@ -43,7 +41,8 @@ pico_set_program_version(tests "0.4")
 
 target_sources(tests PRIVATE test/main.c test/ptest.c
     test/test_probe_controls.c src/probe_controls.c
-    test/test_digitalsampling.c src/digitalsampling.c
+    test/test_digitalsampling.c src/digitalsampling.c src/run_length_encoder.c
+        src/pio_digitalsampling.c src/dma_digitalsampling.c
     test/test_pio_program.c src/pio_program.c
     test/test_square_wave_generator.c src/square_wave_generator.c)
 

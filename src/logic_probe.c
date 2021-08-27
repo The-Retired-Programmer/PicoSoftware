@@ -19,6 +19,7 @@
 //
 
 #include "digitalsampling.h"
+#include "run_length_encoder.h"
 #include "logic_probe.h"
 #include "probe_controls.h"
 
@@ -80,7 +81,7 @@ void probe_getsample() {
         printf("N Bad state - expecting STATE_SAMPLING_DONE(2) - was %i\n", probecontrols.state);
         return;
     }
-    create_RLE_encoded_sample(&probecontrols, puts);
+    create_RLE_encoded_sample(&probecontrols, getsamplebuffers(), puts);
     puts("Y");
     probecontrols.state = STATE_IDLE;
 }

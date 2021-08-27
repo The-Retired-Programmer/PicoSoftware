@@ -14,8 +14,19 @@
  * limitations under the License.
  */
 
+#ifndef _DIGITALSAMPLING_H
+#define _DIGITALSAMPLING_H
+
 #include "probe_controls.h"
 
 char* digitalsampling_start(struct probe_controls* probecontrols);
 
-void create_RLE_encoded_sample(struct probe_controls* probecontrols, int (*outputfunction)(const char *line));
+struct sample_buffers {
+    uint number_of_buffers;
+    uint32_t buffer_size_words;
+    uint32_t *buffers[4];
+};
+
+struct sample_buffers getsamplebuffers();
+
+#endif

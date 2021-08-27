@@ -14,21 +14,15 @@
  * limitations under the License.
  */
 
-//
-// test - square wave generator
-//
+#include "probe_controls.h"
 
-#include <stdlib.h>
-#include "pico/stdlib.h"
-#include "../src/square_wave_generator.h"
-#include "ptest.h"
+char* setupDMAcontrollers(struct probe_controls* controls, const volatile uint32_t *readaddress, uint dreq);
 
-// no pass or fail - it needs a visual check on GPIO pins with a scope or leds
+void dma_after_every_control(void (*callback)());
 
-void test_square_wave_generator() {
-    square_wave_generator(13,3,0.25);
-}
+void dma_on_completed(void (*callback)());
 
-void test_square_wave_generator_init() {
-    add_test("square_wave_generator", "sqwave", test_square_wave_generator);
-}
+void dma_to_have_bus_priority();
+
+void dma_start();
+
