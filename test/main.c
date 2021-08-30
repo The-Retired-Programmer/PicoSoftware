@@ -15,7 +15,7 @@
  */
 
 //
-// Logic Analyser Probe - testing entry point
+// Logic Analyser Probe - testing 
 //
 
 #include <stdio.h>
@@ -26,16 +26,22 @@
 #include "test_digitalsampling.h"
 #include "test_square_wave_generator.h"
 #include "test_pio_program.h"
+#include "test_gpio_probe_event.h"
 
 int main() {
     stdio_init_all();
     ptest_init();
+    //
     // define all tests
+    //
     test_pio_program_init();
     test_square_wave_generator_init();
     test_probe_controls_init();
     test_digitalsampling_init();
+    test_gpio_probe_event_init();
+    //
     // run the tests
+    //
     puts("\nTESTING STARTING ...\n");
     if (test_if_selection_mode()){
         while (true) {

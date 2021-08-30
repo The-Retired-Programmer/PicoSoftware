@@ -24,9 +24,10 @@ pico_enable_stdio_usb(app 1)
 
 target_sources(app PRIVATE src/main.c src/logic_analyser.c src/logic_probe.c
      src/probe_controls.c src/digitalsampling.c src/run_length_encoder.c
-     src/pio_digitalsampling.c src/dma_digitalsampling.c src/pio_program.c)
+     src/pio_digitalsampling.c src/dma_digitalsampling.c src/pio_program.c
+     src/gpio_probe_event.c )
 
-target_link_libraries(app pico_stdlib hardware_pio hardware_dma)
+target_link_libraries(app pico_stdlib hardware_pio hardware_dma hardware_gpio )
 
 pico_add_extra_outputs(app)
 
@@ -44,8 +45,9 @@ target_sources(tests PRIVATE test/main.c test/ptest.c
     test/test_digitalsampling.c src/digitalsampling.c src/run_length_encoder.c
         src/pio_digitalsampling.c src/dma_digitalsampling.c
     test/test_pio_program.c src/pio_program.c
-    test/test_square_wave_generator.c src/square_wave_generator.c)
+    test/test_square_wave_generator.c src/square_wave_generator.c
+    test/test_gpio_probe_event.c src/gpio_probe_event.c)
 
-target_link_libraries(tests pico_stdlib hardware_pio hardware_dma)
+target_link_libraries(tests pico_stdlib hardware_pio hardware_dma hardware_gpio )
 
 pico_add_extra_outputs(tests)
