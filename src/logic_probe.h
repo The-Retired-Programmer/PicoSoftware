@@ -24,4 +24,5 @@ void probe_ping();
 void probe_getstate();
 void probe_go(char* cmdbuffer);
 void probe_stop();
+bool is_probe_stop_complete();
 void probe_getsample();

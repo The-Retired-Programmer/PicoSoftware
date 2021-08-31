@@ -70,15 +70,22 @@ void probe_stop() {
         printf("N Bad state - expecting STATE_SAMPLING(1) - was %i\n", probecontrols.state);
         return;
     }
-    // needs to do stop action ; let the real stop change status
-    //  *********for debug purposes - do the state change here *******
-    probecontrols.state = STATE_SAMPLING_DONE; 
+    // need to call the DMA to stop
+    probecontrols.state = STATE_STOPPING_SAMPLING;
     puts("Y");
+}
+
+bool is_probe_stop_complete() {
+    if (probecontrols.state == STATE_STOPPING_SAMPLING && is_digitalsampling_finished()) {
+        probecontrols.state = STATE_SAMPLING_DONE;
+        return true;
+    }
+    return false;
 }
 
 void probe_getsample() {
     if (probecontrols.state != STATE_SAMPLING_DONE) {
-        printf("N Bad state - expecting STATE_SAMPLING_DONE(2) - was %i\n", probecontrols.state);
+        printf("N Bad state - expecting STATE_SAMPLING_DONE(3) - was %i\n", probecontrols.state);
         return;
     }
     create_RLE_encoded_sample(&probecontrols, getsamplebuffers(), puts);

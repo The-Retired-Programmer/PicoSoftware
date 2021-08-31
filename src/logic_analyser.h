@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-#include "probe_controls.h"
-
 void logic_analyser_init();
 
-void logic_analyser_handle_commands();
+void logic_analyser_controller();
+
+void logic_analyser_teardown();

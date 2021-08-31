@@ -21,6 +21,8 @@
 
 char* digitalsampling_start(struct probe_controls* probecontrols);
 
+bool is_digitalsampling_finished();
+
 struct sample_buffers {
     uint number_of_buffers;
     uint32_t buffer_size_words;

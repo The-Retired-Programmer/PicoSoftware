@@ -17,3 +17,5 @@
 #include "probe_controls.h"
 
 char* setuptransferbuffers(struct probe_controls* controls);
+
+void dma_done();

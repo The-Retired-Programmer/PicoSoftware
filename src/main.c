@@ -22,5 +22,6 @@
 
 int main() {
     logic_analyser_init();
-    logic_analyser_handle_commands();
+    logic_analyser_controller();
+    logic_analyser_teardown();
 }

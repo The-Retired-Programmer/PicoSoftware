@@ -14,28 +14,6 @@
  * limitations under the License.
  */
 
-//
-// Logic Analyser Probe - top level initialisation and command UI
-//
+bool linebuilder();
 
-#include <stdlib.h>
-#include "pico/stdlib.h"
-#include "logic_probe.h"
-#include "user_commands.h"
-#include "logic_probe.h"
-
-void logic_analyser_init() {
-    stdio_init_all();
-    probe_init();
-}
-
-void logic_analyser_controller() {
-    user_commands_controller_init();
-    while (true) {
-        user_commands_controller();
-        is_probe_stop_complete();
-    }
-}
-
-void logic_analyser_teardown() {
-}
+void action_command();

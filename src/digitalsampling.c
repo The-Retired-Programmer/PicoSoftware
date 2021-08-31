@@ -15,8 +15,12 @@
  */
 
 //
-// Digital Sampling - using PIO for sampling and DMA to transfer data into
-//   a circular buffer.
+// Digital Sampling
+//
+//  using PIO for sampling and DMA to transfer data into
+//  a circular buffer.
+//
+//  listening for a particular event
 //
 
 #include <stdlib.h>
@@ -29,8 +33,12 @@
 #include "digitalsampling_internal.h"
 #include "pio_digitalsampling.h"
 #include "dma_digitalsampling.h"
+#include "gpio_probe_event.h"
+
+bool dma_done_flag;
 
 char* digitalsampling_start(struct probe_controls* controls) {
+    dma_done_flag = false;
     char* returned;
     returned = setuptransferbuffers(controls);
     if (returned != NULL) {
@@ -41,9 +49,21 @@ char* digitalsampling_start(struct probe_controls* controls) {
     if (returned != NULL) {
         return returned;
     }
+    dma_on_completed(dma_done);
+    gpio_probe_event_init(controls);
+    // and start everything running
+    gpio_probe_event_start();
     piodigitalsampling_start();
     dma_start();
     return NULL;
+}
+
+void dma_done() {
+    dma_done_flag = true;
+}
+
+bool is_digitalsampling_finished() {
+    return dma_done_flag;
 }
 
 // 
