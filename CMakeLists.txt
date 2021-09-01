@@ -47,7 +47,7 @@ target_sources(tests PRIVATE test/main.c test/ptest.c
     test/test_pio_program.c src/pio_program.c
     test/test_square_wave_generator.c src/square_wave_generator.c
     test/test_gpio_probe_event.c src/gpio_probe_event.c
-     src/user_commands.c)
+    test/integration_test.c src/logic_analyser.c src/logic_probe.c src/user_commands.c)
 
 target_link_libraries(tests pico_stdlib hardware_pio hardware_dma hardware_gpio )
 

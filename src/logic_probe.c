@@ -78,9 +78,8 @@ void probe_stop() {
 bool is_probe_stop_complete() {
     if (probecontrols.state == STATE_STOPPING_SAMPLING && is_digitalsampling_finished()) {
         probecontrols.state = STATE_SAMPLING_DONE;
-        return true;
     }
-    return false;
+    return probecontrols.state == STATE_SAMPLING_DONE;
 }
 
 void probe_getsample() {
@@ -91,4 +90,10 @@ void probe_getsample() {
     create_RLE_encoded_sample(&probecontrols, getsamplebuffers(), puts);
     puts("Y");
     probecontrols.state = STATE_IDLE;
+}
+
+// for testing
+
+enum probestate getprobestate() {
+    return probecontrols.state;
 }

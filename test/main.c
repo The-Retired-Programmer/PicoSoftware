@@ -27,6 +27,7 @@
 #include "test_square_wave_generator.h"
 #include "test_pio_program.h"
 #include "test_gpio_probe_event.h"
+#include "integration_test.h"
 
 int main() {
     stdio_init_all();
@@ -39,6 +40,7 @@ int main() {
     test_probe_controls_init();
     test_digitalsampling_init();
     test_gpio_probe_event_init();
+    integration_test_init();
     //
     // run the tests
     //

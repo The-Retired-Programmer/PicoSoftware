@@ -34,13 +34,14 @@ void user_commands_controller_init() {
 
 void user_commands_controller() {
     if (linebuilder()) {
-        action_command();
+        action_command(linebuffer);
+        user_commands_controller_init();
     }
 }
 
-void action_command() {
-    if (strchr(linebuffer,'!') == NULL) {
-        switch (linebuffer[0]) {
+void action_command(char *line) {
+    if (strchr(line,'!') == NULL) {
+        switch (line[0]) {
         case 'p': 
             probe_ping();
             break;
@@ -48,7 +49,7 @@ void action_command() {
             probe_getstate();
             break;
         case 'g': 
-            probe_go(linebuffer);
+            probe_go(line);
             break;
         case 's': 
             probe_stop();
@@ -57,10 +58,9 @@ void action_command() {
             probe_getsample();
             break;
         default: // unknown command
-            printf("N Unknown command %s\n",linebuffer);
+            printf("N Unknown command %s\n",line);
         }
     }
-    user_commands_controller_init();
 }
 
 bool linebuilder() {

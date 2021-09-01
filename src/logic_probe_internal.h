@@ -14,6 +14,12 @@
  * limitations under the License.
  */
 
-bool linebuilder();
+//
+// LOGIC ANALYSER PROBE - using Pico as Probe
+//
 
-void action_command(char *line);
+#include "probe_controls.h"
+
+// for testing
+
+enum probestate getprobestate();

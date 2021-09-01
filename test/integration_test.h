@@ -14,6 +14,16 @@
  * limitations under the License.
  */
 
-bool linebuilder();
+//
+// integration test - logic analyser
+//
+void integration_test_init();
 
-void action_command(char *line);
+// internal
+
+void integration_test();
+
+void itest_controller();
+
+void it_commandaction(char* checkname, char *line, enum probestate expectedstate);
+
