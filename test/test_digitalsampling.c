@@ -23,6 +23,7 @@
 #include "pico/stdlib.h"
 #include "hardware/clocks.h"
 #include "hardware/gpio.h"
+#include "hardware/timer.h"
 #include "ptest.h"
 #include "../src/square_wave_generator.h"
 #include "../src/digitalsampling.h"
@@ -39,6 +40,7 @@
 void test_digitalsampling_init() {
     add_test("run length encoder", "rle", test_digitalsampling_rle_internals);
     add_test("dma digitalsampling", "dma", test_digitalsampling_dma_internals);
+    add_test("dma stop", "dma_stop", test_digitalsampling_dma_stop);
     add_test("pio digitalsampling","pio", test_digitalsampling_pio_internals);
 }
 
@@ -97,25 +99,22 @@ int rlelinereceiver9chars(const char *line) {
     pass_if_equal_string("small line receiver - 9 alternating", "HLHLHLHLH", get_rle_linebuffer());
     return 0;
 }
-
-const volatile uint32_t readdata = 0xcccccccc;
-uint dma_buffer_fills = 0 ;
+#define readdatainit  0xcccc0000
+volatile uint32_t readdata = readdatainit;
+volatile uint dma_buffer_fills = 0 ;
 volatile bool dma_completed = false;
+volatile uint dma_completed_count = 0;
 
 //
-//   you need approx 4micro secs per buffer fill to be able to count the individual
-//   irq0 (control dma) done interrupts - so running at fully bus speed and system
-//   clock of 125Mhz and 4 capture buffers, 64K samples is minimum (equates to
-//   individual buffer size of 500 words. 
-//
-//   max sample size (1 pin sample) is approx 1,920,000 bits - will obviously reduce as
-//   code base increases (a factor of 30 over sample test minimum).
 //
 void test_digitalsampling_dma_internals() {
     dma_buffer_fills = 0;
+    readdata = readdatainit;
     dma_completed = false;
+    dma_completed_count = 0;
     struct probe_controls controls;
-    char* res = setup_controls(&controls,"g-16-1-19200-0-16-0-0-16-0-1-64000"); // will only use samplesize/ pin_width
+    // 1024 sample size means  8 words / buffer or ~ 40usecs per buffer
+    char* res = setup_controls(&controls,"g-16-1-19200-0-16-0-0-16-0-1-1024"); // will only use samplesize and pin_width
     if ( res != NULL ) {
         fail(res);
         return;
@@ -125,7 +124,12 @@ void test_digitalsampling_dma_internals() {
         fail(res);
         return;
     }
-    res = setupDMAcontrollers(&controls, &readdata, 0x3f); // dma run at system clock speed
+    struct sample_buffers initsamplebuffers = getsamplebuffers();
+    for (uint i = 0; i < initsamplebuffers.number_of_buffers; i++) {
+        printf("sample buffer %i at %x\n",i, initsamplebuffers.buffers[i]); 
+    };
+    dma_set_timer(0, 1, 256);
+    res = setupDMAcontrollers(&controls, &readdata, 0x3b); //
     if ( res != NULL ) {
         fail(res);
         return;
@@ -135,15 +139,67 @@ void test_digitalsampling_dma_internals() {
     dma_after_every_control(dma_buffer_callback);
     dma_on_completed(dma_transfer_finished_callback);
     dma_start();
-    uint32_t cyclecount = 0;
-    while (!dma_completed) cyclecount++;
+    while (!dma_completed);
     pass("transfer completed signalled");
     struct sample_buffers samplebuffers = getsamplebuffers();
     for (uint i = 0; i < samplebuffers.number_of_buffers; i++) {
-        pass_if_equal_uint32("buffer check", readdata, samplebuffers.buffers[i][0]);
+        printf("sample buffer %i at %x\n",i, samplebuffers.buffers[i]); 
+    };
+    for (uint i = 0; i < samplebuffers.number_of_buffers; i++) {
+        pass_if_equal_uint32x("start buffer check", readdatainit+i, samplebuffers.buffers[i][0]);
+        pass_if_equal_uint32x("end buffer check", readdatainit+i, samplebuffers.buffers[i][7]);
     };
     pass_if_equal_uint("control count", 5, dma_buffer_fills);
+}
 
+void test_digitalsampling_dma_stop() {
+    dma_buffer_fills = 0;
+    readdata = readdatainit;
+    dma_completed = false;
+    struct probe_controls controls;
+    // 1024 sample size =>  8 words / buffer
+    char* res = setup_controls(&controls,"g-16-1-19200-0-16-0-0-16-0-0-1024"); // will only use samplesize and pin_width
+    if ( res != NULL ) {
+        fail(res);
+        return;
+    }
+    res = setuptransferbuffers(&controls);
+    if ( res != NULL ) {
+        fail(res);
+        return;
+    }
+    struct sample_buffers initsamplebuffers = getsamplebuffers();
+    for (uint i = 0; i < initsamplebuffers.number_of_buffers; i++) {
+        printf("sample buffer %i at %x\n",i, initsamplebuffers.buffers[i]); 
+    };
+    dma_set_timer(0, 1, 256);
+    res = setupDMAcontrollers(&controls, &readdata, 0x3b);
+    if ( res != NULL ) {
+        fail(res);
+        return;
+    }
+    // don't award dma bus priority else it grabs all cycles (even from irq callbacks)
+    //dma_to_have_bus_priority();
+    dma_after_every_control(dma_buffer_callback);
+    dma_on_completed(dma_transfer_finished_callback);
+    dma_start();
+    // a delay to allow the buffers to rotate
+    busy_wait_us_32(13*13);
+    trace('s');
+    dma_stop();
+    trace('w');
+    while (!dma_completed); // wait for completion
+    trace('c');
+    pass("transfer completed signalled");
+    struct sample_buffers samplebuffers = getsamplebuffers();
+    for (uint i = 0; i < samplebuffers.number_of_buffers; i++) {
+        printf("sample buffer %i at %x\n",i, samplebuffers.buffers[i]); 
+    };
+    for (uint i = 0; i < samplebuffers.number_of_buffers; i++) {
+        pass_if_equal_uint32x("start buffer check", readdatainit+i, samplebuffers.buffers[i][0]);
+        pass_if_equal_uint32x("end buffer check", readdatainit+i, samplebuffers.buffers[i][7]);
+    };
+    pass_if_greaterthan_uint("control count", 5, dma_buffer_fills);
 }
 
 char* setup_controls(struct probe_controls* controls, char * cmd) {
@@ -152,10 +208,13 @@ char* setup_controls(struct probe_controls* controls, char * cmd) {
 }
 
 void dma_buffer_callback() {
+    readdata+=1;
+    trace('0');
     dma_buffer_fills++;
 }
 
 void dma_transfer_finished_callback() {
+     trace('1');
     dma_completed = true;
 }
 

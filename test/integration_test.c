@@ -21,6 +21,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "pico/stdlib.h"
+#include "hardware/timer.h"
 #include "ptest.h"
 #include "../src/logic_probe.h"
 #include "../src/logic_probe_internal.h"
@@ -28,24 +29,39 @@
 #include "../src/probe_controls.h"
 #include "integration_test.h"
 
-void integration_test_init() {
-    add_test("integration test", "it", integration_test);
+void integration_test1() {
+    integration_test("g-16-1-19200-1-16-2-0-16-0-1-3200", 170000);
 }
 
-void integration_test() {
+void integration_test2() {
+    integration_test("g-16-1-19200-1-16-2-0-16-0-0-3200", 1000);
+}
+
+void integration_test3() {
+    integration_test("g-16-1-19200-1-16-2-0-16-0-0-3200", 250000);
+}
+
+void integration_test_init() {
+    add_test("integration test - stop on buffer full", "it", integration_test1);
+    add_test("integration test - manual stop - short wait", "it", integration_test2);
+    add_test("integration test - manual stop - long wait", "it", integration_test3);
+}
+
+void integration_test(char *gcommand, uint32_t waitusec) {
     probe_init(); // ~= logic_analysis_init()
-    itest_controller(); // mock for logic_analyser_controller();
+    itest_controller(gcommand, waitusec ); // mock for logic_analyser_controller();
     //  == logic_analyser_teardown();
 }
 
-char *presamplecommands[] = { "p", "?", "g-16-1-19200-1-16-2-0-16-0-1-3200", "?", NULL};
+char *presamplecommands[] = { "p", "?", "g-command", "?", NULL};
 enum probestate presamplestates[] = {STATE_IDLE, STATE_IDLE, STATE_SAMPLING, STATE_SAMPLING};
 char *presamplechecknames[] ={"after p", "after p/?", "after g", "after g/?"};
 char *postsamplecommands[] = {"?", "d", "?" , NULL};
 enum probestate postsamplestates[] = {STATE_SAMPLING_DONE, STATE_IDLE, STATE_IDLE};
 char *postsamplechecknames[] = { "after s/?", "after d", "after d/?"};
 
-void itest_controller() { // mock for logic_analyser_controller()
+void itest_controller(char *gcommand, uint32_t waitusec) { // mock for logic_analyser_controller()
+    presamplecommands[2] = gcommand;
     char **nextcommand = presamplecommands;
     enum probestate *nextprobestate = presamplestates;
     char **nextcheckname = presamplechecknames;
@@ -56,8 +72,7 @@ void itest_controller() { // mock for logic_analyser_controller()
     //
     // need to wait for a period
     //
-    uint32_t countdown = 125000000;
-    while(countdown--);
+    busy_wait_us_32(waitusec);
     action_command("s");
     pass_if_equal_uint("after s", STATE_STOPPING_SAMPLING,  getprobestate());
     while (!is_probe_stop_complete());

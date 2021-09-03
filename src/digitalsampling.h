@@ -21,6 +21,8 @@
 
 char* digitalsampling_start(struct probe_controls* probecontrols);
 
+void digitalsampling_stop();
+
 bool is_digitalsampling_finished();
 
 struct sample_buffers {

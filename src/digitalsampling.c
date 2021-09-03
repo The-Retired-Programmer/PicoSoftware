@@ -57,11 +57,17 @@ char* digitalsampling_start(struct probe_controls* controls) {
     dma_start();
     return NULL;
 }
+// request the stop (will happen at next individual buffer full
+void digitalsampling_stop() {
+    dma_stop();
+}
 
+//  stop has occurred
 void dma_done() {
     dma_done_flag = true;
 }
 
+// test if stop has occurred
 bool is_digitalsampling_finished() {
     return dma_done_flag;
 }

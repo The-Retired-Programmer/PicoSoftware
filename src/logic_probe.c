@@ -40,7 +40,6 @@ void probe_ping() {
     puts("Y");
 }
 
-
 void probe_getstate() {
     printf("%i\n", probecontrols.state);
     puts("Y");
@@ -70,7 +69,7 @@ void probe_stop() {
         printf("N Bad state - expecting STATE_SAMPLING(1) - was %i\n", probecontrols.state);
         return;
     }
-    // need to call the DMA to stop
+    digitalsampling_stop();
     probecontrols.state = STATE_STOPPING_SAMPLING;
     puts("Y");
 }

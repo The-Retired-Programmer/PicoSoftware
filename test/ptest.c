@@ -156,7 +156,9 @@ void execute_test(int selectionid) {
     current_tcb->passcount = 0;
     current_tcb->failcount = 0;
     printf("RUNNING (%i) %s\n",selectionid, current_tcb->name);
+    trace_init();
     current_tcb->testfunction();
+    trace_print();
 }
 
 void summary_of_test() {
@@ -167,6 +169,63 @@ void summary_of_test() {
     }
     printf("Checks: passed: %i, failed: %i;\n",
         tcbs[singletestnumber-1].passcount, tcbs[singletestnumber-1].failcount);
+}
+
+// ----------------------------------------------------------------------------
+//
+//  trace buffer for use by tests
+//
+// ----------------------------------------------------------------------------
+
+#define TRACEBUFFERSIZE 1000
+#define PRINTTRACELINESIZE 100
+char tracebuffer[TRACEBUFFERSIZE];
+uint insertpoint;
+bool rotated;
+
+void trace_init() {
+    for (uint i = 0; i < TRACEBUFFERSIZE; i++) {
+        tracebuffer[i] = ' ';
+    }
+    insertpoint = 0;
+    rotated = false;
+}
+
+void trace(char tracechar) {
+    if (insertpoint >= TRACEBUFFERSIZE) {
+        insertpoint = 0;
+        rotated = true;
+    }
+    tracebuffer[insertpoint++] = tracechar;
+}
+
+void trace_print() {
+    if (!rotated && insertpoint==0) return;
+    uint startpoint = rotated ? insertpoint+1 : 0;
+    uint size = rotated ? TRACEBUFFERSIZE : insertpoint;
+    puts("Trace:");
+    if (rotated) puts(".....");
+    while (size > 0) {
+        uint printsize = size < PRINTTRACELINESIZE? size: PRINTTRACELINESIZE;
+        if (startpoint + printsize > TRACEBUFFERSIZE) {
+            uint segsize = TRACEBUFFERSIZE - startpoint;
+            trace_print_segment(startpoint, segsize);
+            startpoint = 0;
+            segsize = printsize - segsize;
+            trace_print_segment(startpoint, segsize);
+        } else {
+            trace_print_segment(startpoint, printsize);
+        }
+        putchar('\n');
+        size -= printsize;
+        startpoint += printsize;
+    }
+}
+
+void trace_print_segment(uint frompoint, uint size) {
+    for (uint i = frompoint; i < frompoint+ size; i++) {
+        putchar(tracebuffer[i]);
+    }
 }
 
 // ----------------------------------------------------------------------------
@@ -222,6 +281,26 @@ void pass_if_equal_uint32(char* id, uint32_t expected, uint32_t value) {
         current_tcb->failcount++;
         printf("Test %s - Check %s failed\n", current_tcb->name, id);
         printf("    expected %i, was %i\n", expected, value);
+    }
+}
+
+void pass_if_equal_uint32x(char* id, uint32_t expected, uint32_t value) {
+    if (expected == value) {
+        current_tcb->passcount++;
+    } else {
+        current_tcb->failcount++;
+        printf("Test %s - Check %s failed\n", current_tcb->name, id);
+        printf("    expected %x, was %x\n", expected, value);
+    }
+}
+
+void pass_if_greaterthan_uint(char* id, uint expected, uint value) {
+    if (expected < value) {
+        current_tcb->passcount++;
+    } else {
+        current_tcb->failcount++;
+        printf("Test %s - Check %s failed\n", current_tcb->name, id);
+        printf("    expected %x, was %x\n", expected, value);
     }
 }
 

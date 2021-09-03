@@ -55,9 +55,11 @@
 //
 static uint32_t *commandlistbase[4*2];
 static uint32_t **commandlist;
+static uint number_of_buffers;
 
 char* setupDMAcontrollers(struct probe_controls* controls, const volatile uint32_t *readaddress, uint dreq) {
     struct sample_buffers samplebuffers = getsamplebuffers();
+    number_of_buffers = samplebuffers.number_of_buffers;
     //
     // command DMA buffer set
     //
@@ -66,7 +68,7 @@ char* setupDMAcontrollers(struct probe_controls* controls, const volatile uint32
     } else {
         uint  lowbits = 1;
         commandlist = commandlistbase;
-        for (int i = 0 ; i < samplebuffers.number_of_buffers ; i++) {
+        for (int i = 0 ; i < number_of_buffers ; i++) {
             lowbits = ((uint32_t) commandlist)&RINGBASEMASK;
             if (lowbits == 0) {
                 break;
@@ -79,7 +81,7 @@ char* setupDMAcontrollers(struct probe_controls* controls, const volatile uint32
     }
     // commandlist now points at the start of the command buffer
     uint32_t **commandlistinsert = commandlist;
-    for (int i = 0; i< samplebuffers.number_of_buffers; i++) {
+    for (int i = 0; i< number_of_buffers; i++) {
         *commandlistinsert++ = samplebuffers.buffers[i];
     }
     if (controls->sampleendmode == BUFFER_FULL) {
@@ -92,7 +94,7 @@ char* setupDMAcontrollers(struct probe_controls* controls, const volatile uint32
     channel_config_set_read_increment(&cc, true);
     channel_config_set_write_increment(&cc, false);
     if (controls->sampleendmode != BUFFER_FULL) {
-        channel_config_set_ring(&cc, false, BUFFERSPOWEROF2);
+        channel_config_set_ring(&cc, false, BUFFERSPOWEROF2 + 2 );
     }
     dma_channel_configure(CONTROL_DMA_CHANNEL, &cc,
         &dma_hw->ch[TRANSFER_DMA_CHANNEL].al2_write_addr_trig, // Destination pointer
@@ -151,5 +153,13 @@ void dma_to_have_bus_priority() {
 
 void dma_start() {
     dma_channel_start(CONTROL_DMA_CHANNEL);
+}
+
+// command generated stop - force stop after current buffer is full
+void dma_stop() {
+    uint32_t **commandlistinsert = commandlist;
+    for (int i = 0; i< number_of_buffers; i++) {
+        *commandlistinsert++ = NULL;
+    }    
 }
  
