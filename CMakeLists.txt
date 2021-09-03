@@ -22,10 +22,10 @@ pico_set_program_version(app "0.4")
 pico_enable_stdio_uart(app 1)
 pico_enable_stdio_usb(app 1)
 
-target_sources(app PRIVATE src/main.c src/logic_analyser.c src/logic_probe.c
+target_sources(app PRIVATE src/main.c src/logic_probe.c
      src/probe_controls.c src/digitalsampling.c src/run_length_encoder.c
      src/pio_digitalsampling.c src/dma_digitalsampling.c src/pio_program.c
-     src/gpio_probe_event.c src/user_commands.c)
+     src/gpio_probe_event.c src/frontend_commands.c)
 
 target_link_libraries(app pico_stdlib hardware_pio hardware_dma hardware_gpio )
 
@@ -47,7 +47,7 @@ target_sources(tests PRIVATE test/main.c test/ptest.c
     test/test_pio_program.c src/pio_program.c
     test/test_square_wave_generator.c src/square_wave_generator.c
     test/test_gpio_probe_event.c src/gpio_probe_event.c
-    test/integration_test.c src/logic_analyser.c src/logic_probe.c src/user_commands.c)
+    test/integration_test.c src/logic_probe.c src/frontend_commands.c)
 
 target_link_libraries(tests pico_stdlib hardware_pio hardware_dma hardware_gpio )
 

@@ -15,7 +15,7 @@
  */
 
 //
-// Logic Analyser -  command UI
+// Logic Analyser -  frontend command handling
 //
 
 #include <stdio.h>
@@ -23,19 +23,19 @@
 #include <stdlib.h>
 #include "pico/stdlib.h"
 #include "logic_probe.h"
-#include "user_commands_internal.h"
+#include "frontend_commands_internal.h"
 
 char linebuffer[200];
 char *insertchar;
 
-void user_commands_controller_init() {
+void frontend_commands_controller_init() {
     insertchar = linebuffer;
 }
 
-void user_commands_controller() {
+void frontend_commands_controller() {
     if (linebuilder()) {
         action_command(linebuffer);
-        user_commands_controller_init();
+        frontend_commands_controller_init();
     }
 }
 
@@ -48,7 +48,8 @@ void action_command(char *line) {
         case '?': 
             probe_getstate();
             break;
-        case 'g': 
+        case 'g':
+            probe_pass_init();
             probe_go(line);
             break;
         case 's': 
@@ -56,6 +57,7 @@ void action_command(char *line) {
             break;
         case 'd':
             probe_getsample();
+            probe_pass_teardown();
             break;
         default: // unknown command
             printf("N Unknown command %s\n",line);

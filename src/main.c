@@ -15,13 +15,20 @@
  */
 
 //
-// Logic Analyser Probe - program entry point
+// Logic Analyser Probe
 //
 
-#include "logic_analyser.h"
+#include <stdlib.h>
+#include "pico/stdlib.h"
+#include "logic_probe.h"
+#include "frontend_commands.h"
 
 int main() {
-    logic_analyser_init();
-    logic_analyser_controller();
-    logic_analyser_teardown();
+    stdio_init_all();
+    probe_init();
+    frontend_commands_controller_init();
+    while (true) {
+        frontend_commands_controller();
+        is_probe_stop_complete();
+    }
 }

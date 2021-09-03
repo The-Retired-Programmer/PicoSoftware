@@ -25,7 +25,7 @@
 #include "ptest.h"
 #include "../src/logic_probe.h"
 #include "../src/logic_probe_internal.h"
-#include "../src/user_commands_internal.h"
+#include "../src/frontend_commands_internal.h"
 #include "../src/probe_controls.h"
 #include "integration_test.h"
 
@@ -48,9 +48,8 @@ void integration_test_init() {
 }
 
 void integration_test(char *gcommand, uint32_t waitusec) {
-    probe_init(); // ~= logic_analysis_init()
-    itest_controller(gcommand, waitusec ); // mock for logic_analyser_controller();
-    //  == logic_analyser_teardown();
+    probe_init(); // as per src/main.c
+    itest_controller(gcommand, waitusec ); // mock for frontend_commands_controller
 }
 
 char *presamplecommands[] = { "p", "?", "g-command", "?", NULL};

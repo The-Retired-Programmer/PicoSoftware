@@ -21,6 +21,7 @@
 #include "pico/stdlib.h"
 #include "hardware/gpio.h"
 #include "ptest.h"
+#include "../src/logic_probe.h"
 
 #define MAXTESTS 20 
 
@@ -156,9 +157,11 @@ void execute_test(int selectionid) {
     current_tcb->passcount = 0;
     current_tcb->failcount = 0;
     printf("RUNNING (%i) %s\n",selectionid, current_tcb->name);
+    probe_pass_init();
     trace_init();
     current_tcb->testfunction();
     trace_print();
+    probe_pass_teardown();
 }
 
 void summary_of_test() {

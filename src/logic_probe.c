@@ -24,15 +24,17 @@
 #include "probe_controls.h"
 
 #include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include "pico/stdlib.h"
-#include "hardware/gpio.h"
 
 struct probe_controls probecontrols;
 
 void probe_init() {
     probecontrols.state = STATE_IDLE;
+}
+
+void probe_pass_init() {
+}
+
+void probe_pass_teardown() {
 }
 
 void probe_ping() {
