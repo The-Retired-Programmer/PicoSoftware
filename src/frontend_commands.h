@@ -17,3 +17,9 @@
 void frontend_commands_controller_init();
 
 void frontend_commands_controller();
+
+#ifdef TESTINGBUILD
+
+void action_command(char *line);
+
+#endif

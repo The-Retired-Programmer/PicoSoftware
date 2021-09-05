@@ -20,7 +20,6 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include "pico/stdlib.h"
 #include "ptest.h"
 #include "test_probe_controls.h"
 #include "test_digitalsampling.h"
@@ -44,24 +43,5 @@ int main() {
     //
     // run the tests
     //
-    puts("\nTESTING STARTING ...\n");
-    if (test_if_selection_mode()){
-        while (true) {
-            int selectedtest = getselectionid();
-            if (selectedtest == 0) break;
-            if (selectedtest == out_of_range) {
-                continue;
-            } else if (selectedtest > 0) {
-                execute_test(selectedtest);
-                summary_of_test();
-            } else {
-                execute_tests();
-                summary_of_tests();
-            }
-        }
-    } else {
-        execute_tests();
-        summary_of_tests();
-    }
-    puts("\n ...TESTING COMPLETED\n");
+    ptest_execute();
 }

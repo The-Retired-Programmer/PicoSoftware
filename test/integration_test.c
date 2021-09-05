@@ -24,42 +24,24 @@
 #include "hardware/timer.h"
 #include "ptest.h"
 #include "../src/logic_probe.h"
-#include "../src/logic_probe_internal.h"
-#include "../src/frontend_commands_internal.h"
 #include "../src/probe_controls.h"
-#include "integration_test.h"
+#include "../src/frontend_commands.h"
 
-void integration_test1() {
-    integration_test("g-16-1-19200-1-16-2-0-16-0-1-3200", 170000);
+static void it_commandaction(char* checkname, char *line, enum probestate expectedstate) {
+    char cmdbuffer[255];
+    action_command(strcpy(cmdbuffer,line));
+    pass_if_equal_uint(checkname, expectedstate,  getprobestate());
+    is_probe_stop_complete();
 }
 
-void integration_test2() {
-    integration_test("g-16-1-19200-1-16-2-0-16-0-0-3200", 1000);
-}
+static char *presamplecommands[] = { "p", "?", "g-command", "?", NULL};
+static enum probestate presamplestates[] = {STATE_IDLE, STATE_IDLE, STATE_SAMPLING, STATE_SAMPLING};
+static char *presamplechecknames[] ={"after p", "after p/?", "after g", "after g/?"};
+static char *postsamplecommands[] = {"?", "d", "?" , NULL};
+static enum probestate postsamplestates[] = {STATE_SAMPLING_DONE, STATE_IDLE, STATE_IDLE};
+static char *postsamplechecknames[] = { "after s/?", "after d", "after d/?"};
 
-void integration_test3() {
-    integration_test("g-16-1-19200-1-16-2-0-16-0-0-3200", 250000);
-}
-
-void integration_test_init() {
-    add_test("integration test - stop on buffer full", "it", integration_test1);
-    add_test("integration test - manual stop - short wait", "it", integration_test2);
-    add_test("integration test - manual stop - long wait", "it", integration_test3);
-}
-
-void integration_test(char *gcommand, uint32_t waitusec) {
-    probe_init(); // as per src/main.c
-    itest_controller(gcommand, waitusec ); // mock for frontend_commands_controller
-}
-
-char *presamplecommands[] = { "p", "?", "g-command", "?", NULL};
-enum probestate presamplestates[] = {STATE_IDLE, STATE_IDLE, STATE_SAMPLING, STATE_SAMPLING};
-char *presamplechecknames[] ={"after p", "after p/?", "after g", "after g/?"};
-char *postsamplecommands[] = {"?", "d", "?" , NULL};
-enum probestate postsamplestates[] = {STATE_SAMPLING_DONE, STATE_IDLE, STATE_IDLE};
-char *postsamplechecknames[] = { "after s/?", "after d", "after d/?"};
-
-void itest_controller(char *gcommand, uint32_t waitusec) { // mock for logic_analyser_controller()
+static void itest_controller(char *gcommand, uint32_t waitusec) { // mock for logic_analyser_controller()
     presamplecommands[2] = gcommand;
     char **nextcommand = presamplecommands;
     enum probestate *nextprobestate = presamplestates;
@@ -83,9 +65,31 @@ void itest_controller(char *gcommand, uint32_t waitusec) { // mock for logic_ana
     }
 }
 
-void it_commandaction(char* checkname, char *line, enum probestate expectedstate) {
-    char cmdbuffer[255];
-    action_command(strcpy(cmdbuffer,line));
-    pass_if_equal_uint(checkname, expectedstate,  getprobestate());
-    is_probe_stop_complete();
+static void integration_test(char *gcommand, uint32_t waitusec) {
+    probe_init(); // as per src/main.c
+    itest_controller(gcommand, waitusec ); // mock for frontend_commands_controller
+}
+
+static void integration_test1() {
+    integration_test("g-16-1-19200-1-16-2-0-16-0-1-3200", 170000);
+}
+
+static void integration_test2() {
+    integration_test("g-16-1-19200-1-16-2-0-16-0-0-3200", 1000);
+}
+
+static void integration_test3() {
+    integration_test("g-16-1-19200-1-16-2-0-16-0-0-3200", 250000);
+}
+
+// =============================================================================
+//
+// module API
+//
+// =============================================================================
+
+void integration_test_init() {
+    add_test("integration test - stop on buffer full", "it", integration_test1);
+    add_test("integration test - manual stop - short wait", "it", integration_test2);
+    add_test("integration test - manual stop - long wait", "it", integration_test3);
 }

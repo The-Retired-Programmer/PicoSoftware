@@ -25,9 +25,15 @@
 
 // no pass or fail - it needs a visual check on GPIO pins with a scope or leds
 
-void test_square_wave_generator() {
+static void test_square_wave_generator() {
     square_wave_generator(13,3,0.25);
 }
+
+// =============================================================================
+//
+// module API
+//
+// =============================================================================
 
 void test_square_wave_generator_init() {
     add_test("square_wave_generator", "sqwave", test_square_wave_generator);

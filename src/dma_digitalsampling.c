@@ -56,6 +56,24 @@
 static uint32_t *commandlistbase[4*2];
 static uint32_t **commandlist;
 static uint number_of_buffers;
+void (*on_dma_irq0)();
+void (*on_dma_irq1)();
+
+static void dma_irq0_handler() {
+    on_dma_irq0();
+    dma_channel_acknowledge_irq0(CONTROL_DMA_CHANNEL);
+}
+
+static void dma_irq1_handler() {
+    on_dma_irq1();
+    dma_channel_acknowledge_irq1(TRANSFER_DMA_CHANNEL);
+}
+
+// =============================================================================
+//
+// module API
+//
+// =============================================================================
 
 char* setupDMAcontrollers(struct probe_controls* controls, const volatile uint32_t *readaddress, uint dreq) {
     struct sample_buffers samplebuffers = getsamplebuffers();
@@ -120,19 +138,6 @@ char* setupDMAcontrollers(struct probe_controls* controls, const volatile uint32
     return NULL;
 }
 
-void (*on_dma_irq0)();
-void (*on_dma_irq1)();
-
-void dma_irq0_handler() {
-    on_dma_irq0();
-    dma_channel_acknowledge_irq0(CONTROL_DMA_CHANNEL);
-}
-
-void dma_irq1_handler() {
-    on_dma_irq1();
-    dma_channel_acknowledge_irq1(TRANSFER_DMA_CHANNEL);
-}
-
 void dma_after_every_control(void (*callback)()) {
     on_dma_irq0 = callback;
     dma_channel_set_irq0_enabled(CONTROL_DMA_CHANNEL,true);
@@ -155,7 +160,6 @@ void dma_start() {
     dma_channel_start(CONTROL_DMA_CHANNEL);
 }
 
-// command generated stop - force stop after current buffer is full
 void dma_stop() {
     uint32_t **commandlistinsert = commandlist;
     for (int i = 0; i< number_of_buffers; i++) {

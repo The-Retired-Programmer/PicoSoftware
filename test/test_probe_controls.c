@@ -23,9 +23,8 @@
 #include "pico/stdlib.h"
 #include "ptest.h"
 #include "../src/probe_controls.h"
-#include "../src/probe_controls_internal.h"
 
-void test_probe_controls() {
+static void test_probe_controls() {
     char cmdbuffer[255]; 
     char* cmd ="g-16-1-19200-1-16-0-0-16-0-1-320";
     struct probe_controls controls;
@@ -44,13 +43,19 @@ void test_probe_controls() {
     pass_if_equal_uint32("samplesize", 320, controls.samplesize);
 }
 
-void test_probe_pinbase() {
+static void test_probe_pinbase() {
     char* cmd ="16";
     struct probe_controls controls;
     bool res = parse_pinbase(&controls, cmd);
     pass_if_true_with_message("return", res, get_errormessage());
     pass_if_equal_uint("pinbase", 16, controls.pinbase);
 }
+
+// =============================================================================
+//
+// module API
+//
+// =============================================================================
 
 void test_probe_controls_init() {
     add_test("parse_control_parameters", "g-cmd", test_probe_controls);

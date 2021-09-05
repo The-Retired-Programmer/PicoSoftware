@@ -20,4 +20,8 @@ void piodigitalsampling_init(struct probe_controls* controls);
 
 void piodigitalsampling_start();
 
+#ifdef TESTINGBUILD
 
+uint32_t piodigitalsampling_read();
+
+#endif

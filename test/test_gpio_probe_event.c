@@ -26,9 +26,12 @@
 #include "test_gpio_probe_event.h"
 #include "../src/probe_controls.h"
 
-//enum trigger_on { TRIGGER_ON_LOW, TRIGGER_ON_HIGH, TRIGGER_ON_FALL, TRIGGER_ON_RISE};
+static char* setup_controls_for_gpio(struct probe_controls* controls, char * cmd) {
+    char cmdbuffer[255]; 
+    return parse_control_parameters(controls, strcpy(cmdbuffer,cmd));
+}
 
-void test_gpio_probe_event_trigger_on_fall() {
+static void test_gpio_probe_event_trigger_on_fall() {
     struct probe_controls controls;
     char* res = setup_controls_for_gpio(&controls,"g-16-1-19200-0-16-0-1-12-2-1-64000"); 
     if ( res != NULL ) {
@@ -45,7 +48,7 @@ void test_gpio_probe_event_trigger_on_fall() {
     pass_if_true_with_message("after trigger", has_event_triggered(), "event should have triggered");
 }
 
-void test_gpio_probe_event_trigger_on_rise() {
+static void test_gpio_probe_event_trigger_on_rise() {
     struct probe_controls controls;
     char* res = setup_controls_for_gpio(&controls,"g-16-1-19200-0-16-0-1-12-3-1-64000");
     if ( res != NULL ) {
@@ -62,7 +65,7 @@ void test_gpio_probe_event_trigger_on_rise() {
     pass_if_true_with_message("after trigger", has_event_triggered(), "event should have triggered");
 }
 
-void test_gpio_probe_event_trigger_on_low() {
+static void test_gpio_probe_event_trigger_on_low() {
     struct probe_controls controls;
     char* res = setup_controls_for_gpio(&controls,"g-16-1-19200-0-16-0-1-12-0-1-64000");
     if ( res != NULL ) {
@@ -77,7 +80,7 @@ void test_gpio_probe_event_trigger_on_low() {
     pass_if_true_with_message("is low", has_event_triggered(), "event should have triggered");
 }
 
-void test_gpio_probe_event_trigger_on_high() {
+static void test_gpio_probe_event_trigger_on_high() {
     struct probe_controls controls;
     char* res = setup_controls_for_gpio(&controls,"g-16-1-19200-0-16-0-1-12-1-1-64000");
     if ( res != NULL ) {
@@ -92,7 +95,7 @@ void test_gpio_probe_event_trigger_on_high() {
     pass_if_true_with_message("is high", has_event_triggered(), "event should have triggered");
 }
 
-void test_gpio_probe_event_notenabled() {
+static void test_gpio_probe_event_notenabled() {
     struct probe_controls controls;
     char* res = setup_controls_for_gpio(&controls,"g-16-1-19200-0-16-0-0-12-2-1-64000"); 
     if ( res != NULL ) {
@@ -109,10 +112,11 @@ void test_gpio_probe_event_notenabled() {
     pass_if_false_with_message("after trigger", has_event_triggered(), "event should not have triggered");
 }
 
-char* setup_controls_for_gpio(struct probe_controls* controls, char * cmd) {
-    char cmdbuffer[255]; 
-    return parse_control_parameters(controls, strcpy(cmdbuffer,cmd));
-}
+// =============================================================================
+//
+// module API
+//
+// =============================================================================
 
 void test_gpio_probe_event_init() {
     add_test("gpio_event_low", "gpiolow", test_gpio_probe_event_trigger_on_low);

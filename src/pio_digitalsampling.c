@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 // =========================================================================
 //
 //  LOGIC PROBE - Digital Sampling using PIO
@@ -36,6 +37,12 @@
 #include "hardware/pio.h"
 #include "pio_program.h"
 #include "probe_controls.h"
+
+// =============================================================================
+//
+// module API
+//
+// =============================================================================
 
 void piodigitalsampling_init(struct probe_controls* controls) {
     PIO pio = pio0;
@@ -89,8 +96,10 @@ void piodigitalsampling_start() {
     ppb_start();
 }
 
-// for testing only
+#ifdef TESTINGBUILD
 
 uint32_t piodigitalsampling_read() {
     return  pio_sm_get_blocking(pio0, 0);
 }
+
+#endif

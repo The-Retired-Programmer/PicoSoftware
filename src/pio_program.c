@@ -23,7 +23,6 @@
 #include "hardware/pio.h"
 #include "hardware/clocks.h"
 #include "pio_program.h"
-#include "pio_program_internal.h"
 
 #define MAX_PROGRAM_SIZE 32
 static uint16_t program_instructions[MAX_PROGRAM_SIZE];
@@ -40,6 +39,23 @@ static struct pio_program program = {
 static uint offset;
 static PIO pio;
 static uint sm;
+
+static void ppb_init(uint smnum) {
+    sm = smnum;
+    nextinstructioninsertpoint = program_instructions;
+    emptyinstructions = MAX_PROGRAM_SIZE;
+    wraptarget = -1;
+    wrap = -1;
+    program.instructions = program_instructions;
+    program.length = 0;
+    program.origin = -1;
+}
+
+// =============================================================================
+//
+// module API
+//
+// =============================================================================
 
 void ppb_init_pio0_sm(uint smnum) {
     pio = pio0;
@@ -59,17 +75,6 @@ void ppb_init_pio0() {
 void ppb_init_pio1() {
     pio = pio1;
     ppb_init(0);
-}
-
-static void ppb_init(uint smnum) {
-    sm = smnum;
-    nextinstructioninsertpoint = program_instructions;
-    emptyinstructions = MAX_PROGRAM_SIZE;
-    wraptarget = -1;
-    wrap = -1;
-    program.instructions = program_instructions;
-    program.length = 0;
-    program.origin = -1;
 }
 
 uint ppb_here() {
@@ -130,7 +135,7 @@ void ppb_start() {
     pio_sm_set_enabled(pio, sm, true);
 }
 
-// and for testing only
+#ifdef TESTINGBUILD
 
 int ppb_get_wraptarget() {
     return wraptarget;
@@ -151,3 +156,5 @@ uint ppb_getprogramsize() {
 uint ppb_getprogramoffset() {
     return offset;
 }
+
+#endif

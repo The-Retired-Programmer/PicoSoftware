@@ -31,7 +31,6 @@ void dma_to_have_bus_priority();
 
 void dma_start();
 
-
 void dma_stop();
 
 static inline void dma_set_timer(uint timer_num, uint xval, uint yval) {

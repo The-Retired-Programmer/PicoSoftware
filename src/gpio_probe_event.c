@@ -21,15 +21,26 @@
 //
 // =========================================================================
 
-#include <stdlib.h>
+//#include <stdlib.h>
 #include "hardware/gpio.h"
 #include "probe_controls.h"
-#include "gpio_probe_event_internal.h"
 
 enum gpio_irq_level gpioirq;
 bool event_triggered;
 uint pin;
 bool enabled;
+
+static void gpio_callback(uint pin, uint32_t events) {
+    event_triggered = true;
+    gpio_set_irq_enabled(pin, gpioirq, false);
+    gpio_acknowledge_irq(pin, events);
+}
+
+// =============================================================================
+//
+// module API
+//
+// =============================================================================
 
 void gpio_probe_event_init(struct probe_controls* controls) {
     event_triggered = false;
@@ -61,14 +72,6 @@ void gpio_probe_event_start() {
     }
 }
 
-void gpio_callback(uint pin, uint32_t events) {
-    event_triggered = true;
-    gpio_set_irq_enabled(pin, gpioirq, false);
-    gpio_acknowledge_irq(pin, events);
-}
-
 bool has_event_triggered() {
     return event_triggered;
 }
-
-

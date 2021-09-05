@@ -27,24 +27,28 @@
 #include "ptest.h"
 #include "../src/square_wave_generator.h"
 #include "../src/digitalsampling.h"
-#include "../src/digitalsampling_internal.h"
 #include "../src/run_length_encoder.h"
-#include "../src/run_length_encoder_internal.h"
 #include "../src/pio_program.h"
-#include "../src/pio_program_internal.h"
 #include "../src/pio_digitalsampling.h"
-#include "../src/pio_digitalsampling_internal.h"
 #include "../src/dma_digitalsampling.h"
 #include "test_digitalsampling.h"
 
-void test_digitalsampling_init() {
-    add_test("run length encoder", "rle", test_digitalsampling_rle_internals);
-    add_test("dma digitalsampling", "dma", test_digitalsampling_dma_internals);
-    add_test("dma stop", "dma_stop", test_digitalsampling_dma_stop);
-    add_test("pio digitalsampling","pio", test_digitalsampling_pio_internals);
+static int rlelinereceiver(const char *line) {
+    pass_if_equal_string("small line receiver", "2H2L2H2L", get_rle_linebuffer());
+    return 0;
 }
 
-void test_digitalsampling_rle_internals() {
+static int rlelinereceiverunused(const char *line) {
+    fail("unexpected line segment received");
+    return 0;
+}
+
+static int rlelinereceiver9chars(const char *line) {
+    pass_if_equal_string("small line receiver - 9 alternating", "HLHLHLHLH", get_rle_linebuffer());
+    return 0;
+}
+
+static void test_digitalsampling_rle_internals() {
     // basic alternating levels
     rle_init(1,13,rlelinereceiverunused);
     bool level = true;
@@ -85,29 +89,29 @@ void test_digitalsampling_rle_internals() {
     pass_if_equal_string("final small line", "2H2L", get_rle_linebuffer());
 }
 
-int rlelinereceiver(const char *line) {
-    pass_if_equal_string("small line receiver", "2H2L2H2L", get_rle_linebuffer());
-    return 0;
-}
-
-int rlelinereceiverunused(const char *line) {
-    fail("unexpected line segment received");
-    return 0;
-}
-
-int rlelinereceiver9chars(const char *line) {
-    pass_if_equal_string("small line receiver - 9 alternating", "HLHLHLHLH", get_rle_linebuffer());
-    return 0;
-}
 #define readdatainit  0xcccc0000
 volatile uint32_t readdata = readdatainit;
 volatile uint dma_buffer_fills = 0 ;
 volatile bool dma_completed = false;
 volatile uint dma_completed_count = 0;
 
-//
-//
-void test_digitalsampling_dma_internals() {
+static char* setup_controls(struct probe_controls* controls, char * cmd) {
+    char cmdbuffer[255]; 
+    return parse_control_parameters(controls, strcpy(cmdbuffer,cmd));
+}
+
+static void dma_buffer_callback() {
+    readdata+=1;
+    trace('0');
+    dma_buffer_fills++;
+}
+
+static void dma_transfer_finished_callback() {
+     trace('1');
+    dma_completed = true;
+}
+
+static void test_digitalsampling_dma_internals() {
     dma_buffer_fills = 0;
     readdata = readdatainit;
     dma_completed = false;
@@ -152,7 +156,7 @@ void test_digitalsampling_dma_internals() {
     pass_if_equal_uint("control count", 5, dma_buffer_fills);
 }
 
-void test_digitalsampling_dma_stop() {
+static void test_digitalsampling_dma_stop() {
     dma_buffer_fills = 0;
     readdata = readdatainit;
     dma_completed = false;
@@ -202,23 +206,7 @@ void test_digitalsampling_dma_stop() {
     pass_if_greaterthan_uint("control count", 5, dma_buffer_fills);
 }
 
-char* setup_controls(struct probe_controls* controls, char * cmd) {
-    char cmdbuffer[255]; 
-    return parse_control_parameters(controls, strcpy(cmdbuffer,cmd));
-}
-
-void dma_buffer_callback() {
-    readdata+=1;
-    trace('0');
-    dma_buffer_fills++;
-}
-
-void dma_transfer_finished_callback() {
-     trace('1');
-    dma_completed = true;
-}
-
-void test_digitalsampling_pio_internals() {
+static void test_digitalsampling_pio_internals() {
     struct probe_controls controls;
     char* res = setup_controls(&controls,"g-13-3-20000-1-13-3-0-13-0-1-3200");
     if ( res != NULL ) {
@@ -235,4 +223,17 @@ void test_digitalsampling_pio_internals() {
         databuffer[i] = piodigitalsampling_read();
     }
     pass_if_equal_uintx("buffer read", 0x3B7693B2, databuffer[0]);
+}
+
+// =============================================================================
+//
+// module API
+//
+// =============================================================================
+
+void test_digitalsampling_init() {
+    add_test("run length encoder", "rle", test_digitalsampling_rle_internals);
+    add_test("dma digitalsampling", "dma", test_digitalsampling_dma_internals);
+    add_test("dma stop", "dma_stop", test_digitalsampling_dma_stop);
+    add_test("pio digitalsampling","pio", test_digitalsampling_pio_internals);
 }

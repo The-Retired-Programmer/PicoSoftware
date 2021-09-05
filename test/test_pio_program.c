@@ -22,9 +22,8 @@
 #include "pico/stdlib.h"
 #include "ptest.h"
 #include "../src/pio_program.h"
-#include "../src/pio_program_internal.h"
 
-void test_pio_program() {
+static void test_pio_program() {
     ppb_init_pio1();
     ppb_set_wraptarget();
     ppb_add_instruction(pio_encode_set(pio_pins,7));
@@ -61,7 +60,12 @@ void test_pio_program() {
     pass_if_equal_uint( "program offset(4)", 32-9, ppb_getprogramoffset());
 }
 
+// =============================================================================
+//
+// module API
+//
+// =============================================================================
+
 void test_pio_program_init() {
     add_test("pio_program", "pioprog", test_pio_program);
 }
-

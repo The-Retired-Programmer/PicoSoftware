@@ -21,7 +21,4 @@
 #include <stdlib.h>
 #include "../src/probe_controls.h"
 
-char* setup_controls_for_gpio(struct probe_controls* controls, char * cmd);
-
 void test_gpio_probe_event_init();
-

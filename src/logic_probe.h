@@ -14,10 +14,6 @@
  * limitations under the License.
  */
 
-//
-// LOGIC ANALYSER PROBE - using Pico as Probe
-//
-
 void probe_init();
 
 void probe_pass_init();
@@ -29,3 +25,11 @@ void probe_go(char* cmdbuffer);
 void probe_stop();
 bool is_probe_stop_complete();
 void probe_getsample();
+
+#ifdef TESTINGBUILD
+
+#include "probe_controls.h"
+
+enum probestate getprobestate();
+
+#endif

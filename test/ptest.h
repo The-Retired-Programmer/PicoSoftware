@@ -20,9 +20,7 @@
 #include <stdlib.h>
 #include "pico/stdlib.h"
 
-//
-// TEST CONTROL BLOCK - 1 per test to be run
-//
+//      TEST HARNESS
 
 struct test_control_block {
     char* name;
@@ -36,18 +34,9 @@ void ptest_init();
 
 bool add_test(char* name, char* alias, void (*testfunction)());
 
-void execute_tests();
+void ptest_execute();
 
-void summary_of_tests();
-
-bool test_if_selection_mode();
-
-int getselectionid();
-#define out_of_range -2
-
-void execute_test(int selectionid);
-
-void summary_of_test();
+//      TRACE
 
 void trace_init();
 
@@ -55,7 +44,7 @@ void trace(char tracechar);
 
 void trace_print();
 
-void trace_print_segment(uint frompoint, uint size);
+//      PASS / FAIL TESTS
 
 void pass_if_null(char* id, char* value);
 

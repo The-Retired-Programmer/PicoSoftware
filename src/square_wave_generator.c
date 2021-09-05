@@ -14,14 +14,6 @@
  * limitations under the License.
  */
 
-//
-// test - logic analyser/probe_controls
-//
-
-#include <stdlib.h>
-#include "pico/stdlib.h"
-#include "pio_program.h"
-
 // =========================================================================
 //
 //  SQUARE WAVE GENERATOR
@@ -43,6 +35,17 @@
 //  USES - PIO1 & SM0, clears all programs from PIO 1 prior to loading its own.
 //
 // =========================================================================
+
+
+#include <stdlib.h>
+#include "pico/stdlib.h"
+#include "pio_program.h"
+
+// =============================================================================
+//
+// module API
+//
+// =============================================================================
 
 void square_wave_generator(uint pinbase, uint pinwidth, float frequency) {
     uint wrap_program_cycles;

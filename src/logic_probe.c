@@ -15,17 +15,21 @@
  */
 
 //
-// LOGIC ANALYSER PROBE - using Pico as Probe
+// LOGIC ANALYSER PROBE -  frontend command actions
 //
 
 #include "digitalsampling.h"
 #include "run_length_encoder.h"
-#include "logic_probe.h"
 #include "probe_controls.h"
-
 #include <stdio.h>
 
 struct probe_controls probecontrols;
+
+// =============================================================================
+//
+// module API
+//
+// =============================================================================
 
 void probe_init() {
     probecontrols.state = STATE_IDLE;
@@ -93,8 +97,11 @@ void probe_getsample() {
     probecontrols.state = STATE_IDLE;
 }
 
-// for testing
+#ifdef TESTINGBUILD
 
 enum probestate getprobestate() {
     return probecontrols.state;
 }
+
+#endif
+

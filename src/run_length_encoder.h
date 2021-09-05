@@ -19,3 +19,15 @@
 
 void create_RLE_encoded_sample(struct probe_controls* probecontrols,
     struct sample_buffers samplebuffers, int (*outputfunction)(const char *line));
+
+#ifdef TESTINGBUILD
+
+char* get_rle_linebuffer();
+
+void rle_init(uint maxdigits, uint _maxlinelength, int (*_outputfunction)(const char *line));
+
+void rle_writetobuffer();
+
+void rle_insertvalue(bool logic_value);
+
+#endif

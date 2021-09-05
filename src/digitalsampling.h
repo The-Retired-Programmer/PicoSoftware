@@ -33,4 +33,12 @@ struct sample_buffers {
 
 struct sample_buffers getsamplebuffers();
 
+#ifdef TESTINGBUILD
+
+char* setuptransferbuffers(struct probe_controls* controls);
+
+void dma_done();
+
+#endif
+
 #endif

@@ -47,6 +47,15 @@ struct probe_controls {
 char* parse_control_parameters(struct probe_controls* controls, char* cmdbuffer);
 
 uint samplesperword(struct probe_controls* controls);
+
 uint usedbitsperword(struct probe_controls* controls);
+
+#ifdef TESTINGBUILD
+
+bool parse_pinbase(struct probe_controls* controls, char* s);
+
+char* get_errormessage();
+
+#endif
 
 #endif

@@ -17,11 +17,8 @@
 //
 //  LOGIC PROBE - Digital Sampling Events  using GPIO for event capture
 //
-//   events are used to terminate the digital sampling.
-//
 // =========================================================================
 
-#include <stdlib.h>
 #include "probe_controls.h"
 
 void gpio_probe_event_init(struct probe_controls* controls);
@@ -29,4 +26,3 @@ void gpio_probe_event_init(struct probe_controls* controls);
 void gpio_probe_event_start();
 
 bool has_event_triggered();
-

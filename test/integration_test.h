@@ -14,16 +14,4 @@
  * limitations under the License.
  */
 
-//
-// integration test - logic analyser
-//
 void integration_test_init();
-
-// internal
-
-void integration_test();
-
-void itest_controller();
-
-void it_commandaction(char* checkname, char *line, enum probestate expectedstate);
-

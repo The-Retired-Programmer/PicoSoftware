@@ -23,23 +23,11 @@
 #include <stdlib.h>
 #include "pico/stdlib.h"
 #include "logic_probe.h"
-#include "frontend_commands_internal.h"
 
 char linebuffer[200];
 char *insertchar;
 
-void frontend_commands_controller_init() {
-    insertchar = linebuffer;
-}
-
-void frontend_commands_controller() {
-    if (linebuilder()) {
-        action_command(linebuffer);
-        frontend_commands_controller_init();
-    }
-}
-
-void action_command(char *line) {
+static void _action_command(char *line) {
     if (strchr(line,'!') == NULL) {
         switch (line[0]) {
         case 'p': 
@@ -65,7 +53,7 @@ void action_command(char *line) {
     }
 }
 
-bool linebuilder() {
+static bool linebuilder() {
     while (true) {
         int rawch = getchar_timeout_us(0);
         if (rawch ==  PICO_ERROR_TIMEOUT) {
@@ -80,4 +68,29 @@ bool linebuilder() {
         }
     }
 }
+
+// =============================================================================
+//
+// module API
+//
+// =============================================================================
+
+void frontend_commands_controller_init() {
+    insertchar = linebuffer;
+}
+
+void frontend_commands_controller() {
+    if (linebuilder()) {
+        _action_command(linebuffer);
+        frontend_commands_controller_init();
+    }
+}
+
+#ifdef TESTINGBUILD
+
+void action_command(char *line) {
+    _action_command(line);
+}
+
+#endif
 

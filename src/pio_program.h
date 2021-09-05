@@ -58,4 +58,18 @@ inline static uint pio_encode_jmp_condition(enum pico_jmp_condition jmp_conditio
     return _pio_encode_instr_and_args(pio_instr_bits_jmp, jmp_condition, addr);
 }
 
+#ifdef TESTINGBUILD
+
+int ppb_get_wraptarget();
+
+int ppb_get_wrap();
+
+uint16_t *ppb_getprograminstructions();
+
+uint ppb_getprogramsize();
+
+uint ppb_getprogramoffset();
+
+#endif
+
 #endif

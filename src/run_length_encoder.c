@@ -14,11 +14,6 @@
  * limitations under the License.
  */
 
-#include <stdlib.h>
-#include <string.h>
-#include "digitalsampling.h"
-#include "run_length_encoder_internal.h"
-
 // ========================================================================
 //
 //  RUN LENGTH ENCODER
@@ -35,6 +30,10 @@
 //
 // ========================================================================
 
+#include <stdlib.h>
+#include <string.h>
+#include "digitalsampling.h"
+
 #define RLELINESIZE 72
 #define MAXDIGITS 6
  
@@ -48,35 +47,7 @@ char* insertptr;
 bool logic_level;
 uint32_t count;
 
-// ========================================================================
-//
-//  extracting data bits from dma buffers and creating run length encoded
-//  data for each sample pin
-//
-// ========================================================================
-
-void create_RLE_encoded_sample(struct probe_controls* controls,
-        struct sample_buffers samplebuffers, int (*outputfunction)(const char *line)){
-    rle_init(MAXDIGITS, RLELINESIZE, outputfunction);
-    for(uint pinoffset = 0; pinoffset < controls->pinwidth; pinoffset++) {
-        printf("# %i\n", pinoffset+controls->pinbase);
-        insertptr = rlebuffer;
-        count = 0;
-        for (uint bufferno = 0; bufferno < samplebuffers.number_of_buffers; bufferno++){
-            for (uint wordno = 0; wordno < samplebuffers.buffer_size_words ; wordno++) {
-                uint32_t wordvalue = samplebuffers.buffers[bufferno][wordno];
-                for (int bitcount = usedbitsperword(controls) -controls->pinwidth + pinoffset; bitcount >=0 ; bitcount-=controls->pinwidth) {
-                    uint32_t mask = 1u<<bitcount;
-                    rle_insertvalue((wordvalue&mask) > 0);
-                }
-            }
-        }
-        rle_writetobuffer(); // flush final rle component into the buffer
-        outputfunction(rlebuffer); // .. and output the buffer
-    }
-}
-
-void rle_init(uint maxdigits, uint _maxlinelength, int (*_outputfunction)(const char *line)) {
+static void _rle_init(uint maxdigits, uint _maxlinelength, int (*_outputfunction)(const char *line)) {
     insertptr = rlebuffer;
     count = 0;
     spaceformaxcount = maxdigits + 2;
@@ -90,24 +61,7 @@ void rle_init(uint maxdigits, uint _maxlinelength, int (*_outputfunction)(const 
     outputfunction = _outputfunction;
 }
 
-void rle_insertvalue(bool logic_value) {
-    if (count == 0) {
-        logic_level =logic_value;
-        count = 1;
-    } else if (logic_value == logic_level) {
-        count++;
-        if (count == maxcount) {
-            rle_writetobuffer();
-            count=0;
-        }
-    } else {
-        rle_writetobuffer();
-        count = 1;
-        logic_level = logic_value;
-    }
-}
-
-void rle_writetobuffer() {
+static void _rle_writetobuffer() {
     if (insertptr -rlebuffer >= maxlinelength - spaceformaxcount ) {
        *insertptr = '\0';
         outputfunction(rlebuffer);
@@ -117,7 +71,73 @@ void rle_writetobuffer() {
             :sprintf(insertptr, "%i%c", count,logic_level?'H':'L');
 }
 
-// for testing only
+static void _rle_insertvalue(bool logic_value) {
+    if (count == 0) {
+        logic_level =logic_value;
+        count = 1;
+    } else if (logic_value == logic_level) {
+        count++;
+        if (count == maxcount) {
+            _rle_writetobuffer();
+            count=0;
+        }
+    } else {
+        _rle_writetobuffer();
+        count = 1;
+        logic_level = logic_value;
+    }
+}
+
+// =============================================================================
+//
+// module API
+//
+// =============================================================================
+
+// ========================================================================
+//
+//  extracting data bits from dma buffers and creating run length encoded
+//  data for each sample pin
+//
+// ========================================================================
+
+void create_RLE_encoded_sample(struct probe_controls* controls,
+        struct sample_buffers samplebuffers, int (*outputfunction)(const char *line)){
+    _rle_init(MAXDIGITS, RLELINESIZE, outputfunction);
+    for(uint pinoffset = 0; pinoffset < controls->pinwidth; pinoffset++) {
+        printf("# %i\n", pinoffset+controls->pinbase);
+        insertptr = rlebuffer;
+        count = 0;
+        for (uint bufferno = 0; bufferno < samplebuffers.number_of_buffers; bufferno++){
+            for (uint wordno = 0; wordno < samplebuffers.buffer_size_words ; wordno++) {
+                uint32_t wordvalue = samplebuffers.buffers[bufferno][wordno];
+                for (int bitcount = usedbitsperword(controls) -controls->pinwidth + pinoffset; bitcount >=0 ; bitcount-=controls->pinwidth) {
+                    uint32_t mask = 1u<<bitcount;
+                    _rle_insertvalue((wordvalue&mask) > 0);
+                }
+            }
+        }
+        _rle_writetobuffer(); // flush final rle component into the buffer
+        outputfunction(rlebuffer); // .. and output the buffer
+    }
+}
+
+#ifdef TESTINGBUILD
+
 char* get_rle_linebuffer() {
     return rlebuffer;
 }
+
+void rle_init(uint maxdigits, uint _maxlinelength, int (*_outputfunction)(const char *line)) {
+    _rle_init(maxdigits,_maxlinelength, outputfunction);
+}
+
+void rle_writetobuffer() {
+    _rle_writetobuffer();
+}
+
+void rle_insertvalue(bool logic_value) {
+    _rle_insertvalue(logic_value);
+}
+
+#endif
