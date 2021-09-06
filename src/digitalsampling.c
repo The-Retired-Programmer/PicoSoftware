@@ -70,6 +70,7 @@ char* digitalsampling_start(struct probe_controls* controls) {
     if (returned != NULL) {
         return returned;
     }
+    dma_to_have_bus_priority();
     dma_on_completed(dma_done);
     gpio_probe_event_init(controls);
     // and start everything running

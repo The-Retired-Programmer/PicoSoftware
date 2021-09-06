@@ -65,8 +65,7 @@ static void test_digitalsampling_dma_internals() {
         fail(res);
         return;
     }
-    // don't award dma bus priority else it grabs all cycles (even from irq callbacks)
-    //dma_to_have_bus_priority();
+    dma_to_have_bus_priority();
     dma_after_every_control(dma_buffer_callback);
     dma_on_completed(dma_transfer_finished_callback);
     dma_start();
@@ -98,8 +97,7 @@ static void test_digitalsampling_dma_stop() {
         fail(res);
         return;
     }
-    // don't award dma bus priority else it grabs all cycles (even from irq callbacks)
-    //dma_to_have_bus_priority();
+    dma_to_have_bus_priority();
     dma_after_every_control(dma_buffer_callback);
     dma_on_completed(dma_transfer_finished_callback);
     dma_start();
