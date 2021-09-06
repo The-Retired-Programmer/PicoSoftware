@@ -95,7 +95,7 @@ struct sample_buffers getsamplebuffers() {
 #ifdef TESTINGBUILD
 
 char* setuptransferbuffers(struct probe_controls* controls) {
-    _setuptransferbuffers(controls);
+    return _setuptransferbuffers(controls);
 }
 
 void dma_done() {

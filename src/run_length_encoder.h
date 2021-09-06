@@ -24,7 +24,7 @@ void create_RLE_encoded_sample(struct probe_controls* probecontrols,
 
 char* get_rle_linebuffer();
 
-void rle_init(uint maxdigits, uint _maxlinelength, int (*_outputfunction)(const char *line));
+void rle_init(uint maxdigits, uint _maxlinelength, int (*outputfunction)(const char *line));
 
 void rle_writetobuffer();
 

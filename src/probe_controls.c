@@ -203,8 +203,10 @@ static bool parse_samplesize(struct probe_controls* controls, char* s) {
 //
 // =============================================================================
 
-char* parse_control_parameters(struct probe_controls* controls, char* cmdbuffer) {
-    sprintf(errormessage,"%s","Unknown error");
+char* parse_control_parameters(struct probe_controls* controls, char* cmdline) {
+    strcpy(errormessage,"Unknown error");
+    char cmdbuffer[255];
+    strcpy(cmdbuffer,cmdline);
     char* cmd = strtok(cmdbuffer,"-");
     return  _parse_pinbase(controls, strtok(NULL,"-")) &&
             parse_pinwidth(controls, strtok(NULL,"-")) &&

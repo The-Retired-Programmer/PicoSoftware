@@ -26,14 +26,9 @@
 #include "test_gpio_probe_event.h"
 #include "../src/probe_controls.h"
 
-static char* setup_controls_for_gpio(struct probe_controls* controls, char * cmd) {
-    char cmdbuffer[255]; 
-    return parse_control_parameters(controls, strcpy(cmdbuffer,cmd));
-}
-
 static void test_gpio_probe_event_trigger_on_fall() {
     struct probe_controls controls;
-    char* res = setup_controls_for_gpio(&controls,"g-16-1-19200-0-16-0-1-12-2-1-64000"); 
+    char* res = parse_control_parameters(&controls,"g-16-1-19200-0-16-0-1-12-2-1-64000"); 
     if ( res != NULL ) {
         fail(res);
         return;
@@ -50,7 +45,7 @@ static void test_gpio_probe_event_trigger_on_fall() {
 
 static void test_gpio_probe_event_trigger_on_rise() {
     struct probe_controls controls;
-    char* res = setup_controls_for_gpio(&controls,"g-16-1-19200-0-16-0-1-12-3-1-64000");
+    char* res = parse_control_parameters(&controls,"g-16-1-19200-0-16-0-1-12-3-1-64000");
     if ( res != NULL ) {
         fail(res);
         return;
@@ -67,7 +62,7 @@ static void test_gpio_probe_event_trigger_on_rise() {
 
 static void test_gpio_probe_event_trigger_on_low() {
     struct probe_controls controls;
-    char* res = setup_controls_for_gpio(&controls,"g-16-1-19200-0-16-0-1-12-0-1-64000");
+    char* res = parse_control_parameters(&controls,"g-16-1-19200-0-16-0-1-12-0-1-64000");
     if ( res != NULL ) {
         fail(res);
         return;
@@ -82,7 +77,7 @@ static void test_gpio_probe_event_trigger_on_low() {
 
 static void test_gpio_probe_event_trigger_on_high() {
     struct probe_controls controls;
-    char* res = setup_controls_for_gpio(&controls,"g-16-1-19200-0-16-0-1-12-1-1-64000");
+    char* res = parse_control_parameters(&controls,"g-16-1-19200-0-16-0-1-12-1-1-64000");
     if ( res != NULL ) {
         fail(res);
         return;
@@ -97,7 +92,7 @@ static void test_gpio_probe_event_trigger_on_high() {
 
 static void test_gpio_probe_event_notenabled() {
     struct probe_controls controls;
-    char* res = setup_controls_for_gpio(&controls,"g-16-1-19200-0-16-0-0-12-2-1-64000"); 
+    char* res = parse_control_parameters(&controls,"g-16-1-19200-0-16-0-0-12-2-1-64000"); 
     if ( res != NULL ) {
         fail(res);
         return;

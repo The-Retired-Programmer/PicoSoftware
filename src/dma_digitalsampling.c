@@ -60,12 +60,12 @@ void (*on_dma_irq0)();
 void (*on_dma_irq1)();
 
 static void dma_irq0_handler() {
-    on_dma_irq0();
+    (*on_dma_irq0)();
     dma_channel_acknowledge_irq0(CONTROL_DMA_CHANNEL);
 }
 
 static void dma_irq1_handler() {
-    on_dma_irq1();
+    (*on_dma_irq1)();
     dma_channel_acknowledge_irq1(TRANSFER_DMA_CHANNEL);
 }
 

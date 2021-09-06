@@ -40,14 +40,14 @@
 uint32_t maxcount;
 uint spaceformaxcount;
 uint maxlinelength;
-int (*outputfunction)(const char *line);
+int (*eol_function)(const char *line);
 
 char rlebuffer[RLELINESIZE];
 char* insertptr;
 bool logic_level;
 uint32_t count;
 
-static void _rle_init(uint maxdigits, uint _maxlinelength, int (*_outputfunction)(const char *line)) {
+static void _rle_init(uint maxdigits, uint _maxlinelength, int (*outputfunction)(const char *line)) {
     insertptr = rlebuffer;
     count = 0;
     spaceformaxcount = maxdigits + 2;
@@ -58,13 +58,13 @@ static void _rle_init(uint maxdigits, uint _maxlinelength, int (*_outputfunction
     }
     maxlinelength = _maxlinelength;
     assert(maxlinelength <= RLELINESIZE);
-    outputfunction = _outputfunction;
+    eol_function = outputfunction;
 }
 
 static void _rle_writetobuffer() {
-    if (insertptr -rlebuffer >= maxlinelength - spaceformaxcount ) {
+    if (insertptr - rlebuffer >= maxlinelength - spaceformaxcount ) {
        *insertptr = '\0';
-        outputfunction(rlebuffer);
+        (*eol_function)(rlebuffer);
         insertptr = rlebuffer;
     }
     insertptr+= (count == 1 ) ? sprintf(insertptr, "%c", logic_level?'H':'L')
@@ -118,7 +118,7 @@ void create_RLE_encoded_sample(struct probe_controls* controls,
             }
         }
         _rle_writetobuffer(); // flush final rle component into the buffer
-        outputfunction(rlebuffer); // .. and output the buffer
+        (*eol_function)(rlebuffer); // .. and output the buffer
     }
 }
 
@@ -128,7 +128,7 @@ char* get_rle_linebuffer() {
     return rlebuffer;
 }
 
-void rle_init(uint maxdigits, uint _maxlinelength, int (*_outputfunction)(const char *line)) {
+void rle_init(uint maxdigits, uint _maxlinelength, int (*outputfunction)(const char *line)) {
     _rle_init(maxdigits,_maxlinelength, outputfunction);
 }
 

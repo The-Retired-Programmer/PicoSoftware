@@ -95,11 +95,6 @@ volatile uint dma_buffer_fills = 0 ;
 volatile bool dma_completed = false;
 volatile uint dma_completed_count = 0;
 
-static char* setup_controls(struct probe_controls* controls, char * cmd) {
-    char cmdbuffer[255]; 
-    return parse_control_parameters(controls, strcpy(cmdbuffer,cmd));
-}
-
 static void dma_buffer_callback() {
     readdata+=1;
     trace('0');
@@ -117,8 +112,8 @@ static void test_digitalsampling_dma_internals() {
     dma_completed = false;
     dma_completed_count = 0;
     struct probe_controls controls;
-    // 1024 sample size means  8 words / buffer or ~ 40usecs per buffer
-    char* res = setup_controls(&controls,"g-16-1-19200-0-16-0-0-16-0-1-1024"); // will only use samplesize and pin_width
+    // 1024 sample size means  8 words / buffer
+    char* res = parse_control_parameters(&controls,"g-16-1-19200-0-16-0-0-16-0-1-1024"); // will only use samplesize and pin_width
     if ( res != NULL ) {
         fail(res);
         return;
@@ -128,10 +123,6 @@ static void test_digitalsampling_dma_internals() {
         fail(res);
         return;
     }
-    struct sample_buffers initsamplebuffers = getsamplebuffers();
-    for (uint i = 0; i < initsamplebuffers.number_of_buffers; i++) {
-        printf("sample buffer %i at %x\n",i, initsamplebuffers.buffers[i]); 
-    };
     dma_set_timer(0, 1, 256);
     res = setupDMAcontrollers(&controls, &readdata, 0x3b); //
     if ( res != NULL ) {
@@ -145,14 +136,7 @@ static void test_digitalsampling_dma_internals() {
     dma_start();
     while (!dma_completed);
     pass("transfer completed signalled");
-    struct sample_buffers samplebuffers = getsamplebuffers();
-    for (uint i = 0; i < samplebuffers.number_of_buffers; i++) {
-        printf("sample buffer %i at %x\n",i, samplebuffers.buffers[i]); 
-    };
-    for (uint i = 0; i < samplebuffers.number_of_buffers; i++) {
-        pass_if_equal_uint32x("start buffer check", readdatainit+i, samplebuffers.buffers[i][0]);
-        pass_if_equal_uint32x("end buffer check", readdatainit+i, samplebuffers.buffers[i][7]);
-    };
+    readdata = readdatainit;
     pass_if_equal_uint("control count", 5, dma_buffer_fills);
 }
 
@@ -162,7 +146,7 @@ static void test_digitalsampling_dma_stop() {
     dma_completed = false;
     struct probe_controls controls;
     // 1024 sample size =>  8 words / buffer
-    char* res = setup_controls(&controls,"g-16-1-19200-0-16-0-0-16-0-0-1024"); // will only use samplesize and pin_width
+    char* res = parse_control_parameters(&controls,"g-16-1-19200-0-16-0-0-16-0-0-1024"); // will only use samplesize and pin_width
     if ( res != NULL ) {
         fail(res);
         return;
@@ -172,10 +156,6 @@ static void test_digitalsampling_dma_stop() {
         fail(res);
         return;
     }
-    struct sample_buffers initsamplebuffers = getsamplebuffers();
-    for (uint i = 0; i < initsamplebuffers.number_of_buffers; i++) {
-        printf("sample buffer %i at %x\n",i, initsamplebuffers.buffers[i]); 
-    };
     dma_set_timer(0, 1, 256);
     res = setupDMAcontrollers(&controls, &readdata, 0x3b);
     if ( res != NULL ) {
@@ -195,20 +175,12 @@ static void test_digitalsampling_dma_stop() {
     while (!dma_completed); // wait for completion
     trace('c');
     pass("transfer completed signalled");
-    struct sample_buffers samplebuffers = getsamplebuffers();
-    for (uint i = 0; i < samplebuffers.number_of_buffers; i++) {
-        printf("sample buffer %i at %x\n",i, samplebuffers.buffers[i]); 
-    };
-    for (uint i = 0; i < samplebuffers.number_of_buffers; i++) {
-        pass_if_equal_uint32x("start buffer check", readdatainit+i, samplebuffers.buffers[i][0]);
-        pass_if_equal_uint32x("end buffer check", readdatainit+i, samplebuffers.buffers[i][7]);
-    };
     pass_if_greaterthan_uint("control count", 5, dma_buffer_fills);
 }
 
 static void test_digitalsampling_pio_internals() {
     struct probe_controls controls;
-    char* res = setup_controls(&controls,"g-13-3-20000-1-13-3-0-13-0-1-3200");
+    char* res = parse_control_parameters(&controls,"g-13-3-20000-1-13-3-0-13-0-1-3200");
     if ( res != NULL ) {
         fail(res);
         return;
