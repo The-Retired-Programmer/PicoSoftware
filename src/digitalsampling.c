@@ -25,7 +25,6 @@
 
 #include <stdlib.h>
 #include "hardware/pio.h"
-#include "hardware/dma.h"
 #include "digitalsampling.h"
 #include "pio_digitalsampling.h"
 #include "dma_digitalsampling.h"
@@ -49,7 +48,7 @@ static char* _setuptransferbuffers(struct probe_controls* controls) {
 
 static bool dma_done_flag = false;
 
-static void _dma_done() {
+static void dma_done() {
     dma_done_flag = true;
 }
 
@@ -71,7 +70,7 @@ char* digitalsampling_start(struct probe_controls* controls) {
     if (returned != NULL) {
         return returned;
     }
-    dma_on_completed(_dma_done);
+    dma_on_completed(dma_done);
     gpio_probe_event_init(controls);
     // and start everything running
     gpio_probe_event_start();
@@ -96,10 +95,6 @@ struct sample_buffers getsamplebuffers() {
 
 char* setuptransferbuffers(struct probe_controls* controls) {
     return _setuptransferbuffers(controls);
-}
-
-void dma_done() {
-   _dma_done();
 }
 
 #endif

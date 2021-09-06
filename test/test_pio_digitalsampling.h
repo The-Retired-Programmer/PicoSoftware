@@ -15,7 +15,7 @@
  */
 
 //
-// test - logical analyser/digitalsampling
+// test - logical analyser/pio_digitalsampling
 //
 
-void test_digitalsampling_init();
+void test_pio_digitalsampling_init();

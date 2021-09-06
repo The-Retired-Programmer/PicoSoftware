@@ -19,8 +19,6 @@
 //
 
 #include <stdlib.h>
-#include <string.h>
-#include "pico/stdlib.h"
 #include "hardware/timer.h"
 #include "ptest.h"
 #include "../src/logic_probe.h"
@@ -28,8 +26,7 @@
 #include "../src/frontend_commands.h"
 
 static void it_commandaction(char* checkname, char *line, enum probestate expectedstate) {
-    char cmdbuffer[255];
-    action_command(strcpy(cmdbuffer,line));
+    action_command(line);
     pass_if_equal_uint(checkname, expectedstate,  getprobestate());
     is_probe_stop_complete();
 }

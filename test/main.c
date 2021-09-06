@@ -22,10 +22,12 @@
 #include <stdlib.h>
 #include "ptest.h"
 #include "test_probe_controls.h"
-#include "test_digitalsampling.h"
-#include "test_square_wave_generator.h"
-#include "test_pio_program.h"
 #include "test_gpio_probe_event.h"
+#include "test_pio_program.h"
+#include "test_square_wave_generator.h"
+#include "test_run_length_encoder.h"
+#include "test_pio_digitalsampling.h"
+#include "test_dma_digitalsampling.h"
 #include "integration_test.h"
 
 int main() {
@@ -34,11 +36,13 @@ int main() {
     //
     // define all tests
     //
+    test_probe_controls_init();
+    test_gpio_probe_event_init();
     test_pio_program_init();
     test_square_wave_generator_init();
-    test_probe_controls_init();
-    test_digitalsampling_init();
-    test_gpio_probe_event_init();
+    test_run_length_encoder_init();
+    test_pio_digitalsampling_init();
+    test_dma_digitalsampling_init();
     integration_test_init();
     //
     // run the tests

@@ -14,29 +14,8 @@
  * limitations under the License.
  */
 
-#ifndef _DIGITALSAMPLING_H
-#define _DIGITALSAMPLING_H
+//
+// test - logical analyser/run length encoder
+//
 
-#include "probe_controls.h"
-
-char* digitalsampling_start(struct probe_controls* probecontrols);
-
-void digitalsampling_stop();
-
-bool is_digitalsampling_finished();
-
-struct sample_buffers {
-    uint number_of_buffers;
-    uint32_t buffer_size_words;
-    uint32_t *buffers[4];
-};
-
-struct sample_buffers getsamplebuffers();
-
-#ifdef TESTINGBUILD
-
-char* setuptransferbuffers(struct probe_controls* controls);
-
-#endif
-
-#endif
+void test_run_length_encoder_init();
