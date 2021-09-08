@@ -90,3 +90,24 @@ void integration_test_init() {
     add_test("integration test - manual stop - short wait", "it", integration_test2);
     add_test("integration test - manual stop - long wait", "it", integration_test3);
 }
+
+/*
+switch (sampleendmode) {
+    case MANUAL:
+        dma_stop();
+        break;
+    //case BUFFER_FULL:  // ignore as it will stop soon
+    //    break;
+    case EVENT_WINDOW_1:
+        dma_stop_with_now_in_window1();
+        break;
+    case EVENT_WINDOW_2:
+        dma_stop_with_now_in_window2();
+        break;
+    case EVENT_WINDOW_3:
+        dma_stop_with_now_in_window3();
+        break;
+    case EVENT_WINDOW_4:
+        dma_stop_with_now_in_window4();
+    }
+*/

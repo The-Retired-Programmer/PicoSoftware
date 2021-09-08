@@ -29,11 +29,16 @@ enum gpio_irq_level gpioirq;
 bool event_triggered;
 uint pin;
 bool enabled;
+bool callbacklistener;
+void (*on_callback)();
 
 static void gpio_callback(uint pin, uint32_t events) {
     event_triggered = true;
     gpio_set_irq_enabled(pin, gpioirq, false);
     gpio_acknowledge_irq(pin, events);
+    if (callbacklistener) {
+        (*on_callback)();
+    }
 }
 
 // =============================================================================
@@ -44,6 +49,7 @@ static void gpio_callback(uint pin, uint32_t events) {
 
 void gpio_probe_event_init(struct probe_controls* controls) {
     event_triggered = false;
+    callbacklistener = false;
     pin = controls->ev_pin;
     enabled = controls->ev_enabled;
     if (enabled) {
@@ -64,6 +70,11 @@ void gpio_probe_event_init(struct probe_controls* controls) {
             break;
         }
     }
+}
+
+void gpio_set_trigger_listener(void (*listener)()) {
+    on_callback = listener;
+    callbacklistener = true;
 }
 
 void gpio_probe_event_start() {

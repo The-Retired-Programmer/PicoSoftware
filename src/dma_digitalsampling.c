@@ -69,6 +69,13 @@ static void dma_irq1_handler() {
     dma_channel_acknowledge_irq1(TRANSFER_DMA_CHANNEL);
 }
 
+static void dma_stop_with_now_in_window(uint first_window_offset) {
+    uint32_t **commandlist_read = dma_channel_get_read_addr(CONTROL_DMA_CHANNEL);
+    uint clr_offset = commandlist_read - commandlist;
+    uint stop_offset = (clr_offset + first_window_offset) % number_of_buffers;   
+    commandlist[stop_offset] = NULL;
+}
+
 // =============================================================================
 //
 // module API
@@ -160,10 +167,26 @@ void dma_start() {
     dma_channel_start(CONTROL_DMA_CHANNEL);
 }
 
+// stop at end of this buffer
 void dma_stop() {
     uint32_t **commandlistinsert = commandlist;
     for (int i = 0; i< number_of_buffers; i++) {
         *commandlistinsert++ = NULL;
     }    
 }
- 
+
+void dma_stop_with_now_in_window1() {
+    dma_stop_with_now_in_window(3);
+}
+
+void dma_stop_with_now_in_window2() {
+    dma_stop_with_now_in_window(2);
+}
+
+void dma_stop_with_now_in_window3() {
+    dma_stop_with_now_in_window(1);
+}
+
+void dma_stop_with_now_in_window4() {
+    dma_stop_with_now_in_window(0);
+}

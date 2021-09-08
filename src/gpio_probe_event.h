@@ -23,6 +23,8 @@
 
 void gpio_probe_event_init(struct probe_controls* controls);
 
+void gpio_set_trigger_listener(void (*listener)());
+
 void gpio_probe_event_start();
 
 bool has_event_triggered();

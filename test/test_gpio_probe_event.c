@@ -107,6 +107,36 @@ static void test_gpio_probe_event_notenabled() {
     pass_if_false_with_message("after trigger", has_event_triggered(), "event should not have triggered");
 }
 
+static uint callbackcount = 0;
+
+static void callback() {
+    callbackcount++;
+}
+
+static void test_gpio_probe_event_trigger_callback() {
+    struct probe_controls controls;
+    callbackcount = 0;
+    char* res = parse_control_parameters(&controls,"g-16-1-19200-0-16-0-1-12-3-1-64000");
+    if ( res != NULL ) {
+        fail(res);
+        return;
+    }
+    gpio_probe_event_init(&controls);
+    gpio_set_trigger_listener(callback);
+    uint pin = controls.ev_pin;
+    gpio_set_dir(pin,true);
+    gpio_put(pin, false);
+    gpio_probe_event_start();
+    pass_if_false_with_message("before trigger", has_event_triggered(), "event should not have triggered");
+    pass_if_equal_uint("callbackcount before trigger", 0, callbackcount);
+    gpio_put(pin, true);
+    pass_if_true_with_message("after trigger", has_event_triggered(), "event should have triggered");
+    pass_if_equal_uint("callbackcount after trigger", 1, callbackcount);
+    gpio_put(pin, false);
+    gpio_put(pin, true);
+    pass_if_equal_uint("callbackcount after 2nd trigger", 1, callbackcount);
+}
+
 // =============================================================================
 //
 // module API
@@ -119,4 +149,5 @@ void test_gpio_probe_event_init() {
     add_test("gpio_event_fall", "gpiofall", test_gpio_probe_event_trigger_on_fall);
     add_test("gpio_event_rise", "gpiorise", test_gpio_probe_event_trigger_on_rise);
     add_test("gpio_event_notenabled", "gpionotenabled", test_gpio_probe_event_notenabled);
+    add_test("gpio_event_callback", "gpiocallback", test_gpio_probe_event_trigger_callback);
 }
