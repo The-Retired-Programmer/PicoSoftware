@@ -59,6 +59,13 @@ static uint number_of_buffers;
 void (*on_dma_irq0)();
 void (*on_dma_irq1)();
 
+static void disable_interrupts() {
+    dma_channel_set_irq0_enabled(CONTROL_DMA_CHANNEL,false);
+    irq_set_enabled(DMA_IRQ_0, false);
+    dma_channel_set_irq1_enabled(TRANSFER_DMA_CHANNEL,false);
+    irq_set_enabled(DMA_IRQ_1, false);
+}
+
 static void dma_irq0_handler() {
     (*on_dma_irq0)();
     dma_channel_acknowledge_irq0(CONTROL_DMA_CHANNEL);
@@ -66,6 +73,7 @@ static void dma_irq0_handler() {
 
 static void dma_irq1_handler() {
     (*on_dma_irq1)();
+    disable_interrupts();
     dma_channel_acknowledge_irq1(TRANSFER_DMA_CHANNEL);
 }
 
