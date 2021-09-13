@@ -34,13 +34,7 @@ void dma_start();
 
 void dma_stop();
 
-void dma_stop_with_now_in_window1();
-
-void dma_stop_with_now_in_window2();
-
-void dma_stop_with_now_in_window3();
-
-void dma_stop_with_now_in_window4();
+void dma_stop_where_now_is_in_window(uint logicalwindow);
 
 static inline void dma_set_timer(uint timer_num, uint xval, uint yval) {
     check_hw_layout(dma_hw_t, timer[0], DMA_TIMER0_OFFSET);

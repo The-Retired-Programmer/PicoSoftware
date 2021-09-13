@@ -26,12 +26,14 @@ void digitalsampling_stop();
 bool is_digitalsampling_finished();
 
 struct sample_buffers {
-    uint number_of_buffers;
     uint32_t buffer_size_words;
     uint32_t *buffers[4];
+    uint number_of_buffers;
+    uint earliest_valid_buffer;
+    uint valid_buffer_count;
 };
 
-struct sample_buffers getsamplebuffers();
+struct sample_buffers *getsamplebuffers();
 
 #ifdef TESTINGBUILD
 

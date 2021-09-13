@@ -18,7 +18,7 @@
 #include "digitalsampling.h"
 
 void create_RLE_encoded_sample(struct probe_controls* probecontrols,
-    struct sample_buffers samplebuffers, int (*outputfunction)(const char *line));
+    struct sample_buffers *samplebuffers, int (*outputfunction)(const char *line));
 
 #ifdef TESTINGBUILD
 

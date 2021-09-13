@@ -24,9 +24,15 @@
 #include "../src/logic_probe.h"
 #include "../src/probe_controls.h"
 #include "../src/frontend_commands.h"
+#include "../src/digitalsampling.h"
+
+static void commandaction(char *line) {
+    puts(line);
+    action_command(line);
+}
 
 static void it_commandaction(char* checkname, char *line, enum probestate expectedstate) {
-    action_command(line);
+    commandaction(line);
     pass_if_equal_uint(checkname, expectedstate,  getprobestate());
     is_probe_stop_complete();
 }
@@ -38,7 +44,34 @@ static char *postsamplecommands[] = {"?", "d", "?" , NULL};
 static enum probestate postsamplestates[] = {STATE_SAMPLING_DONE, STATE_IDLE, STATE_IDLE};
 static char *postsamplechecknames[] = { "after s/?", "after d", "after d/?"};
 
-static void itest_controller(char *gcommand, uint32_t waitusec) { // mock for logic_analyser_controller()
+static void itest_controller1(char *gcommand) { // mock for logic_analyser_controller()
+    presamplecommands[2] = gcommand;
+    char **nextcommand = presamplecommands;
+    enum probestate *nextprobestate = presamplestates;
+    char **nextcheckname = presamplechecknames;
+    pass_if_equal_uint("initialstate", STATE_IDLE,  getprobestate());
+    while (*nextcommand != NULL ) {
+        it_commandaction(*nextcheckname++, *nextcommand++, *nextprobestate++);
+    }
+    while (!is_probe_stop_complete());
+    nextcommand = postsamplecommands;
+    nextprobestate = postsamplestates;
+    nextcheckname = postsamplechecknames;
+    while (*nextcommand != NULL ) {
+        it_commandaction(*nextcheckname++, *nextcommand++, *nextprobestate++);
+    }
+}
+
+static void integration_tester1(char *gcommand) {
+    probe_init(); // as per src/main.c
+    itest_controller1(gcommand ); // mock for frontend_commands_controller
+    struct sample_buffers *samplebuffers = getsamplebuffers();
+    printf("Sample Buffers: start at %i; count is %i\n",
+        samplebuffers->earliest_valid_buffer,
+        samplebuffers->valid_buffer_count);
+}
+
+static void itest_controller2(char *gcommand, uint32_t waitusec) { // mock for logic_analyser_controller()
     presamplecommands[2] = gcommand;
     char **nextcommand = presamplecommands;
     enum probestate *nextprobestate = presamplestates;
@@ -51,7 +84,7 @@ static void itest_controller(char *gcommand, uint32_t waitusec) { // mock for lo
     // need to wait for a period
     //
     busy_wait_us_32(waitusec);
-    action_command("s");
+    commandaction("s");
     pass_if_equal_uint("after s", STATE_STOPPING_SAMPLING,  getprobestate());
     while (!is_probe_stop_complete());
     nextcommand = postsamplecommands;
@@ -62,21 +95,36 @@ static void itest_controller(char *gcommand, uint32_t waitusec) { // mock for lo
     }
 }
 
-static void integration_test(char *gcommand, uint32_t waitusec) {
+static void integration_tester2(char *gcommand, uint32_t waitusec) {
     probe_init(); // as per src/main.c
-    itest_controller(gcommand, waitusec ); // mock for frontend_commands_controller
+    itest_controller2(gcommand, waitusec ); // mock for frontend_commands_controller
+    struct sample_buffers *samplebuffers = getsamplebuffers();
+    printf("Sample Buffers: start at %i; count is %i\n",
+        samplebuffers->earliest_valid_buffer,
+        samplebuffers->valid_buffer_count);
 }
 
+//  assuming sample size 3200, sample rate = 20K/s, sample width = 1
+#define MICROSECS_PER_BUFFER 40000
+
 static void integration_test1() {
-    integration_test("g-16-1-19200-1-16-2-0-16-0-1-3200", 170000);
+    integration_tester1("g-16-1-19200-0-16-2-0-16-0-1-3200");
+}
+
+static void integration_test1a() {
+    integration_tester2("g-16-1-19200-0-16-2-0-16-0-1-3200", MICROSECS_PER_BUFFER*2);
 }
 
 static void integration_test2() {
-    integration_test("g-16-1-19200-1-16-2-0-16-0-0-3200", 1000);
+    integration_tester2("g-16-1-19200-0-16-2-0-16-0-0-3200", MICROSECS_PER_BUFFER/2);
 }
 
 static void integration_test3() {
-    integration_test("g-16-1-19200-1-16-2-0-16-0-0-3200", 250000);
+    integration_tester2("g-16-1-19200-0-16-2-0-16-0-0-3200", MICROSECS_PER_BUFFER*3);
+}
+
+static void integration_test4() {
+    integration_tester2("g-16-1-19200-0-16-2-0-16-0-0-3200", MICROSECS_PER_BUFFER*10);
 }
 
 // =============================================================================
@@ -87,27 +135,8 @@ static void integration_test3() {
 
 void integration_test_init() {
     add_test("integration test - stop on buffer full", "it", integration_test1);
+    add_test("integration test - interrupt on buffer full", "it", integration_test1a);
     add_test("integration test - manual stop - short wait", "it", integration_test2);
     add_test("integration test - manual stop - long wait", "it", integration_test3);
+    add_test("integration test - manual stop - longer wait", "it", integration_test4);
 }
-
-/*
-switch (sampleendmode) {
-    case MANUAL:
-        dma_stop();
-        break;
-    //case BUFFER_FULL:  // ignore as it will stop soon
-    //    break;
-    case EVENT_WINDOW_1:
-        dma_stop_with_now_in_window1();
-        break;
-    case EVENT_WINDOW_2:
-        dma_stop_with_now_in_window2();
-        break;
-    case EVENT_WINDOW_3:
-        dma_stop_with_now_in_window3();
-        break;
-    case EVENT_WINDOW_4:
-        dma_stop_with_now_in_window4();
-    }
-*/

@@ -102,15 +102,15 @@ static void _rle_insertvalue(bool logic_value) {
 // ========================================================================
 
 void create_RLE_encoded_sample(struct probe_controls* controls,
-        struct sample_buffers samplebuffers, int (*outputfunction)(const char *line)){
+        struct sample_buffers *samplebuffers, int (*outputfunction)(const char *line)){
     _rle_init(MAXDIGITS, RLELINESIZE, outputfunction);
     for(uint pinoffset = 0; pinoffset < controls->pinwidth; pinoffset++) {
         printf("# %i\n", pinoffset+controls->pinbase);
         insertptr = rlebuffer;
         count = 0;
-        for (uint bufferno = 0; bufferno < samplebuffers.number_of_buffers; bufferno++){
-            for (uint wordno = 0; wordno < samplebuffers.buffer_size_words ; wordno++) {
-                uint32_t wordvalue = samplebuffers.buffers[bufferno][wordno];
+        for (uint bufferno = 0; bufferno < samplebuffers->number_of_buffers; bufferno++){
+            for (uint wordno = 0; wordno < samplebuffers->buffer_size_words ; wordno++) {
+                uint32_t wordvalue = samplebuffers->buffers[bufferno][wordno];
                 for (int bitcount = usedbitsperword(controls) -controls->pinwidth + pinoffset; bitcount >=0 ; bitcount-=controls->pinwidth) {
                     uint32_t mask = 1u<<bitcount;
                     _rle_insertvalue((wordvalue&mask) > 0);

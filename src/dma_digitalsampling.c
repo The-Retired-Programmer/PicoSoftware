@@ -25,7 +25,7 @@
 // Control: has either a serial command buffer or a ring command buffer; transfers
 // one word per cycle int the write register of the Transfer channel, so initiating
 // a buffer sized transfer. ring mode is used normally (while waiting for some
-// signal to terminate transfer at end of a buffer transfer), or if the simple
+// signal to terminate transfer at end of a buffer transfer), or if the
 // BUFFER_FULL option is selected the transfer will complete once all buffers are
 // full (so just a simple serial command buffer is used).  If ring mode is used
 // the command data must be aligned to a simple power of 2 boundary.  IRQ
@@ -42,6 +42,9 @@
 #include "hardware/structs/bus_ctrl.h"
 #include "dma_digitalsampling.h"
 #include "digitalsampling.h"
+#ifdef TESTINGBUILD
+#include "../test/ptest.h"
+#endif
 
 #define CONTROL_DMA_CHANNEL 0
 #define TRANSFER_DMA_CHANNEL 1
@@ -56,6 +59,8 @@
 static uint32_t *commandlistbase[4*2];
 static uint32_t **commandlist;
 static uint number_of_buffers;
+static uint dma_commands_issued;
+struct sample_buffers *samplebuffers;
 void (*on_dma_irq0)();
 void (*on_dma_irq1)();
 
@@ -66,22 +71,36 @@ static void disable_interrupts() {
     irq_set_enabled(DMA_IRQ_1, false);
 }
 
+static void set_valid_sample_values() {
+    uint32_t **commandlist_read = dma_channel_get_read_addr(CONTROL_DMA_CHANNEL);
+    uint offset = (commandlist_read - commandlist) % number_of_buffers;
+    uint countoffset = dma_commands_issued % number_of_buffers;
+//
+    if (dma_commands_issued > number_of_buffers+1) {
+       samplebuffers->valid_buffer_count = 4;
+       samplebuffers->earliest_valid_buffer = (offset+3) % number_of_buffers;
+
+    }  else {
+       samplebuffers->valid_buffer_count = dma_commands_issued -1;
+       samplebuffers->earliest_valid_buffer = 0;
+    }
+#ifdef TESTINGBUILD
+    trace(offset+'A'); trace(countoffset+'a'); trace(dma_commands_issued+'a');
+#endif
+}
+
 static void dma_irq0_handler() {
-    (*on_dma_irq0)();
+    if (on_dma_irq0 != NULL) (*on_dma_irq0)();
+    dma_commands_issued++;
+    if( dma_commands_issued >= 0x8000 ) dma_commands_issued &= 0x7; 
     dma_channel_acknowledge_irq0(CONTROL_DMA_CHANNEL);
 }
 
 static void dma_irq1_handler() {
-    (*on_dma_irq1)();
+    if (on_dma_irq1 != NULL) (*on_dma_irq1)();
     disable_interrupts();
+    set_valid_sample_values();
     dma_channel_acknowledge_irq1(TRANSFER_DMA_CHANNEL);
-}
-
-static void dma_stop_with_now_in_window(uint first_window_offset) {
-    uint32_t **commandlist_read = dma_channel_get_read_addr(CONTROL_DMA_CHANNEL);
-    uint clr_offset = commandlist_read - commandlist;
-    uint stop_offset = (clr_offset + first_window_offset) % number_of_buffers;   
-    commandlist[stop_offset] = NULL;
 }
 
 // =============================================================================
@@ -91,8 +110,11 @@ static void dma_stop_with_now_in_window(uint first_window_offset) {
 // =============================================================================
 
 char* setupDMAcontrollers(struct probe_controls* controls, const volatile uint32_t *readaddress, uint dreq) {
-    struct sample_buffers samplebuffers = getsamplebuffers();
-    number_of_buffers = samplebuffers.number_of_buffers;
+    samplebuffers = getsamplebuffers();
+    number_of_buffers = samplebuffers->number_of_buffers;
+    dma_commands_issued = 0;
+    dma_after_every_control(NULL);
+    dma_on_completed(NULL);
     //
     // command DMA buffer set
     //
@@ -115,7 +137,7 @@ char* setupDMAcontrollers(struct probe_controls* controls, const volatile uint32
     // commandlist now points at the start of the command buffer
     uint32_t **commandlistinsert = commandlist;
     for (int i = 0; i< number_of_buffers; i++) {
-        *commandlistinsert++ = samplebuffers.buffers[i];
+        *commandlistinsert++ = samplebuffers->buffers[i];
     }
     if (controls->sampleendmode == BUFFER_FULL) {
         *commandlistinsert = NULL; // termination of the list - cause DMA to stop
@@ -147,7 +169,7 @@ char* setupDMAcontrollers(struct probe_controls* controls, const volatile uint32
     dma_channel_configure(TRANSFER_DMA_CHANNEL, &ct,
         NULL,        // this will be added by the control dma (write address)
         readaddress,      // Source pointer
-        samplebuffers.buffer_size_words, // Number of transfers 
+        samplebuffers->buffer_size_words, // Number of transfers 
         false
     );
     return NULL;
@@ -155,16 +177,11 @@ char* setupDMAcontrollers(struct probe_controls* controls, const volatile uint32
 
 void dma_after_every_control(void (*callback)()) {
     on_dma_irq0 = callback;
-    dma_channel_set_irq0_enabled(CONTROL_DMA_CHANNEL,true);
-    irq_set_exclusive_handler(DMA_IRQ_0, dma_irq0_handler);
-    irq_set_enabled(DMA_IRQ_0, true);
+    
 }
 
 void dma_on_completed(void (*callback)()) {
     on_dma_irq1 = callback;
-    dma_channel_set_irq1_enabled(TRANSFER_DMA_CHANNEL,true);
-    irq_set_exclusive_handler(DMA_IRQ_1, dma_irq1_handler);
-    irq_set_enabled(DMA_IRQ_1, true);
 }
 
 void dma_to_have_bus_priority() {
@@ -172,6 +189,12 @@ void dma_to_have_bus_priority() {
 }
 
 void dma_start() {
+    dma_channel_set_irq0_enabled(CONTROL_DMA_CHANNEL,true);
+    irq_set_exclusive_handler(DMA_IRQ_0, dma_irq0_handler);
+    irq_set_enabled(DMA_IRQ_0, true);
+    dma_channel_set_irq1_enabled(TRANSFER_DMA_CHANNEL,true);
+    irq_set_exclusive_handler(DMA_IRQ_1, dma_irq1_handler);
+    irq_set_enabled(DMA_IRQ_1, true);
     dma_channel_start(CONTROL_DMA_CHANNEL);
 }
 
@@ -183,18 +206,10 @@ void dma_stop() {
     }    
 }
 
-void dma_stop_with_now_in_window1() {
-    dma_stop_with_now_in_window(3);
-}
-
-void dma_stop_with_now_in_window2() {
-    dma_stop_with_now_in_window(2);
-}
-
-void dma_stop_with_now_in_window3() {
-    dma_stop_with_now_in_window(1);
-}
-
-void dma_stop_with_now_in_window4() {
-    dma_stop_with_now_in_window(0);
+void dma_stop_where_now_is_in_window(uint logicalwindow) {
+    uint first_window_offset = number_of_buffers - logicalwindow;
+    uint32_t **commandlist_read = dma_channel_get_read_addr(CONTROL_DMA_CHANNEL);
+    uint clr_offset = commandlist_read - commandlist;
+    uint stop_offset = (clr_offset + first_window_offset) % number_of_buffers;   
+    commandlist[stop_offset] = NULL;
 }

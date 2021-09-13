@@ -30,6 +30,7 @@ volatile uint32_t readdata = readdatainit;
 volatile uint dma_buffer_fills = 0 ;
 volatile bool dma_completed = false;
 volatile uint dma_completed_count = 0;
+struct probe_controls controls;
 
 static void dma_buffer_callback() {
     readdata+=1;
@@ -47,7 +48,6 @@ static void test_digitalsampling_dma_internals() {
     readdata = readdatainit;
     dma_completed = false;
     dma_completed_count = 0;
-    struct probe_controls controls;
     // 1024 sample size means  8 words / buffer
     char* res = parse_control_parameters(&controls,"g-16-1-19200-0-16-0-0-16-0-1-1024"); // will only use samplesize and pin_width
     if ( res != NULL ) {
@@ -73,9 +73,17 @@ static void test_digitalsampling_dma_internals() {
     pass("transfer completed signalled");
     readdata = readdatainit;
     pass_if_equal_uint("control count", 5, dma_buffer_fills);
+    struct sample_buffers *samplebuffers = getsamplebuffers();
+    for (uint i = 0; i < samplebuffers->number_of_buffers ; i++) {
+        printf("buffer: first %x, last %x\n", samplebuffers->buffers[i][0],
+            samplebuffers->buffers[i][samplebuffers->buffer_size_words-1]);
+    }
+    printf("Sample Buffers: start at %i; count is %i\n",
+        samplebuffers->earliest_valid_buffer,
+        samplebuffers->valid_buffer_count);
 }
 
-static void test_digitalsampling_dma_stop_common(char *config, void (*stopfunction)()) {
+static bool test_digitalsampling_dma_stop_preactions(char *config) {
     dma_buffer_fills = 0;
     readdata = readdatainit;
     dma_completed = false;
@@ -84,58 +92,77 @@ static void test_digitalsampling_dma_stop_common(char *config, void (*stopfuncti
     char* res = parse_control_parameters(&controls,config); // will only use samplesize and pin_width
     if ( res != NULL ) {
         fail(res);
-        return;
+        return false;
     }
     res = setuptransferbuffers(&controls);
     if ( res != NULL ) {
         fail(res);
-        return;
+        return false;
     }
     dma_set_timer(0, 1, 256);
     res = setupDMAcontrollers(&controls, &readdata, 0x3b);
     if ( res != NULL ) {
         fail(res);
-        return;
+        return false;
     }
     dma_to_have_bus_priority();
     dma_after_every_control(dma_buffer_callback);
     dma_on_completed(dma_transfer_finished_callback);
     dma_start();
-    // a delay to allow the buffers to rotate
-    busy_wait_us_32(13*13);
-    trace('s');
-    (*stopfunction)();
+    return true;
+}
+
+static void test_digitalsampling_dma_stop_postactions() {
     readdata = readdata & 0xff00ffff; // mark the buffer where the event occurs
     trace('w');
     while (!dma_completed); // wait for completion
     trace('c');
     pass("transfer completed signalled");
     pass_if_greaterthan_uint("control count", 5, dma_buffer_fills);
-    struct sample_buffers samplebuffers = getsamplebuffers();
-    for (uint i = 0; i < samplebuffers.number_of_buffers ; i++) {
-        printf("buffer: first %x, last %x\n", samplebuffers.buffers[i][0],
-            samplebuffers.buffers[i][samplebuffers.buffer_size_words-1]);
+    struct sample_buffers *samplebuffers = getsamplebuffers();
+    for (uint i = 0; i < samplebuffers->number_of_buffers ; i++) {
+        printf("buffer: first %x, last %x\n", samplebuffers->buffers[i][0],
+            samplebuffers->buffers[i][samplebuffers->buffer_size_words-1]);
     }
+    printf("Sample Buffers: start at %i; count is %i\n",
+        samplebuffers->earliest_valid_buffer,
+        samplebuffers->valid_buffer_count);
+}
+
+static void test_digitalsampling_dma_stop_now(char *config) {
+    if ( !test_digitalsampling_dma_stop_preactions(config)) return;
+    busy_wait_us_32(13*13); // a delay to allow the buffers to rotate
+    trace('s');
+    dma_stop();
+    test_digitalsampling_dma_stop_postactions();
+}
+
+static void test_digitalsampling_dma_stop_in_window(char *config, uint logicalwindow) {
+    if ( !test_digitalsampling_dma_stop_preactions(config)) return;
+    busy_wait_us_32(13*13); // a delay to allow the buffers to rotate
+    trace('s');
+    dma_stop_where_now_is_in_window(logicalwindow);
+    test_digitalsampling_dma_stop_postactions();
 }
 
 static void test_digitalsampling_dma_stop() {
-    test_digitalsampling_dma_stop_common("g-16-1-19200-0-16-0-0-16-0-0-1024",dma_stop);
+    test_digitalsampling_dma_stop_now("g-16-1-19200-0-16-0-0-16-0-0-1024");
 }
 
 static void test_digitalsampling_dma_stop_w1() {
-    test_digitalsampling_dma_stop_common("g-16-1-19200-0-16-0-0-16-0-2-1024",dma_stop_with_now_in_window1);
+    test_digitalsampling_dma_stop_in_window("g-16-1-19200-0-16-0-0-16-0-2-1024",1);
 }
 
 static void test_digitalsampling_dma_stop_w2() {
-    test_digitalsampling_dma_stop_common("g-16-1-19200-0-16-0-0-16-0-3-1024",dma_stop_with_now_in_window2);
+    test_digitalsampling_dma_stop_in_window("g-16-1-19200-0-16-0-0-16-0-3-1024",2);
 }
 
 static void test_digitalsampling_dma_stop_w3() {
-    test_digitalsampling_dma_stop_common("g-16-1-19200-0-16-0-0-16-0-4-1024",dma_stop_with_now_in_window3);
+    test_digitalsampling_dma_stop_in_window("g-16-1-19200-0-16-0-0-16-0-4-1024",3);
 }
 
 static void test_digitalsampling_dma_stop_w4() {
-    test_digitalsampling_dma_stop_common("g-16-1-19200-0-16-0-0-16-0-5-1024",dma_stop_with_now_in_window4);
+    test_digitalsampling_dma_stop_in_window("g-16-1-19200-0-16-0-0-16-0-5-1024",4);
 }
 
 // =============================================================================

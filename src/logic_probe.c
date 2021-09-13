@@ -81,7 +81,7 @@ void probe_stop() {
 }
 
 bool is_probe_stop_complete() {
-    if (probecontrols.state == STATE_STOPPING_SAMPLING && is_digitalsampling_finished()) {
+    if ((probecontrols.state == STATE_SAMPLING || probecontrols.state == STATE_STOPPING_SAMPLING) && is_digitalsampling_finished()) {
         probecontrols.state = STATE_SAMPLING_DONE;
     }
     return probecontrols.state == STATE_SAMPLING_DONE;

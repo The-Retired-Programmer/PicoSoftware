@@ -88,8 +88,8 @@ bool is_digitalsampling_finished() {
     return dma_done_flag;
 }
 
-struct sample_buffers getsamplebuffers() {
-    return samplebuffers;
+struct sample_buffers *getsamplebuffers() {
+    return &samplebuffers;
 }
 
 #ifdef TESTINGBUILD
