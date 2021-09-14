@@ -58,6 +58,6 @@ static void test_probe_pinbase() {
 // =============================================================================
 
 void test_probe_controls_init() {
-    add_test("parse_control_parameters", "g-cmd", test_probe_controls);
-    add_test("parse_pinbase", "g-pin", test_probe_pinbase);
+    add_test("parse_control_parameters", "u", test_probe_controls);
+    add_test("parse_pinbase", "u", test_probe_pinbase);
 }

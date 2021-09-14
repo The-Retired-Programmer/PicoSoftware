@@ -25,7 +25,7 @@
 
 // TEST HARNESS
 
-#define MAXTESTS 50 
+#define MAXTESTS 100 
 
 static struct test_control_block tcbs[MAXTESTS];
 static uint testcount = 0;
@@ -56,7 +56,10 @@ static bool isint(char *line) {
 
 static void writemenu() {
     for (int i=0; i < testcount; i++) {
-        printf("%s(%i) - %s\n", tcbs[i].alias, i+1, tcbs[i].name);
+        if (*(tcbs[i].groups) == '\0' ) {
+            printf("%i - %s\n", i+1, tcbs[i].name);
+        } else 
+            printf("%i (%s) - %s\n", i+1, tcbs[i].groups, tcbs[i].name);
     }
 }
 
@@ -151,14 +154,8 @@ static int getselectionid() {
             return (singletestnumber = val);
         }
         return OUT_OF_RANGE;
-    } else {
-        for (int i=0; i < testcount; i++) {
-            if (strcmp(linebuffer, tcbs[i].alias)== 0) {
-                return (singletestnumber = i+1);
-            }
-        }
+    } else 
         return OUT_OF_RANGE;
-    }
 }
 
 //      TRACE
@@ -189,12 +186,12 @@ void ptest_init() {
     testcount = 0;
 }
 
-bool add_test(char* name, char* alias, void (*testfunction)() ) {
+bool add_test(char* name, char* groups, void (*testfunction)() ) {
     if (testcount >= MAXTESTS) {
         return false;
     }
     tcbs[testcount].name = name;
-    tcbs[testcount].alias = alias;
+    tcbs[testcount].groups = groups;
     tcbs[testcount].passcount = 0;
     tcbs[testcount].failcount = 0;
     tcbs[testcount++].testfunction = testfunction;

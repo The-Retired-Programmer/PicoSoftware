@@ -49,5 +49,5 @@ static void test_digitalsampling_pio_internals() {
 // =============================================================================
 
 void test_pio_digitalsampling_init() {
-    add_test("pio digitalsampling","pio", test_digitalsampling_pio_internals);
+    add_test("pio digitalsampling","u", test_digitalsampling_pio_internals);
 }

@@ -24,7 +24,7 @@
 
 struct test_control_block {
     char* name;
-    char* alias; // short for single test UI use
+    char* groups;
     void (*testfunction)();
     int passcount;
     int failcount;
@@ -32,7 +32,7 @@ struct test_control_block {
 
 void ptest_init();
 
-bool add_test(char* name, char* alias, void (*testfunction)());
+bool add_test(char* name, char* groups, void (*testfunction)());
 
 void ptest_execute();
 

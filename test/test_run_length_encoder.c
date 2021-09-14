@@ -85,5 +85,5 @@ static void test_digitalsampling_rle_internals() {
 // =============================================================================
 
 void test_run_length_encoder_init() {
-    add_test("run length encoder", "rle", test_digitalsampling_rle_internals);
+    add_test("run length encoder", "u", test_digitalsampling_rle_internals);
 }

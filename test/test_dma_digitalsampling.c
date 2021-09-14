@@ -151,11 +151,11 @@ static void test_digitalsampling_dma_stop_w4() {
 // =============================================================================
 
 void test_dma_digitalsampling_init() {
-    add_test("dma digitalsampling", "dma", test_digitalsampling_dma_internals);
-    add_test("dma stop", "dma_stop", test_digitalsampling_dma_stop);
-    add_test("dma stop window1", "dma_stop_w1", test_digitalsampling_dma_stop_w1);
-    add_test("dma stop window2", "dma_stop_w2", test_digitalsampling_dma_stop_w2);
-    add_test("dma stop window3", "dma_stop_w3", test_digitalsampling_dma_stop_w3);
-    add_test("dma stop window4", "dma_stop_w4", test_digitalsampling_dma_stop_w4);
+    add_test("dma digitalsampling", "ud", test_digitalsampling_dma_internals);
+    add_test("dma stop", "ud", test_digitalsampling_dma_stop);
+    add_test("dma stop window1", "udw", test_digitalsampling_dma_stop_w1);
+    add_test("dma stop window2", "udw", test_digitalsampling_dma_stop_w2);
+    add_test("dma stop window3", "udw", test_digitalsampling_dma_stop_w3);
+    add_test("dma stop window4", "udw", test_digitalsampling_dma_stop_w4);
 
 }

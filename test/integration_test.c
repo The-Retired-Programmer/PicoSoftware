@@ -134,9 +134,9 @@ static void integration_test4() {
 // =============================================================================
 
 void integration_test_init() {
-    add_test("integration test - stop on buffer full", "it", integration_test1);
-    add_test("integration test - interrupt on buffer full", "it", integration_test1a);
-    add_test("integration test - manual stop - short wait", "it", integration_test2);
-    add_test("integration test - manual stop - long wait", "it", integration_test3);
-    add_test("integration test - manual stop - longer wait", "it", integration_test4);
+    add_test("integration test - stop on buffer full", "i", integration_test1);
+    add_test("integration test - interrupt on buffer full", "i", integration_test1a);
+    add_test("integration test - manual stop - short wait", "i", integration_test2);
+    add_test("integration test - manual stop - long wait", "i", integration_test3);
+    add_test("integration test - manual stop - longer wait", "i", integration_test4);
 }

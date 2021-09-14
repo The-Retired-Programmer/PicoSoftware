@@ -144,10 +144,10 @@ static void test_gpio_probe_event_trigger_callback() {
 // =============================================================================
 
 void test_gpio_probe_event_init() {
-    add_test("gpio_event_low", "gpiolow", test_gpio_probe_event_trigger_on_low);
-    add_test("gpio_event_high", "gpiohigh", test_gpio_probe_event_trigger_on_high);
-    add_test("gpio_event_fall", "gpiofall", test_gpio_probe_event_trigger_on_fall);
-    add_test("gpio_event_rise", "gpiorise", test_gpio_probe_event_trigger_on_rise);
-    add_test("gpio_event_notenabled", "gpionotenabled", test_gpio_probe_event_notenabled);
-    add_test("gpio_event_callback", "gpiocallback", test_gpio_probe_event_trigger_callback);
+    add_test("gpio_event_low", "ug", test_gpio_probe_event_trigger_on_low);
+    add_test("gpio_event_high", "ug", test_gpio_probe_event_trigger_on_high);
+    add_test("gpio_event_fall", "ug", test_gpio_probe_event_trigger_on_fall);
+    add_test("gpio_event_rise", "ug", test_gpio_probe_event_trigger_on_rise);
+    add_test("gpio_event_notenabled", "ug", test_gpio_probe_event_notenabled);
+    add_test("gpio_event_callback", "ug", test_gpio_probe_event_trigger_callback);
 }

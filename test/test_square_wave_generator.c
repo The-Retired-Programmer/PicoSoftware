@@ -36,5 +36,5 @@ static void test_square_wave_generator() {
 // =============================================================================
 
 void test_square_wave_generator_init() {
-    add_test("square_wave_generator", "sqwave", test_square_wave_generator);
+    add_test("square_wave_generator", "u", test_square_wave_generator);
 }
