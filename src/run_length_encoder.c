@@ -108,9 +108,10 @@ void create_RLE_encoded_sample(struct probe_controls* controls,
         printf("# %i\n", pinoffset+controls->pinbase);
         insertptr = rlebuffer;
         count = 0;
-        for (uint bufferno = 0; bufferno < samplebuffers->number_of_buffers; bufferno++){
+        for (uint bufferno = 0; bufferno < samplebuffers->valid_buffer_count; bufferno++){
+            uint bufferindex = (bufferno + samplebuffers->earliest_valid_buffer) % samplebuffers->number_of_buffers; 
             for (uint wordno = 0; wordno < samplebuffers->buffer_size_words ; wordno++) {
-                uint32_t wordvalue = samplebuffers->buffers[bufferno][wordno];
+                uint32_t wordvalue = samplebuffers->buffers[bufferindex][wordno];
                 for (int bitcount = usedbitsperword(controls) -controls->pinwidth + pinoffset; bitcount >=0 ; bitcount-=controls->pinwidth) {
                     uint32_t mask = 1u<<bitcount;
                     _rle_insertvalue((wordvalue&mask) > 0);
