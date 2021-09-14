@@ -42,9 +42,6 @@
 #include "hardware/structs/bus_ctrl.h"
 #include "dma_digitalsampling.h"
 #include "digitalsampling.h"
-#ifdef TESTINGBUILD
-#include "../test/ptest.h"
-#endif
 
 #define CONTROL_DMA_CHANNEL 0
 #define TRANSFER_DMA_CHANNEL 1
@@ -62,9 +59,13 @@ static uint number_of_buffers;
 static uint dma_commands_issued;
 struct sample_buffers *samplebuffers;
 
-static void disable_interrupts() {
+static void disable_dma_irq0_interrupt() {
     dma_channel_set_irq0_enabled(CONTROL_DMA_CHANNEL,false);
     irq_set_enabled(DMA_IRQ_0, false);
+}
+
+static void disable_all_dma_interrupts() {
+    disable_dma_irq0_interrupt();
     dma_channel_set_irq1_enabled(TRANSFER_DMA_CHANNEL,false);
     irq_set_enabled(DMA_IRQ_1, false);
 }
@@ -82,19 +83,16 @@ static void set_valid_sample_values() {
        samplebuffers->earliest_valid_buffer = 0;
     }
     samplebuffers->sampling_done = true;
-#ifdef TESTINGBUILD
-    trace(offset+'A'); trace(countoffset+'a'); trace(dma_commands_issued+'a');
-#endif
 }
 
 static void dma_irq0_handler() {
     dma_commands_issued++;
-    if( dma_commands_issued >= 0x8000 ) dma_commands_issued &= 0x7; 
+    if (dma_commands_issued > number_of_buffers+1) disable_dma_irq0_interrupt();
     dma_channel_acknowledge_irq0(CONTROL_DMA_CHANNEL);
 }
 
 static void dma_irq1_handler() {
-    disable_interrupts();
+    disable_all_dma_interrupts();
     set_valid_sample_values();
     dma_channel_acknowledge_irq1(TRANSFER_DMA_CHANNEL);
 }
