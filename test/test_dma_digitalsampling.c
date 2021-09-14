@@ -27,56 +27,38 @@
 
 #define readdatainit  0xcccc0000
 volatile uint32_t readdata = readdatainit;
-volatile uint dma_buffer_fills = 0 ;
-volatile bool dma_completed = false;
-volatile uint dma_completed_count = 0;
 struct probe_controls controls;
 
-static void dma_buffer_callback() {
-    readdata+=1;
-    trace('0');
-    dma_buffer_fills++;
-}
-
-static void dma_transfer_finished_callback() {
-     trace('1');
-    dma_completed = true;
-}
-
 static void test_digitalsampling_dma_internals() {
-    dma_buffer_fills = 0;
     readdata = readdatainit;
-    dma_completed = false;
-    dma_completed_count = 0;
     // 1024 sample size means  8 words / buffer
-    char* res = parse_control_parameters(&controls,"g-16-1-19200-0-16-0-0-16-0-1-1024"); // will only use samplesize and pin_width
-    if ( res != NULL ) {
-        fail(res);
+    char* errormessage = parse_control_parameters(&controls,"g-16-1-19200-0-16-0-0-16-0-1-1024"); // will only use samplesize and pin_width
+    if ( errormessage != NULL ) {
+        fail(errormessage);
         return;
     }
-    res = setuptransferbuffers(&controls);
-    if ( res != NULL ) {
-        fail(res);
+    errormessage = setuptransferbuffers(&controls);
+    if ( errormessage != NULL ) {
+        fail(errormessage);
         return;
     }
     dma_set_timer(0, 1, 256);
-    res = setupDMAcontrollers(&controls, &readdata, 0x3b); //
-    if ( res != NULL ) {
-        fail(res);
+    errormessage = setupDMAcontrollers(&controls, &readdata, 0x3b); //
+    if ( errormessage != NULL ) {
+        fail(errormessage);
         return;
     }
     dma_to_have_bus_priority();
-    dma_after_every_control(dma_buffer_callback);
-    dma_on_completed(dma_transfer_finished_callback);
     dma_start();
-    while (!dma_completed);
+    struct sample_buffers *samplebuffers = getsamplebuffers();
+    while (!samplebuffers->sampling_done);
     pass("transfer completed signalled");
     readdata = readdatainit;
-    pass_if_equal_uint("control count", 5, dma_buffer_fills);
-    struct sample_buffers *samplebuffers = getsamplebuffers();
-    for (uint i = 0; i < samplebuffers->number_of_buffers ; i++) {
-        printf("buffer: first %x, last %x\n", samplebuffers->buffers[i][0],
-            samplebuffers->buffers[i][samplebuffers->buffer_size_words-1]);
+    pass_if_equal_uint("buffers filled", 4, samplebuffers->valid_buffer_count);
+    for (uint i = 0; i < samplebuffers->valid_buffer_count ; i++) {
+        uint bufferoffset = (i + samplebuffers->earliest_valid_buffer) % samplebuffers->number_of_buffers;
+        printf("buffer: first %x, last %x\n", samplebuffers->buffers[bufferoffset][0],
+            samplebuffers->buffers[bufferoffset][samplebuffers->buffer_size_words-1]);
     }
     printf("Sample Buffers: start at %i; count is %i\n",
         samplebuffers->earliest_valid_buffer,
@@ -84,45 +66,42 @@ static void test_digitalsampling_dma_internals() {
 }
 
 static bool test_digitalsampling_dma_stop_preactions(char *config) {
-    dma_buffer_fills = 0;
     readdata = readdatainit;
-    dma_completed = false;
     struct probe_controls controls;
     // 1024 sample size =>  8 words / buffer
-    char* res = parse_control_parameters(&controls,config); // will only use samplesize and pin_width
-    if ( res != NULL ) {
-        fail(res);
+    char* errormessage = parse_control_parameters(&controls,config); // will only use samplesize and pin_width
+    if ( errormessage != NULL ) {
+        fail(errormessage);
         return false;
     }
-    res = setuptransferbuffers(&controls);
-    if ( res != NULL ) {
-        fail(res);
+    errormessage = setuptransferbuffers(&controls);
+    if ( errormessage != NULL ) {
+        fail(errormessage);
         return false;
     }
     dma_set_timer(0, 1, 256);
-    res = setupDMAcontrollers(&controls, &readdata, 0x3b);
-    if ( res != NULL ) {
-        fail(res);
+    errormessage = setupDMAcontrollers(&controls, &readdata, 0x3b);
+    if ( errormessage != NULL ) {
+        fail(errormessage);
         return false;
     }
     dma_to_have_bus_priority();
-    dma_after_every_control(dma_buffer_callback);
-    dma_on_completed(dma_transfer_finished_callback);
     dma_start();
     return true;
 }
 
 static void test_digitalsampling_dma_stop_postactions() {
+    struct sample_buffers *samplebuffers = getsamplebuffers();
     readdata = readdata & 0xff00ffff; // mark the buffer where the event occurs
     trace('w');
-    while (!dma_completed); // wait for completion
+    while (!samplebuffers->sampling_done); // wait for completion
     trace('c');
     pass("transfer completed signalled");
-    pass_if_greaterthan_uint("control count", 5, dma_buffer_fills);
-    struct sample_buffers *samplebuffers = getsamplebuffers();
-    for (uint i = 0; i < samplebuffers->number_of_buffers ; i++) {
-        printf("buffer: first %x, last %x\n", samplebuffers->buffers[i][0],
-            samplebuffers->buffers[i][samplebuffers->buffer_size_words-1]);
+    pass_if_equal_uint("buffers filled", 4, samplebuffers->valid_buffer_count);
+    for (uint i = 0; i < samplebuffers->valid_buffer_count ; i++) {
+        uint bufferoffset = (i + samplebuffers->earliest_valid_buffer) % samplebuffers->number_of_buffers;
+        printf("buffer: first %x, last %x\n", samplebuffers->buffers[bufferoffset][0],
+            samplebuffers->buffers[bufferoffset][samplebuffers->buffer_size_words-1]);
     }
     printf("Sample Buffers: start at %i; count is %i\n",
         samplebuffers->earliest_valid_buffer,

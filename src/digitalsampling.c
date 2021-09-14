@@ -34,6 +34,7 @@
 static struct sample_buffers samplebuffers;
 
 static char* _setuptransferbuffers(struct probe_controls* controls) {
+    samplebuffers.sampling_done = false;
     samplebuffers.number_of_buffers = NUMBER_OF_BUFFERS;
     uint32_t buffer_size_words = controls->samplesize / (samplesperword(controls) * NUMBER_OF_BUFFERS);
     samplebuffers.buffer_size_words = buffer_size_words;
@@ -46,12 +47,6 @@ static char* _setuptransferbuffers(struct probe_controls* controls) {
     return NULL;
 }
 
-static bool dma_done_flag = false;
-
-static void dma_done() {
-    dma_done_flag = true;
-}
-
 // =============================================================================
 //
 // module API
@@ -59,19 +54,17 @@ static void dma_done() {
 // =============================================================================
 
 char* digitalsampling_start(struct probe_controls* controls) {
-    dma_done_flag = false;
-    char* returned;
-    returned = _setuptransferbuffers(controls);
-    if (returned != NULL) {
-        return returned;
+    char* errormessage;
+    errormessage = _setuptransferbuffers(controls);
+    if (errormessage != NULL) {
+        return errormessage;
     }
     piodigitalsampling_init(controls);
-    returned = setupDMAcontrollers(controls, &pio0->rxf[0], pio_get_dreq(pio0, 0, false));
-    if (returned != NULL) {
-        return returned;
+    errormessage = setupDMAcontrollers(controls, &pio0->rxf[0], pio_get_dreq(pio0, 0, false));
+    if (errormessage != NULL) {
+        return errormessage;
     }
     dma_to_have_bus_priority();
-    dma_on_completed(dma_done);
     gpio_probe_event_init(controls);
     // and start everything running
     gpio_probe_event_start();
@@ -85,7 +78,7 @@ void digitalsampling_stop() {
 }
 
 bool is_digitalsampling_finished() {
-    return dma_done_flag;
+    return samplebuffers.sampling_done;
 }
 
 struct sample_buffers *getsamplebuffers() {

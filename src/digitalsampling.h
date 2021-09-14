@@ -31,6 +31,7 @@ struct sample_buffers {
     uint number_of_buffers;
     uint earliest_valid_buffer;
     uint valid_buffer_count;
+    volatile bool sampling_done;
 };
 
 struct sample_buffers *getsamplebuffers();

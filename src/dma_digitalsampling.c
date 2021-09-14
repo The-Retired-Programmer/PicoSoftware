@@ -61,8 +61,6 @@ static uint32_t **commandlist;
 static uint number_of_buffers;
 static uint dma_commands_issued;
 struct sample_buffers *samplebuffers;
-void (*on_dma_irq0)();
-void (*on_dma_irq1)();
 
 static void disable_interrupts() {
     dma_channel_set_irq0_enabled(CONTROL_DMA_CHANNEL,false);
@@ -79,25 +77,23 @@ static void set_valid_sample_values() {
     if (dma_commands_issued > number_of_buffers+1) {
        samplebuffers->valid_buffer_count = 4;
        samplebuffers->earliest_valid_buffer = (offset+3) % number_of_buffers;
-
     }  else {
        samplebuffers->valid_buffer_count = dma_commands_issued -1;
        samplebuffers->earliest_valid_buffer = 0;
     }
+    samplebuffers->sampling_done = true;
 #ifdef TESTINGBUILD
     trace(offset+'A'); trace(countoffset+'a'); trace(dma_commands_issued+'a');
 #endif
 }
 
 static void dma_irq0_handler() {
-    if (on_dma_irq0 != NULL) (*on_dma_irq0)();
     dma_commands_issued++;
     if( dma_commands_issued >= 0x8000 ) dma_commands_issued &= 0x7; 
     dma_channel_acknowledge_irq0(CONTROL_DMA_CHANNEL);
 }
 
 static void dma_irq1_handler() {
-    if (on_dma_irq1 != NULL) (*on_dma_irq1)();
     disable_interrupts();
     set_valid_sample_values();
     dma_channel_acknowledge_irq1(TRANSFER_DMA_CHANNEL);
@@ -113,8 +109,6 @@ char* setupDMAcontrollers(struct probe_controls* controls, const volatile uint32
     samplebuffers = getsamplebuffers();
     number_of_buffers = samplebuffers->number_of_buffers;
     dma_commands_issued = 0;
-    dma_after_every_control(NULL);
-    dma_on_completed(NULL);
     //
     // command DMA buffer set
     //
@@ -173,15 +167,6 @@ char* setupDMAcontrollers(struct probe_controls* controls, const volatile uint32
         false
     );
     return NULL;
-}
-
-void dma_after_every_control(void (*callback)()) {
-    on_dma_irq0 = callback;
-    
-}
-
-void dma_on_completed(void (*callback)()) {
-    on_dma_irq1 = callback;
 }
 
 void dma_to_have_bus_priority() {
