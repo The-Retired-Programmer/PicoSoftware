@@ -30,7 +30,17 @@
 static struct test_control_block tcbs[MAXTESTS];
 static uint testcount = 0;
 static struct test_control_block *current_tcb;
-static uint singletestnumber=1;
+static uint singletestnumber=0;
+
+#define END 0
+#define OUT_OF_RANGE_VAL -2
+#define ALL_VAL -1
+#define QUIT_VAL -3
+
+static int OUT_OF_RANGE[] = {OUT_OF_RANGE_VAL,END};
+static int ALL[] = {ALL_VAL,END};
+static int QUIT[] = {QUIT_VAL,END};
+static int VAL[] = {1, END};
 
 static void gettestresponse(char* ptr) {
     putchar('>');
@@ -45,13 +55,24 @@ static void gettestresponse(char* ptr) {
     }
 }
 
-static bool isint(char *line) {
+static int *parse_alpha(char c) {
+    return OUT_OF_RANGE;
+}
+
+static int *parse_int(char *linebuffer) {
+    char *line = linebuffer;
     while(*line != '\0') {
         if (!isdigit(*line++)) {
-            return false;
+            return OUT_OF_RANGE;
         }
     }
-    return true;
+    int val = atoi(linebuffer);
+    if (val>0 && val<=testcount) {
+        singletestnumber = val;
+        VAL[0] = val;
+        return VAL;
+    }
+    return OUT_OF_RANGE;
 }
 
 static void writemenu() {
@@ -114,48 +135,47 @@ static bool test_if_selection_mode() {
     return gpio_get(22)==0;
 }
 
-#define OUT_OF_RANGE -2
-#define ALL -1
-#define QUIT 0
-
-static int getselectionid() {
-    // 1-n => test number ; 0 is  exit ; -1 is all ; -2 is out of range
-    // user command format: decimal digits (nn= test number or 0 = quit)
-    //   + = next test number ; empty (ie just \n ) is repeat; - = previous
-    //  Q or q is quit ; alias string  = run test; ? write the menu
-    //  # = run all tests
-    //
+static int *getselectionid() {
+    // 1-n => test number ; 0 is  list terminator ; -1 is all ; -2 is out of range; -3 Quit
     char linebuffer[120];
     gettestresponse(linebuffer);
-    if ( strcmp(linebuffer,"Q") == 0) {
-        return QUIT;     
-    } else if ( strcmp(linebuffer,"q") == 0) {
+    char c = linebuffer[0];
+    switch (c) {
+    case ';': case ':':
         return QUIT;
-    } else if ( strcmp(linebuffer,"#") == 0) {
+    case '#': case '~':
         return ALL;
-    } else if ( strcmp(linebuffer,"?") == 0) {
+    case '?': case '/':
         writemenu();
         return getselectionid();
-    } else if ( strcmp(linebuffer,"") == 0) {
-        return singletestnumber;
-    } else if ( strcmp(linebuffer,"+") == 0) {
+    case '\\': case '|':
+        if (singletestnumber == 0 ) {
+            VAL[0] = ++singletestnumber;
+            return VAL;
+        }
+        VAL[0] = singletestnumber;
+        return VAL;
+    case '\0': case '>': case '.':
         if (singletestnumber < testcount) {
-            return ++singletestnumber;
+            VAL[0] = ++singletestnumber;
+            return VAL;
         }
         return OUT_OF_RANGE;
-    } else if ( strcmp(linebuffer,"-") == 0) {
+    case '<': case ',':
         if (singletestnumber > 1) {
-            return --singletestnumber;
-        } 
-        return OUT_OF_RANGE;
-    } else if ( isint(linebuffer)) {
-        int val = atoi(linebuffer);
-        if (val>0 && val<=testcount) {
-            return (singletestnumber = val);
+            VAL[0] = --singletestnumber;
+            return VAL;
         }
         return OUT_OF_RANGE;
-    } else 
+    case '0' ... '9':
+        return parse_int(linebuffer);
+    case 'a' ... 'z':
+        return parse_alpha(c);
+    case 'A' ... 'Z':
+        return parse_alpha(tolower(c));
+    default:
         return OUT_OF_RANGE;
+    }
 }
 
 //      TRACE
@@ -202,14 +222,14 @@ void ptest_execute() {
     puts("\nTESTING STARTING ...\n");
     if (test_if_selection_mode()){
         while (true) {
-            int selectedtest = getselectionid();
-            if (selectedtest == QUIT) break;
-            if (selectedtest == OUT_OF_RANGE) {
+            int* selectedtest = getselectionid();
+            if (*selectedtest == QUIT_VAL) break;
+            if (*selectedtest == OUT_OF_RANGE_VAL) {
                 continue;
-            } else if (selectedtest > 0) {
-                execute_test(selectedtest);
+            } else if (*selectedtest > 0) {
+                execute_test(*selectedtest);
                 summary_of_test();
-            } else if (selectedtest == ALL) {
+            } else if (*selectedtest == ALL_VAL) {
                 execute_tests();
                 summary_of_tests();
             }
