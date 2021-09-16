@@ -25,22 +25,37 @@
 
 // TEST HARNESS
 
-#define MAXTESTS 100 
+#define END 0
+#define QUIT -1
+#define OUT_OF_RANGE -2
+
+#define MAXTESTS 100
 
 static struct test_control_block tcbs[MAXTESTS];
 static uint testcount = 0;
 static struct test_control_block *current_tcb;
-static uint singletestnumber=0;
+static uint current_test_number=0;
 
-#define END 0
-#define OUT_OF_RANGE_VAL -2
-#define ALL_VAL -1
-#define QUIT_VAL -3
+static int selected_test_numbers[MAXTESTS+1];
+static uint selected_test_insert_point;
 
-static int OUT_OF_RANGE[] = {OUT_OF_RANGE_VAL,END};
-static int ALL[] = {ALL_VAL,END};
-static int QUIT[] = {QUIT_VAL,END};
-static int VAL[] = {1, END};
+static void init_tests_selected() {
+    selected_test_insert_point = 0;
+}
+
+static void add_test_to_selected(int test_number) {
+    if (selected_test_insert_point<MAXTESTS) selected_test_numbers[selected_test_insert_point++]= test_number;
+}
+
+static int *terminate_tests_selected() {
+    selected_test_numbers[selected_test_insert_point] = END;
+    return selected_test_numbers;
+}
+
+static int *insert_test_and_terminate(int test_number) {
+    add_test_to_selected(test_number);
+    return terminate_tests_selected();
+}
 
 static void gettestresponse(char* ptr) {
     putchar('>');
@@ -56,23 +71,22 @@ static void gettestresponse(char* ptr) {
 }
 
 static int *parse_alpha(char c) {
-    return OUT_OF_RANGE;
+    return insert_test_and_terminate(OUT_OF_RANGE);
 }
 
 static int *parse_int(char *linebuffer) {
     char *line = linebuffer;
     while(*line != '\0') {
         if (!isdigit(*line++)) {
-            return OUT_OF_RANGE;
+            return insert_test_and_terminate(OUT_OF_RANGE);
         }
     }
     int val = atoi(linebuffer);
     if (val>0 && val<=testcount) {
-        singletestnumber = val;
-        VAL[0] = val;
-        return VAL;
+        current_test_number = val;
+        return insert_test_and_terminate(val);
     }
-    return OUT_OF_RANGE;
+    return insert_test_and_terminate(OUT_OF_RANGE);
 }
 
 static void writemenu() {
@@ -96,30 +110,25 @@ static void execute_test(int selectionid) {
     probe_pass_teardown();
 }
 
-static void summary_of_test() {
-    if (tcbs[singletestnumber-1].failcount == 0) {
-        puts("\nTEST STATUS: GREEN");
-    } else {
-        puts("\nTEST STATUS: RED");
-    }
-    printf("Checks: passed: %i, failed: %i;\n",
-        tcbs[singletestnumber-1].passcount, tcbs[singletestnumber-1].failcount);
+static int *select_all_tests() {
+    for (int i = 1; i <= testcount;i++) add_test_to_selected(i);
+    return terminate_tests_selected();
 }
 
-static void execute_tests() {
-    for (uint i = 1; i <= testcount; i++) {
-       execute_test(i);
-    }
+static void execute_selected_tests() {
+    int *selected_tests = selected_test_numbers;
+    while (*selected_tests > 0) execute_test(*selected_tests++);
 }
 
 static void summary_of_tests() {
+    int *selected_tests = selected_test_numbers;
     uint tno = 0;
     uint sno = 0;
     uint fno = 0;
-    for (uint i = 0; i < testcount; i++) {
+    while (*selected_tests > 0) {
         tno++;
-        sno+=tcbs[i].passcount;
-        fno+=tcbs[i].failcount;
+        sno+=tcbs[*selected_tests].passcount;
+        fno+=tcbs[*selected_tests++].failcount;
     }
     if (fno == 0) {
         puts("\nTEST STATUS: GREEN");
@@ -136,37 +145,33 @@ static bool test_if_selection_mode() {
 }
 
 static int *getselectionid() {
-    // 1-n => test number ; 0 is  list terminator ; -1 is all ; -2 is out of range; -3 Quit
+    // 1-n => test number ; special codes (quit, out_of_range)  are negatives
     char linebuffer[120];
     gettestresponse(linebuffer);
     char c = linebuffer[0];
     switch (c) {
     case ';': case ':':
-        return QUIT;
+        return insert_test_and_terminate(QUIT);
     case '#': case '~':
-        return ALL;
+        return select_all_tests();
     case '?': case '/':
         writemenu();
         return getselectionid();
-    case '\\': case '|':
-        if (singletestnumber == 0 ) {
-            VAL[0] = ++singletestnumber;
-            return VAL;
+    case '@': case '\'':
+        if (current_test_number == 0 ) {
+            return insert_test_and_terminate(++current_test_number);
         }
-        VAL[0] = singletestnumber;
-        return VAL;
+        return insert_test_and_terminate(current_test_number);
     case '\0': case '>': case '.':
-        if (singletestnumber < testcount) {
-            VAL[0] = ++singletestnumber;
-            return VAL;
+        if (current_test_number < testcount) {
+            return insert_test_and_terminate(++current_test_number);
         }
-        return OUT_OF_RANGE;
+        return insert_test_and_terminate(OUT_OF_RANGE);
     case '<': case ',':
-        if (singletestnumber > 1) {
-            VAL[0] = --singletestnumber;
-            return VAL;
+        if (current_test_number > 1) {
+            return insert_test_and_terminate(--current_test_number);
         }
-        return OUT_OF_RANGE;
+        return insert_test_and_terminate(OUT_OF_RANGE);
     case '0' ... '9':
         return parse_int(linebuffer);
     case 'a' ... 'z':
@@ -174,7 +179,7 @@ static int *getselectionid() {
     case 'A' ... 'Z':
         return parse_alpha(tolower(c));
     default:
-        return OUT_OF_RANGE;
+        return insert_test_and_terminate(OUT_OF_RANGE);
     }
 }
 
@@ -222,20 +227,18 @@ void ptest_execute() {
     puts("\nTESTING STARTING ...\n");
     if (test_if_selection_mode()){
         while (true) {
+            init_tests_selected();
             int* selectedtest = getselectionid();
-            if (*selectedtest == QUIT_VAL) break;
-            if (*selectedtest == OUT_OF_RANGE_VAL) {
-                continue;
-            } else if (*selectedtest > 0) {
-                execute_test(*selectedtest);
-                summary_of_test();
-            } else if (*selectedtest == ALL_VAL) {
-                execute_tests();
-                summary_of_tests();
+            if (*selectedtest == QUIT) break;
+            else if (*selectedtest > 0) {
+               execute_selected_tests();
+               summary_of_tests();
             }
         }
     } else {
-        execute_tests();
+        init_tests_selected();
+        select_all_tests();
+        execute_selected_tests();
         summary_of_tests();
     }
     puts("\n ...TESTING COMPLETED\n");
