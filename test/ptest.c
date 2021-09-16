@@ -47,6 +47,10 @@ static void add_test_to_selected(int test_number) {
     if (selected_test_insert_point<MAXTESTS) selected_test_numbers[selected_test_insert_point++]= test_number;
 }
 
+static bool is_selected_tests_empty() {
+    return selected_test_insert_point == 0;
+}
+
 static int *terminate_tests_selected() {
     selected_test_numbers[selected_test_insert_point] = END;
     return selected_test_numbers;
@@ -71,7 +75,13 @@ static void gettestresponse(char* ptr) {
 }
 
 static int *parse_alpha(char c) {
-    return insert_test_and_terminate(OUT_OF_RANGE);
+    for (int i = 1; i <= testcount;i++){
+        struct test_control_block *tcb = &tcbs[i-1];
+        if (strchr(tcb->groups,c) != NULL) add_test_to_selected(i);
+    }
+    return is_selected_tests_empty() ?
+                insert_test_and_terminate(OUT_OF_RANGE) :
+                terminate_tests_selected();
 }
 
 static int *parse_int(char *linebuffer) {
