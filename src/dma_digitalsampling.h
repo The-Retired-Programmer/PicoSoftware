@@ -24,8 +24,6 @@
 
 char* setupDMAcontrollers(struct probe_controls* controls, const volatile uint32_t *readaddress, uint dreq);
 
-void dma_to_have_bus_priority();
-
 void dma_start();
 
 void dma_stop();

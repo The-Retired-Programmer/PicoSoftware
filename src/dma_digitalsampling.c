@@ -104,6 +104,7 @@ static void dma_irq1_handler() {
 // =============================================================================
 
 char* setupDMAcontrollers(struct probe_controls* controls, const volatile uint32_t *readaddress, uint dreq) {
+    bus_ctrl_hw->priority = BUSCTRL_BUS_PRIORITY_DMA_W_BITS | BUSCTRL_BUS_PRIORITY_DMA_R_BITS;
     samplebuffers = getsamplebuffers();
     number_of_buffers = samplebuffers->number_of_buffers;
     dma_commands_issued = 0;
@@ -165,10 +166,6 @@ char* setupDMAcontrollers(struct probe_controls* controls, const volatile uint32
         false
     );
     return NULL;
-}
-
-void dma_to_have_bus_priority() {
-    bus_ctrl_hw->priority = BUSCTRL_BUS_PRIORITY_DMA_W_BITS | BUSCTRL_BUS_PRIORITY_DMA_R_BITS;
 }
 
 void dma_start() {

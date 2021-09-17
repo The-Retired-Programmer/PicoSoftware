@@ -14,10 +14,6 @@
  * limitations under the License.
  */
 
-//
-// test - logic analyser/probe_controls
-//
-
 #include <stdlib.h>
 #include "hardware/clocks.h"
 #include "hardware/timer.h"
@@ -48,7 +44,6 @@ static void test_digitalsampling_dma_internals() {
         fail(errormessage);
         return;
     }
-    dma_to_have_bus_priority();
     dma_start();
     struct sample_buffers *samplebuffers = getsamplebuffers();
     while (!samplebuffers->sampling_done);
@@ -85,7 +80,6 @@ static bool test_digitalsampling_dma_stop_preactions(char *config) {
         fail(errormessage);
         return false;
     }
-    dma_to_have_bus_priority();
     dma_start();
     return true;
 }
