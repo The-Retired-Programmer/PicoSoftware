@@ -132,13 +132,16 @@ static void execute_selected_tests() {
 
 static void summary_of_tests() {
     int *selected_tests = selected_test_numbers;
+    struct test_control_block *tcb;
     uint tno = 0;
     uint sno = 0;
     uint fno = 0;
     while (*selected_tests > 0) {
+        tcb = &tcbs[*selected_tests-1];
         tno++;
-        sno+=tcbs[*selected_tests].passcount;
-        fno+=tcbs[*selected_tests++].failcount;
+        sno+=tcb->passcount;
+        fno+=tcb->failcount;
+        selected_tests++;
     }
     if (fno == 0) {
         puts("\nTEST STATUS: GREEN");

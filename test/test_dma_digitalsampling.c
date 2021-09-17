@@ -22,49 +22,14 @@
 #include "../src/dma_digitalsampling.h"
 
 #define readdatainit  0xcccc0000
-volatile uint32_t readdata = readdatainit;
+volatile uint32_t readdata;
 struct probe_controls controls;
-
-static void test_digitalsampling_dma_internals() {
-    readdata = readdatainit;
-    // 1024 sample size means  8 words / buffer
-    char* errormessage = parse_control_parameters(&controls,"g-16-1-19200-0-16-0-0-16-0-1-1024"); // will only use samplesize and pin_width
-    if ( errormessage != NULL ) {
-        fail(errormessage);
-        return;
-    }
-    errormessage = setuptransferbuffers(&controls);
-    if ( errormessage != NULL ) {
-        fail(errormessage);
-        return;
-    }
-    dma_set_timer(0, 1, 256);
-    errormessage = setupDMAcontrollers(&controls, &readdata, 0x3b); //
-    if ( errormessage != NULL ) {
-        fail(errormessage);
-        return;
-    }
-    dma_start();
-    struct sample_buffers *samplebuffers = getsamplebuffers();
-    while (!samplebuffers->sampling_done);
-    pass("transfer completed signalled");
-    readdata = readdatainit;
-    pass_if_equal_uint("buffers filled", 4, samplebuffers->valid_buffer_count);
-    for (uint i = 0; i < samplebuffers->valid_buffer_count ; i++) {
-        uint bufferoffset = (i + samplebuffers->earliest_valid_buffer) % samplebuffers->number_of_buffers;
-        printf("buffer: first %x, last %x\n", samplebuffers->buffers[bufferoffset][0],
-            samplebuffers->buffers[bufferoffset][samplebuffers->buffer_size_words-1]);
-    }
-    printf("Sample Buffers: start at %i; count is %i\n",
-        samplebuffers->earliest_valid_buffer,
-        samplebuffers->valid_buffer_count);
-}
 
 static bool test_digitalsampling_dma_stop_preactions(char *config) {
     readdata = readdatainit;
     struct probe_controls controls;
     // 1024 sample size =>  8 words / buffer
-    char* errormessage = parse_control_parameters(&controls,config); // will only use samplesize and pin_width
+    char* errormessage = parse_control_parameters(&controls,config);
     if ( errormessage != NULL ) {
         fail(errormessage);
         return false;
@@ -100,6 +65,12 @@ static void test_digitalsampling_dma_stop_postactions() {
     printf("Sample Buffers: start at %i; count is %i\n",
         samplebuffers->earliest_valid_buffer,
         samplebuffers->valid_buffer_count);
+}
+
+static void test_digitalsampling_dma_internals() {
+    char *config = "g-16-1-19200-0-16-0-0-16-0-1-1024";
+    if ( !test_digitalsampling_dma_stop_preactions(config)) return;
+    test_digitalsampling_dma_stop_postactions();
 }
 
 static void test_digitalsampling_dma_stop_now(char *config) {
