@@ -28,7 +28,6 @@ struct probe_controls controls;
 static bool test_digitalsampling_dma_stop_preactions(char *config) {
     readdata = readdatainit;
     struct probe_controls controls;
-    // 1024 sample size =>  8 words / buffer
     char* errormessage = parse_control_parameters(&controls,config);
     if ( errormessage != NULL ) {
         fail(errormessage);
@@ -49,14 +48,14 @@ static bool test_digitalsampling_dma_stop_preactions(char *config) {
     return true;
 }
 
-static void test_digitalsampling_dma_stop_postactions() {
+static void test_digitalsampling_dma_stop_postactions(uint expected_buffers_used) {
     struct sample_buffers *samplebuffers = getsamplebuffers();
     readdata = readdata & 0xff00ffff; // mark the buffer where the event occurs
     trace('w');
     while (!samplebuffers->sampling_done); // wait for completion
     trace('c');
     pass("transfer completed signalled");
-    pass_if_equal_uint("buffers filled", 4, samplebuffers->valid_buffer_count);
+    pass_if_equal_uint("buffers filled", expected_buffers_used, samplebuffers->valid_buffer_count);
     for (uint i = 0; i < samplebuffers->valid_buffer_count ; i++) {
         uint bufferoffset = (i + samplebuffers->earliest_valid_buffer) % samplebuffers->number_of_buffers;
         printf("buffer: first %x, last %x\n", samplebuffers->buffers[bufferoffset][0],
@@ -68,45 +67,52 @@ static void test_digitalsampling_dma_stop_postactions() {
 }
 
 static void test_digitalsampling_dma_internals() {
+    // 1024 sample size =>  8 words / buffer
     char *config = "g-16-1-19200-0-16-0-0-16-0-1-1024";
     if ( !test_digitalsampling_dma_stop_preactions(config)) return;
-    test_digitalsampling_dma_stop_postactions();
+    test_digitalsampling_dma_stop_postactions(4);
 }
 
-static void test_digitalsampling_dma_stop_now(char *config) {
+static void test_digitalsampling_dma_stop_now(char *config, uint32_t stop_delay, uint expected_buffers_used) {
     if ( !test_digitalsampling_dma_stop_preactions(config)) return;
-    busy_wait_us_32(13*13); // a delay to allow the buffers to rotate
+    busy_wait_us_32(stop_delay);
     trace('s');
     dma_stop();
-    test_digitalsampling_dma_stop_postactions();
+    test_digitalsampling_dma_stop_postactions(expected_buffers_used);
 }
 
-static void test_digitalsampling_dma_stop_in_window(char *config, uint logicalwindow) {
+static void test_digitalsampling_dma_stop_in_window(char *config, uint logicalwindow, uint expected_buffers_used) {
     if ( !test_digitalsampling_dma_stop_preactions(config)) return;
     busy_wait_us_32(13*13); // a delay to allow the buffers to rotate
     trace('s');
     dma_stop_where_now_is_in_window(logicalwindow);
-    test_digitalsampling_dma_stop_postactions();
+    test_digitalsampling_dma_stop_postactions(expected_buffers_used);
 }
 
-static void test_digitalsampling_dma_stop() {
-    test_digitalsampling_dma_stop_now("g-16-1-19200-0-16-0-0-16-0-0-1024");
+static void test_digitalsampling_dma_stop_quick() {
+    test_digitalsampling_dma_stop_now("g-16-1-19200-0-16-0-0-16-0-0-1024",14, 2);
+    test_digitalsampling_dma_stop_now("g-16-1-19200-0-16-0-0-16-0-0-1024",14, 2);
+    test_digitalsampling_dma_stop_now("g-16-1-19200-0-16-0-0-16-0-0-1024",14, 2);
+}
+
+static void test_digitalsampling_dma_stop_long() {
+    test_digitalsampling_dma_stop_now("g-16-1-19200-0-16-0-0-16-0-0-1024",13*13, 4 );
 }
 
 static void test_digitalsampling_dma_stop_w1() {
-    test_digitalsampling_dma_stop_in_window("g-16-1-19200-0-16-0-0-16-0-2-1024",1);
+    test_digitalsampling_dma_stop_in_window("g-16-1-19200-0-16-0-0-16-0-2-1024",1, 4);
 }
 
 static void test_digitalsampling_dma_stop_w2() {
-    test_digitalsampling_dma_stop_in_window("g-16-1-19200-0-16-0-0-16-0-3-1024",2);
+    test_digitalsampling_dma_stop_in_window("g-16-1-19200-0-16-0-0-16-0-3-1024",2, 4);
 }
 
 static void test_digitalsampling_dma_stop_w3() {
-    test_digitalsampling_dma_stop_in_window("g-16-1-19200-0-16-0-0-16-0-4-1024",3);
+    test_digitalsampling_dma_stop_in_window("g-16-1-19200-0-16-0-0-16-0-4-1024",3, 4);
 }
 
 static void test_digitalsampling_dma_stop_w4() {
-    test_digitalsampling_dma_stop_in_window("g-16-1-19200-0-16-0-0-16-0-5-1024",4);
+    test_digitalsampling_dma_stop_in_window("g-16-1-19200-0-16-0-0-16-0-5-1024",4, 4);
 }
 
 // =============================================================================
@@ -117,7 +123,8 @@ static void test_digitalsampling_dma_stop_w4() {
 
 void test_dma_digitalsampling_init() {
     add_test("dma digitalsampling", "ud", test_digitalsampling_dma_internals);
-    add_test("dma stop", "ud", test_digitalsampling_dma_stop);
+    add_test("dma stop quick", "ud", test_digitalsampling_dma_stop_quick);
+    add_test("dma stop long", "ud", test_digitalsampling_dma_stop_long);
     add_test("dma stop window1", "udw", test_digitalsampling_dma_stop_w1);
     add_test("dma stop window2", "udw", test_digitalsampling_dma_stop_w2);
     add_test("dma stop window3", "udw", test_digitalsampling_dma_stop_w3);

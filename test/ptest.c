@@ -170,7 +170,7 @@ static int *getselectionid() {
     case '?': case '/':
         writemenu();
         return getselectionid();
-    case '@': case '\'':
+    case ' ':
         if (current_test_number == 0 ) {
             return insert_test_and_terminate(++current_test_number);
         }

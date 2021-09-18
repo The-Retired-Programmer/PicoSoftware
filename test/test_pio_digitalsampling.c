@@ -25,14 +25,20 @@
 
 static void test_digitalsampling_pio_internals() {
     struct probe_controls controls;
-    char* res = parse_control_parameters(&controls,"g-13-3-20000-1-13-3-0-13-0-1-3200");
-    if ( res != NULL ) {
-        fail(res);
+    char* errormessage = parse_control_parameters(&controls,"g-13-3-20000-1-13-3-0-13-0-1-3200");
+    if ( errormessage != NULL ) {
+        fail(errormessage);
         return;
     }
     piodigitalsampling_init(&controls);
     piodigitalsampling_start();
-    square_wave_generator(13, 3, 1250);
+    //
+    errormessage = square_wave_generator_init(13,1250);
+    if ( errormessage != NULL ) {
+        fail(errormessage);
+        return;
+    }
+    square_wave_generator_start();
     //read from pio fifo
     #define READSIZE 100
     uint32_t databuffer[READSIZE];

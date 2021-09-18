@@ -26,7 +26,8 @@
 // no pass or fail - it needs a visual check on GPIO pins with a scope or leds
 
 static void test_square_wave_generator() {
-    square_wave_generator(13,3,0.25);
+    square_wave_generator_init(13,0.25);
+    square_wave_generator_start();
 }
 
 // =============================================================================

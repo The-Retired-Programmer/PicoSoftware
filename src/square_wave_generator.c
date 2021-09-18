@@ -47,7 +47,7 @@
 //
 // =============================================================================
 
-void square_wave_generator(uint pinbase, uint pinwidth, float frequency) {
+char *square_wave_generator_init(uint pinbase, float frequency) {
     uint wrap_program_cycles;
     ppb_init_pio1();
     if (frequency > 1000) {
@@ -91,13 +91,18 @@ void square_wave_generator(uint pinbase, uint pinwidth, float frequency) {
         ppb_set_wrap();
         wrap_program_cycles = 8704;
     }
-    ppb_build();
+    char *errormessage = ppb_build();
+    if (errormessage != NULL) return errormessage;
     pio_sm_config c = ppb_clear_and_load(wrap_program_cycles*frequency);
-    sm_config_set_set_pins(&c, pinbase, pinwidth);
+    sm_config_set_set_pins(&c, pinbase, 3);
     pio_gpio_init(pio1, pinbase);
     pio_gpio_init(pio1, pinbase+1);
     pio_gpio_init(pio1, pinbase+2);
-    pio_sm_set_consecutive_pindirs(pio1, 0, pinbase, pinwidth, true);
+    pio_sm_set_consecutive_pindirs(pio1, 0, pinbase, 3, true);
     ppb_configure(&c);
+    return NULL;
+}
+
+void square_wave_generator_start() {
     ppb_start();
 }

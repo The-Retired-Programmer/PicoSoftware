@@ -16,4 +16,6 @@
 
 #include <stdlib.h>
 
-void square_wave_generator(uint pinbase, uint pinwidth, float frequency);
+char *square_wave_generator_init(uint pinbase, float frequency);
+
+void square_wave_generator_start();
