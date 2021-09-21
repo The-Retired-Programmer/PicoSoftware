@@ -187,9 +187,15 @@ void dma_stop() {
 }
 
 void dma_stop_where_now_is_in_window(uint logicalwindow) {
-    uint first_window_offset = number_of_buffers - logicalwindow;
-    uint32_t **commandlist_read = dma_channel_get_read_addr(CONTROL_DMA_CHANNEL);
-    uint clr_offset = commandlist_read - commandlist;
-    uint stop_offset = (clr_offset + first_window_offset) % number_of_buffers;   
+    int stop_offset;
+    if (dma_commands_issued > number_of_buffers) {
+        uint first_window_offset = number_of_buffers - logicalwindow;
+        uint32_t **commandlist_read = dma_channel_get_read_addr(CONTROL_DMA_CHANNEL);
+        uint clr_offset = commandlist_read - commandlist;
+        stop_offset = (clr_offset + first_window_offset) % number_of_buffers;   
+    } else {
+        stop_offset = dma_commands_issued - logicalwindow ;
+        if (stop_offset < 0) stop_offset = 0;
+    }
     commandlist[stop_offset] = NULL;
 }

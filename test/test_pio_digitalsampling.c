@@ -25,7 +25,7 @@
 
 static void test_digitalsampling_pio_internals() {
     struct probe_controls controls;
-    char* errormessage = parse_control_parameters(&controls,"g-13-3-20000-1-13-3-0-13-0-1-3200");
+    char* errormessage = parse_control_parameters(&controls,"g-19-3-20000-1-19-3-0-19-0-1-3200");
     if ( errormessage != NULL ) {
         fail(errormessage);
         return;
@@ -33,7 +33,7 @@ static void test_digitalsampling_pio_internals() {
     piodigitalsampling_init(&controls);
     piodigitalsampling_start();
     //
-    errormessage = square_wave_generator_init(13,1250);
+    errormessage = square_wave_generator_init(19,1250);
     if ( errormessage != NULL ) {
         fail(errormessage);
         return;

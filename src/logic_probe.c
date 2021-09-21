@@ -19,11 +19,16 @@
 //
 
 #include "digitalsampling.h"
+#include "gpio_probe_event.h"
 #include "run_length_encoder.h"
 #include "probe_controls.h"
 #include <stdio.h>
 
 struct probe_controls probecontrols;
+int (*_responsewriter)(const char* response);
+int (*_ack_responsewriter)();
+int (*_nak_responsewriter)(const char* response);
+char response_buffer[256];
 
 // =============================================================================
 //
@@ -31,8 +36,11 @@ struct probe_controls probecontrols;
 //
 // =============================================================================
 
-void probe_init() {
+void probe_init(int (*responsewriter)(const char* response), int (*ack_responsewriter)(), int (*nak_responsewriter)(const char* response)) {
     probecontrols.state = STATE_IDLE;
+    _responsewriter = responsewriter;
+    _ack_responsewriter = ack_responsewriter;
+    _nak_responsewriter = nak_responsewriter;
 }
 
 void probe_pass_init() {
@@ -42,59 +50,64 @@ void probe_pass_teardown() {
 }
 
 void probe_ping() {
-    puts("PICO-1");
-    puts("Y");
+    _responsewriter("PICO-1");
+    _ack_responsewriter();
 }
 
 void probe_getstate() {
-    printf("%i\n", probecontrols.state);
-    puts("Y");
+    sprintf(response_buffer, "%i", probecontrols.state);
+    _responsewriter(response_buffer);
+    _ack_responsewriter();
 }
 
 void probe_go(char* cmdbuffer) {
     if (probecontrols.state != STATE_IDLE) {
-        printf("N Bad state - expecting STATE_IDLE(0) - was %i\n", probecontrols.state);
+        sprintf(response_buffer, "Bad state - expecting STATE_IDLE(0) - was %i", probecontrols.state);
+        _nak_responsewriter(response_buffer);
         return; 
     }
     char* errormessage = parse_control_parameters(&probecontrols, cmdbuffer);
     if (errormessage != NULL ) {
-        printf("N command parse failure - %s\n",errormessage);
+        sprintf(response_buffer, "Command parse failure - %s",errormessage);
+        _nak_responsewriter(response_buffer);
         return; 
     }
     errormessage = digitalsampling_start(&probecontrols);
     if (errormessage != NULL ) {
-        printf("N failure initiating digital sampling- %s\n",errormessage);
+        sprintf(response_buffer, "Failure initiating digital sampling- %s",errormessage);
+        _nak_responsewriter(response_buffer);
         return; 
     }
     probecontrols.state = STATE_SAMPLING;
-    puts("Y");
+    _ack_responsewriter();
 }
 
 void probe_stop() {
     if (probecontrols.state != STATE_SAMPLING) {
-        printf("N Bad state - expecting STATE_SAMPLING(1) - was %i\n", probecontrols.state);
+        sprintf(response_buffer, "Bad state - expecting STATE_SAMPLING(1) - was %i", probecontrols.state);
+        _nak_responsewriter(response_buffer);
         return;
     }
     digitalsampling_stop();
     probecontrols.state = STATE_STOPPING_SAMPLING;
-    puts("Y");
+    _ack_responsewriter();
 }
 
-bool is_probe_stop_complete() {
-    if ((probecontrols.state == STATE_SAMPLING || probecontrols.state == STATE_STOPPING_SAMPLING) && is_digitalsampling_finished()) {
-        probecontrols.state = STATE_SAMPLING_DONE;
-    }
+volatile bool is_probe_stop_complete() {
+    if (probecontrols.state == STATE_SAMPLING && has_event_triggered()) probecontrols.state = STATE_STOPPING_SAMPLING;
+    if ((probecontrols.state == STATE_SAMPLING || probecontrols.state == STATE_STOPPING_SAMPLING) && is_digitalsampling_finished()) probecontrols.state = STATE_SAMPLING_DONE;
     return probecontrols.state == STATE_SAMPLING_DONE;
 }
 
 void probe_getsample() {
     if (probecontrols.state != STATE_SAMPLING_DONE) {
-        printf("N Bad state - expecting STATE_SAMPLING_DONE(3) - was %i\n", probecontrols.state);
+        sprintf(response_buffer, "Bad state - expecting STATE_SAMPLING_DONE(3) - was %i", probecontrols.state);
+        _nak_responsewriter(response_buffer);
         return;
     }
-    create_RLE_encoded_sample(&probecontrols, getsamplebuffers(), puts);
-    puts("Y");
+    create_RLE_encoded_sample(&probecontrols, getsamplebuffers(), _responsewriter);
     probecontrols.state = STATE_IDLE;
+    _ack_responsewriter();
 }
 
 #ifdef TESTINGBUILD

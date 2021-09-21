@@ -34,11 +34,11 @@ void (*on_callback)();
 
 static void gpio_callback(uint pin, uint32_t events) {
     event_triggered = true;
-    gpio_set_irq_enabled(pin, gpioirq, false);
-    gpio_acknowledge_irq(pin, events);
     if (callbacklistener) {
         (*on_callback)();
     }
+    gpio_set_irq_enabled(pin, gpioirq, false);
+    gpio_acknowledge_irq(pin, events);
 }
 
 // =============================================================================

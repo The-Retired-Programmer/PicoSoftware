@@ -68,7 +68,7 @@ static void test_digitalsampling_dma_stop_postactions(uint expected_buffers_used
 
 static void test_digitalsampling_dma_internals() {
     // 1024 sample size =>  8 words / buffer
-    char *config = "g-16-1-19200-0-16-0-0-16-0-1-1024";
+    char *config = "g-19-1-19200-0-19-0-0-19-0-1-1024";
     if ( !test_digitalsampling_dma_stop_preactions(config)) return;
     test_digitalsampling_dma_stop_postactions(4);
 }
@@ -90,29 +90,29 @@ static void test_digitalsampling_dma_stop_in_window(char *config, uint logicalwi
 }
 
 static void test_digitalsampling_dma_stop_quick() {
-    test_digitalsampling_dma_stop_now("g-16-1-19200-0-16-0-0-16-0-0-1024",14, 2);
-    test_digitalsampling_dma_stop_now("g-16-1-19200-0-16-0-0-16-0-0-1024",14, 2);
-    test_digitalsampling_dma_stop_now("g-16-1-19200-0-16-0-0-16-0-0-1024",14, 2);
+    test_digitalsampling_dma_stop_now("g-19-1-19200-0-19-0-0-19-0-0-1024",14, 2);
+    test_digitalsampling_dma_stop_now("g-19-1-19200-0-19-0-0-19-0-0-1024",14, 2);
+    test_digitalsampling_dma_stop_now("g-19-1-19200-0-19-0-0-19-0-0-1024",14, 2);
 }
 
 static void test_digitalsampling_dma_stop_long() {
-    test_digitalsampling_dma_stop_now("g-16-1-19200-0-16-0-0-16-0-0-1024",13*13, 4 );
+    test_digitalsampling_dma_stop_now("g-19-1-19200-0-19-0-0-19-0-0-1024",13*13, 4 );
 }
 
 static void test_digitalsampling_dma_stop_w1() {
-    test_digitalsampling_dma_stop_in_window("g-16-1-19200-0-16-0-0-16-0-2-1024",1, 4);
+    test_digitalsampling_dma_stop_in_window("g-19-1-19200-0-19-0-0-19-0-2-1024",1, 4);
 }
 
 static void test_digitalsampling_dma_stop_w2() {
-    test_digitalsampling_dma_stop_in_window("g-16-1-19200-0-16-0-0-16-0-3-1024",2, 4);
+    test_digitalsampling_dma_stop_in_window("g-19-1-19200-0-19-0-0-19-0-3-1024",2, 4);
 }
 
 static void test_digitalsampling_dma_stop_w3() {
-    test_digitalsampling_dma_stop_in_window("g-16-1-19200-0-16-0-0-16-0-4-1024",3, 4);
+    test_digitalsampling_dma_stop_in_window("g-19-1-19200-0-19-0-0-19-0-4-1024",3, 4);
 }
 
 static void test_digitalsampling_dma_stop_w4() {
-    test_digitalsampling_dma_stop_in_window("g-16-1-19200-0-16-0-0-16-0-5-1024",4, 4);
+    test_digitalsampling_dma_stop_in_window("g-19-1-19200-0-19-0-0-19-0-5-1024",4, 4);
 }
 
 // =============================================================================

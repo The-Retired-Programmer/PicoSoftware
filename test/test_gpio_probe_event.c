@@ -28,7 +28,7 @@
 
 static void test_gpio_probe_event_trigger_on_fall() {
     struct probe_controls controls;
-    char* res = parse_control_parameters(&controls,"g-16-1-19200-0-16-0-1-12-2-1-64000"); 
+    char* res = parse_control_parameters(&controls,"g-19-1-19200-0-19-0-1-18-2-1-64000"); 
     if ( res != NULL ) {
         fail(res);
         return;
@@ -45,7 +45,7 @@ static void test_gpio_probe_event_trigger_on_fall() {
 
 static void test_gpio_probe_event_trigger_on_rise() {
     struct probe_controls controls;
-    char* res = parse_control_parameters(&controls,"g-16-1-19200-0-16-0-1-12-3-1-64000");
+    char* res = parse_control_parameters(&controls,"g-19-1-19200-0-19-0-1-18-3-1-64000");
     if ( res != NULL ) {
         fail(res);
         return;
@@ -62,7 +62,7 @@ static void test_gpio_probe_event_trigger_on_rise() {
 
 static void test_gpio_probe_event_trigger_on_low() {
     struct probe_controls controls;
-    char* res = parse_control_parameters(&controls,"g-16-1-19200-0-16-0-1-12-0-1-64000");
+    char* res = parse_control_parameters(&controls,"g-19-1-19200-0-19-0-1-18-0-1-64000");
     if ( res != NULL ) {
         fail(res);
         return;
@@ -77,7 +77,7 @@ static void test_gpio_probe_event_trigger_on_low() {
 
 static void test_gpio_probe_event_trigger_on_high() {
     struct probe_controls controls;
-    char* res = parse_control_parameters(&controls,"g-16-1-19200-0-16-0-1-12-1-1-64000");
+    char* res = parse_control_parameters(&controls,"g-19-1-19200-0-19-0-1-18-1-1-64000");
     if ( res != NULL ) {
         fail(res);
         return;
@@ -92,7 +92,7 @@ static void test_gpio_probe_event_trigger_on_high() {
 
 static void test_gpio_probe_event_notenabled() {
     struct probe_controls controls;
-    char* res = parse_control_parameters(&controls,"g-16-1-19200-0-16-0-0-12-2-1-64000"); 
+    char* res = parse_control_parameters(&controls,"g-19-1-19200-0-19-0-0-18-2-1-64000"); 
     if ( res != NULL ) {
         fail(res);
         return;
@@ -116,7 +116,7 @@ static void callback() {
 static void test_gpio_probe_event_trigger_callback() {
     struct probe_controls controls;
     callbackcount = 0;
-    char* res = parse_control_parameters(&controls,"g-16-1-19200-0-16-0-1-12-3-1-64000");
+    char* res = parse_control_parameters(&controls,"g-19-1-19200-0-19-0-1-18-3-1-64000");
     if ( res != NULL ) {
         fail(res);
         return;

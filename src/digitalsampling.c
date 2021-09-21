@@ -47,6 +47,12 @@ static char* _setuptransferbuffers(struct probe_controls* controls) {
     return NULL;
 }
 
+static enum sample_end_mode sampleendmode;
+
+static void on_gpio_event() {
+    dma_stop_where_now_is_in_window(sampleendmode - EVENT_WINDOW_1 +1);
+}
+
 // =============================================================================
 //
 // module API
@@ -65,10 +71,12 @@ char* digitalsampling_start(struct probe_controls* controls) {
         return errormessage;
     }
     gpio_probe_event_init(controls);
+    gpio_set_trigger_listener(on_gpio_event);
+    sampleendmode = controls->sampleendmode;
     // and start everything running
-    gpio_probe_event_start();
     piodigitalsampling_start();
     dma_start();
+    gpio_probe_event_start();
     return NULL;
 }
 
