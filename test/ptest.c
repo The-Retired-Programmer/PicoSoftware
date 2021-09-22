@@ -324,6 +324,16 @@ void pass_if_equal_string(char* id, char* expected, char* value) {
     }
 }
 
+void pass_if_equal_int(char* id, int expected, int value) {
+    if (expected == value) {
+        current_tcb->passcount++;
+    } else {
+        current_tcb->failcount++;
+        printf("Test %s - Check %s failed\n", current_tcb->name, id);
+        printf("    expected %i, was %i\n", expected, value);
+    }
+}
+
 void pass_if_equal_uint(char* id, uint expected, uint value) {
     if (expected == value) {
         current_tcb->passcount++;

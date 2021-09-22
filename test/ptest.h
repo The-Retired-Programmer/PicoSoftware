@@ -49,6 +49,7 @@ void trace_print();
 void pass_if_null(char* id, char* value);
 
 void pass_if_equal_string(char* id, char* expected, char* value);
+void pass_if_equal_int(char* id, int expected, int value);
 void pass_if_equal_uint(char* id, uint expected, uint value);
 void pass_if_equal_uintx(char* id, uint expected, uint value);
 void pass_if_equal_uint32(char* id, uint32_t expected, uint32_t value);

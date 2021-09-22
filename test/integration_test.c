@@ -15,6 +15,7 @@
  */
 
 #include <stdlib.h>
+#include <string.h>
 #include "hardware/timer.h"
 #include "ptest.h"
 #include "../src/logic_probe.h"
@@ -24,48 +25,122 @@
 #include "../src/square_wave_generator.h"
 #include "../src/gpio_probe_event.h"
 
-int it_ack_puts() {
-    puts("Y");
+
+//  assuming sample size 32000, sample rate = 1M/s, sample width = 1
+#define MICROSECS_PER_BUFFER 8000
+// small amount  of time to ensure we don't clash with a buffer boundary
+#define DELTA (MICROSECS_PER_BUFFER/10)
+
+#define MAXLINES 3
+static char *receivedresponse;
+static bool ismultilineresponse;
+static char multilineresponse[MAXLINES][256];
+static int responselines;
+
+static int it_response_puts(char *response) {
+    if (ismultilineresponse) {
+        if (responselines < MAXLINES) strcpy(multilineresponse[responselines++], response);
+    } else {
+        receivedresponse = response;
+    }
 }
 
-int it_nak_puts(char *response) {
+static int it_ack_puts() {
+    pass("command - successfully processed");
+}
+
+static int it_nak_puts(char *response) {
     fail(response);
 }
 
-static void commandaction(char *line) {
-    puts(line);
-    action_command(line);
-}
-
-static void it_commandaction(char* checkname, char *line, enum probestate expectedstate) {
-    commandaction(line);
+static void it_commandaction(char* checkname, char *line, enum probestate expectedstate, char *expectedresponse) {
+    if (ismultilineresponse = (strcmp(expectedresponse, "<MULTILINE>")==0)){
+        responselines=0;
+        action_command(line);
+    } else {
+        receivedresponse="";
+        action_command(line);
+        pass_if_equal_string("expected response", expectedresponse, receivedresponse);
+    }
     pass_if_equal_uint(checkname, expectedstate,  getprobestate());
     is_probe_stop_complete();
+}
+
+static void check_data_is_for_pin(uint expectedpin, char* id_line) {
+    int pin;
+    pass_if_equal_int("pin header in data", 1, sscanf(id_line, "# %i", &pin));
+    pass_if_equal_int("expected d pin response", expectedpin, pin);
+}
+
+static void check_data_length(uint expectedbuffercount, char* data_line) {
+    struct sample_buffers *samplebuffers = getsamplebuffers();
+    uint bitsperbuffer = samplebuffers->buffer_size_words*32;
+    int databitcount;
+    pass_if_equal_int("data length (bits) format", 1, sscanf(data_line, "%iL", &databitcount));
+    pass_if_equal_int("data length (bits)", bitsperbuffer*expectedbuffercount, databitcount);
+}
+
+static void check_data_length_and_split(uint expectedbuffercount, char* data_line) {
+    struct sample_buffers *samplebuffers = getsamplebuffers();
+    uint bitsperbuffer = samplebuffers->buffer_size_words*32;
+    int zerodatabitcount;
+    int onedatabitcount;
+    pass_if_equal_int("data length (bits) format", 2, sscanf(data_line, "%iL%iH", &zerodatabitcount, &onedatabitcount));
+    pass_if_equal_int("total data length (bits)", bitsperbuffer*expectedbuffercount, zerodatabitcount+onedatabitcount);
+}
+
+static void check_buffer_content_on_event(uint pin, uint expectedbuffercount) {
+    if (responselines == 2) {
+        check_data_is_for_pin(pin, multilineresponse[0]);
+        check_data_length_and_split(expectedbuffercount, multilineresponse[1]);
+    } else {
+        fail("multiline response has incorrect length");
+    }
+}
+
+static void check_buffer_content_on_stop(uint pin, uint expectedbuffercount) {
+    if (responselines == 2) {
+        check_data_is_for_pin(pin, multilineresponse[0]);
+        check_data_length(expectedbuffercount, multilineresponse[1]);
+    } else {
+        fail("multiline response has incorrect length");
+    }
+}
+
+static void check_buffer_content_on_completion(uint pin, uint expectedbuffercount) {
+    if (responselines == 2) {
+        check_data_is_for_pin(pin, multilineresponse[0]);
+        check_data_length(expectedbuffercount, multilineresponse[1]);
+    } else {
+        fail("multiline response has incorrect length");
+    }
 }
 
 static char *presamplecommands[] = { "p", "?", "g-command", "?", NULL};
 static enum probestate presamplestates[] = {STATE_IDLE, STATE_IDLE, STATE_SAMPLING, STATE_SAMPLING};
 static char *presamplechecknames[] ={"after p", "after p/?", "after g", "after g/?"};
+static char *presampleexpectedresponse[] = {"PICO-1", "0", "", "1"};
 
 static char *postsamplecommands[] = {"?", "d", "?" , NULL};
 static enum probestate postsamplestates[] = {STATE_SAMPLING_DONE, STATE_IDLE, STATE_IDLE};
 static char *postsamplechecknames[] = { "after done", "after d", "after d/?"};
+static char *postsampleexpectedresponse[] = {"3", "<MULTILINE>", "0"};
 
-static void run_commands(char **commands, enum probestate *states, char **checknames) {
+static void run_commands(char **commands, enum probestate *states, char **checknames, char **expectedresponse) {
     while (*commands != NULL ) {
-        it_commandaction(*checknames++, *commands++, *states++);
+        it_commandaction(*checknames++, *commands++, *states++, *expectedresponse++);
     }
 }
 
 static void setup_and_start(char *gcommand) {
     presamplecommands[2] = gcommand;
     pass_if_equal_uint("initialstate", STATE_IDLE,  getprobestate());
-    run_commands(presamplecommands, presamplestates, presamplechecknames);
+    run_commands(presamplecommands, presamplestates, presamplechecknames, presampleexpectedresponse);
 }
 
 static void wait_and_completion(uint expectedstartbuffer, uint expectedbuffercount) {
     while (!is_probe_stop_complete());
-    run_commands(postsamplecommands, postsamplestates, postsamplechecknames);
+    run_commands(postsamplecommands, postsamplestates, postsamplechecknames, postsampleexpectedresponse);
     struct sample_buffers *samplebuffers = getsamplebuffers();
     printf("Sample Buffers: start at %i; count is %i\n",
         samplebuffers->earliest_valid_buffer,
@@ -74,33 +149,29 @@ static void wait_and_completion(uint expectedstartbuffer, uint expectedbuffercou
     pass_if_equal_uint("buffer count", expectedbuffercount, samplebuffers->valid_buffer_count);
 }
 
-static void run_to_completion(char *gcommand, uint expectedstartbuffer, uint expectedbuffercount) {
-    probe_init(puts, it_ack_puts, it_nak_puts); // as per src/main.c
+static void run_to_completion(char *gcommand, uint expectedstartbuffer, uint expectedbuffercount, uint data_pin) {
+    probe_init(it_response_puts, it_ack_puts, it_nak_puts); // as per src/main.c
     square_wave_generator_init(19,125000);
     square_wave_generator_start();
     setup_and_start(gcommand);
     wait_and_completion(expectedstartbuffer, expectedbuffercount);
+    check_buffer_content_on_completion(data_pin, expectedbuffercount);
 }
 
-static void run_with_stop_command(char *gcommand, uint expectedstartbuffer, uint expectedbuffercount, uint32_t waitusec) {
-    probe_init(puts, it_ack_puts, it_nak_puts);
+static void run_with_stop_command(char *gcommand, uint expectedstartbuffer, uint expectedbuffercount, uint32_t waitusec, uint data_pin) {
+    probe_init(it_response_puts, it_ack_puts, it_nak_puts);
     square_wave_generator_init(19,125000);
     square_wave_generator_start();
     setup_and_start(gcommand);
     if (waitusec > 0) busy_wait_us_32(waitusec);
-    commandaction("s");
+    action_command("s");
     pass_if_equal_uint("after s", STATE_STOPPING_SAMPLING,  getprobestate());
-    wait_and_completion(expectedstartbuffer, expectedbuffercount);  
+    wait_and_completion(expectedstartbuffer, expectedbuffercount);
+    check_buffer_content_on_stop(data_pin, expectedbuffercount);
 }
 
-//  assuming sample size 32000, sample rate = 1M/s, sample width = 1
-#define MICROSECS_PER_BUFFER 8000
-// small amount  of time to ensure we don't clash with a buffer boundary
-#define DELTA (MICROSECS_PER_BUFFER/10)
-
-
 static void run_with_stop_on_event(char *gcommand, uint expectedstartbuffer, uint expectedbuffercount, uint32_t eventwait, uint event_pin) {
-    probe_init(puts, it_ack_puts, it_nak_puts); // as per src/main.c
+    probe_init(it_response_puts, it_ack_puts, it_nak_puts); // as per src/main.c
     square_wave_generator_init(19,125000);
     square_wave_generator_start();
     setup_and_start(gcommand);
@@ -110,27 +181,28 @@ static void run_with_stop_on_event(char *gcommand, uint expectedstartbuffer, uin
     gpio_put(event_pin, true);
     is_probe_stop_complete();
     pass_if_equal_uint("after event", STATE_STOPPING_SAMPLING,  getprobestate());
-    wait_and_completion(expectedstartbuffer, expectedbuffercount);  
+    wait_and_completion(expectedstartbuffer, expectedbuffercount);
+    check_buffer_content_on_event(event_pin, expectedbuffercount);
 }
 
 static void to_buffer_full() {
-    run_to_completion("g-18-1-1000000-0-19-2-0-18-0-1-32000", 0, 4);
+    run_to_completion("g-18-1-1000000-0-19-2-0-18-0-1-32000", 0, 4, 18);
 }
 
 static void stop_before_buffer_full() {
-    run_with_stop_command("g-18-1-1000000-0-19-2-0-18-0-1-32000", 0, 1, DELTA);
+    run_with_stop_command("g-18-1-1000000-0-19-2-0-18-0-1-32000", 0, 1, DELTA, 18);
 }
 
 static void manual_stop_quick() {
-    run_with_stop_command("g-18-1-1000000-0-19-2-0-18-0-0-32000", 0, 1, DELTA);
+    run_with_stop_command("g-18-1-1000000-0-19-2-0-18-0-0-32000", 0, 1, DELTA, 18);
 }
 
 static void manual_stop_medium() {
-    run_with_stop_command("g-18-1-1000000-0-19-2-0-18-0-0-32000", 0,3, MICROSECS_PER_BUFFER*2+DELTA);
+    run_with_stop_command("g-18-1-1000000-0-19-2-0-18-0-0-32000", 0,3, MICROSECS_PER_BUFFER*2+DELTA, 18);
 }
 
 static void manual_stop_long() {
-    run_with_stop_command("g-18-1-1000000-0-19-2-0-18-0-0-32000", 3, 4, MICROSECS_PER_BUFFER*10+DELTA);
+    run_with_stop_command("g-18-1-1000000-0-19-2-0-18-0-0-32000", 3, 4, MICROSECS_PER_BUFFER*10+DELTA, 18);
 }
 
 static void event_w1_immediate_event() {

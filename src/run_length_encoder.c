@@ -47,6 +47,8 @@ char* insertptr;
 bool logic_level;
 uint32_t count;
 
+char pinmsgbuffer[256];
+
 static void _rle_init(uint maxdigits, uint _maxlinelength, int (*outputfunction)(const char *line)) {
     insertptr = rlebuffer;
     count = 0;
@@ -105,7 +107,8 @@ void create_RLE_encoded_sample(struct probe_controls* controls,
         struct sample_buffers *samplebuffers, int (*outputfunction)(const char *line)){
     _rle_init(MAXDIGITS, RLELINESIZE, outputfunction);
     for(uint pinoffset = 0; pinoffset < controls->pinwidth; pinoffset++) {
-        printf("# %i\n", pinoffset+controls->pinbase);
+        sprintf(pinmsgbuffer,"# %i", pinoffset+controls->pinbase);
+        outputfunction(pinmsgbuffer);
         insertptr = rlebuffer;
         count = 0;
         for (uint bufferno = 0; bufferno < samplebuffers->valid_buffer_count; bufferno++){
