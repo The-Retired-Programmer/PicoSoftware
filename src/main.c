@@ -24,14 +24,6 @@
 #include "logic_probe.h"
 #include "frontend_commands.h"
 
-static int ack_puts() {
-    puts("Y");
-}
-
-static int nak_puts(char *response) {
-    printf("N %s\n", response);
-}
-
 // =============================================================================
 //
 // module API  - the main function
@@ -40,7 +32,6 @@ static int nak_puts(char *response) {
 
 int main() {
     stdio_init_all();
-    probe_init(puts,ack_puts, nak_puts);
     frontend_commands_controller_init();
     while (true) {
         frontend_commands_controller();

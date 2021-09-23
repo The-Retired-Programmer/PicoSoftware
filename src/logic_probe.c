@@ -15,7 +15,7 @@
  */
 
 //
-// LOGIC ANALYSER PROBE -  frontend command actions
+// LOGIC ANALYSER PROBE - command actions
 //
 
 #include "digitalsampling.h"

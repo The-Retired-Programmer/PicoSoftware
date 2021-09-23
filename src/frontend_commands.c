@@ -69,6 +69,14 @@ static bool linebuilder() {
     }
 }
 
+static int ack_puts() {
+    puts("Y");
+}
+
+static int nak_puts(char *response) {
+    printf("N %s\n", response);
+}
+
 // =============================================================================
 //
 // module API
@@ -77,12 +85,13 @@ static bool linebuilder() {
 
 void frontend_commands_controller_init() {
     insertchar = linebuffer;
+    probe_init(puts,ack_puts, nak_puts);
 }
 
 void frontend_commands_controller() {
     if (linebuilder()) {
         _action_command(linebuffer);
-        frontend_commands_controller_init();
+        insertchar = linebuffer;
     }
 }
 
