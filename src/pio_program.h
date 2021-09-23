@@ -25,6 +25,8 @@ void ppb_init_pio1();
 void ppb_init_pio0_sm(uint smnum);
 void ppb_init_pio1_sm(uint smnum);
 
+void teardown_ppb();
+
 void ppb_set_wraptarget();
 
 void ppb_set_wrap();

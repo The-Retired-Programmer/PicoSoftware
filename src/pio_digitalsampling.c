@@ -92,6 +92,10 @@ void piodigitalsampling_init(struct probe_controls* controls) {
     ppb_configure(&c);
 }
 
+void teardown_piodigitalsampling() {
+    teardown_ppb();
+}
+
 void piodigitalsampling_start() {
     ppb_start();
 }

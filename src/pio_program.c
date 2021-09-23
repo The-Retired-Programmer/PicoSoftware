@@ -77,6 +77,10 @@ void ppb_init_pio1() {
     ppb_init(0);
 }
 
+void teardown_ppb() {
+    pio_sm_set_enabled(pio, sm, false);
+}
+
 uint ppb_here() {
     return MAX_PROGRAM_SIZE - emptyinstructions;
 }

@@ -47,6 +47,12 @@ static char* _setuptransferbuffers(struct probe_controls* controls) {
     return NULL;
 }
 
+static void _teardowntransferbuffers() {
+    for (int i = 0; i< NUMBER_OF_BUFFERS; i++) {
+        free(samplebuffers.buffers[i]);
+    }
+}
+
 static enum sample_end_mode sampleendmode;
 
 static void on_gpio_event() {
@@ -80,6 +86,13 @@ char* digitalsampling_start(struct probe_controls* controls) {
     return NULL;
 }
 
+void digitalsampling_teardown() {
+    teardown_gpio_probe_event();
+    teardown_dma();
+    teardown_piodigitalsampling();
+    _teardowntransferbuffers();
+}
+
 void digitalsampling_stop() {
     dma_stop();
 }
@@ -96,6 +109,10 @@ struct sample_buffers *getsamplebuffers() {
 
 char* setuptransferbuffers(struct probe_controls* controls) {
     return _setuptransferbuffers(controls);
+}
+
+void teardowntransferbuffers() {
+    _teardowntransferbuffers();
 }
 
 #endif

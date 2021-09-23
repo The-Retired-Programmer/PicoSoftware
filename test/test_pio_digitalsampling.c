@@ -46,6 +46,8 @@ static void test_digitalsampling_pio_internals() {
         databuffer[i] = piodigitalsampling_read();
     }
     pass_if_equal_uintx("buffer read", 0x3B7693B2, databuffer[0]);
+    teardown_square_wave_generator();
+    teardown_piodigitalsampling();
 }
 
 // =============================================================================

@@ -113,11 +113,9 @@ static void execute_test(int selectionid) {
     current_tcb->passcount = 0;
     current_tcb->failcount = 0;
     printf("RUNNING (%i) %s\n",selectionid, current_tcb->name);
-    probe_pass_init();
     trace_init();
     current_tcb->testfunction();
     trace_print();
-    probe_pass_teardown();
 }
 
 static int *select_all_tests() {

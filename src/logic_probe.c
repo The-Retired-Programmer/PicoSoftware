@@ -30,6 +30,16 @@ int (*_ack_responsewriter)();
 int (*_nak_responsewriter)(const char* response);
 char response_buffer[256];
 
+static void probe_pass_teardown() {
+    digitalsampling_teardown();
+}
+
+static void probe_pass_reset(char *response) {
+    probe_pass_teardown();
+    probecontrols.state = STATE_IDLE;
+    _nak_responsewriter(response);
+}
+
 // =============================================================================
 //
 // module API
@@ -41,12 +51,6 @@ void probe_init(int (*responsewriter)(const char* response), int (*ack_responsew
     _responsewriter = responsewriter;
     _ack_responsewriter = ack_responsewriter;
     _nak_responsewriter = nak_responsewriter;
-}
-
-void probe_pass_init() {
-}
-
-void probe_pass_teardown() {
 }
 
 void probe_ping() {
@@ -63,19 +67,19 @@ void probe_getstate() {
 void probe_go(char* cmdbuffer) {
     if (probecontrols.state != STATE_IDLE) {
         sprintf(response_buffer, "Bad state - expecting STATE_IDLE(0) - was %i", probecontrols.state);
-        _nak_responsewriter(response_buffer);
+        probe_pass_reset(response_buffer);
         return; 
     }
     char* errormessage = parse_control_parameters(&probecontrols, cmdbuffer);
     if (errormessage != NULL ) {
         sprintf(response_buffer, "Command parse failure - %s",errormessage);
-        _nak_responsewriter(response_buffer);
+        probe_pass_reset(response_buffer);
         return; 
     }
     errormessage = digitalsampling_start(&probecontrols);
     if (errormessage != NULL ) {
         sprintf(response_buffer, "Failure initiating digital sampling- %s",errormessage);
-        _nak_responsewriter(response_buffer);
+        probe_pass_reset(response_buffer);
         return; 
     }
     probecontrols.state = STATE_SAMPLING;
@@ -85,7 +89,7 @@ void probe_go(char* cmdbuffer) {
 void probe_stop() {
     if (probecontrols.state != STATE_SAMPLING) {
         sprintf(response_buffer, "Bad state - expecting STATE_SAMPLING(1) - was %i", probecontrols.state);
-        _nak_responsewriter(response_buffer);
+        probe_pass_reset(response_buffer);
         return;
     }
     digitalsampling_stop();
@@ -102,11 +106,12 @@ volatile bool is_probe_stop_complete() {
 void probe_getsample() {
     if (probecontrols.state != STATE_SAMPLING_DONE) {
         sprintf(response_buffer, "Bad state - expecting STATE_SAMPLING_DONE(3) - was %i", probecontrols.state);
-        _nak_responsewriter(response_buffer);
+        probe_pass_reset(response_buffer);
         return;
     }
     create_RLE_encoded_sample(&probecontrols, getsamplebuffers(), _responsewriter);
     probecontrols.state = STATE_IDLE;
+    probe_pass_teardown();
     _ack_responsewriter();
 }
 

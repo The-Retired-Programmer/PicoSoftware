@@ -27,6 +27,16 @@
 char linebuffer[200];
 char *insertchar;
 
+char messagebuffer[256];
+
+static int ack_puts() {
+    puts("Y");
+}
+
+static int nak_puts(char *response) {
+    printf("N %s\n", response);
+}
+
 static void _action_command(char *line) {
     if (strchr(line,'!') == NULL) {
         switch (line[0]) {
@@ -37,7 +47,6 @@ static void _action_command(char *line) {
             probe_getstate();
             break;
         case 'g':
-            probe_pass_init();
             probe_go(line);
             break;
         case 's': 
@@ -45,10 +54,10 @@ static void _action_command(char *line) {
             break;
         case 'd':
             probe_getsample();
-            probe_pass_teardown();
             break;
         default: // unknown command
-            printf("N Unknown command %s\n",line);
+            sprintf(messagebuffer, "Unknown command %s\n",line);
+            nak_puts(messagebuffer);
         }
     }
 }
@@ -67,14 +76,6 @@ static bool linebuilder() {
             *insertchar++ = ch;
         }
     }
-}
-
-static int ack_puts() {
-    puts("Y");
-}
-
-static int nak_puts(char *response) {
-    printf("N %s\n", response);
 }
 
 // =============================================================================

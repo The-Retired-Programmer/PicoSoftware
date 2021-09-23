@@ -16,9 +16,6 @@
 
 void probe_init();
 
-void probe_pass_init();
-void probe_pass_teardown();
-
 void probe_ping();
 void probe_getstate();
 void probe_go(char* cmdbuffer);

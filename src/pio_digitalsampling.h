@@ -18,6 +18,8 @@
 
 void piodigitalsampling_init(struct probe_controls* controls);
 
+void teardown_piodigitalsampling();
+
 void piodigitalsampling_start();
 
 #ifdef TESTINGBUILD

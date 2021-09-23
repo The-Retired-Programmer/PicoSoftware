@@ -58,6 +58,7 @@ static void test_pio_program() {
     //
     c=ppb_clear_and_load(10000.0); // load it again and check it's at the start location
     pass_if_equal_uint( "program offset(4)", 32-9, ppb_getprogramoffset());
+    teardown_ppb();
 }
 
 // =============================================================================

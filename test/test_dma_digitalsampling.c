@@ -64,6 +64,8 @@ static void test_digitalsampling_dma_stop_postactions(uint expected_buffers_used
     printf("Sample Buffers: start at %i; count is %i\n",
         samplebuffers->earliest_valid_buffer,
         samplebuffers->valid_buffer_count);
+    teardown_dma();
+    teardowntransferbuffers();
 }
 
 static void test_digitalsampling_dma_internals() {
@@ -90,8 +92,6 @@ static void test_digitalsampling_dma_stop_in_window(char *config, uint logicalwi
 }
 
 static void test_digitalsampling_dma_stop_quick() {
-    test_digitalsampling_dma_stop_now("g-19-1-19200-0-19-0-0-19-0-0-1024",14, 2);
-    test_digitalsampling_dma_stop_now("g-19-1-19200-0-19-0-0-19-0-0-1024",14, 2);
     test_digitalsampling_dma_stop_now("g-19-1-19200-0-19-0-0-19-0-0-1024",14, 2);
 }
 

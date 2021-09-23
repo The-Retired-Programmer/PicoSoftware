@@ -18,4 +18,6 @@
 
 char *square_wave_generator_init(uint pinbase, float frequency);
 
+void teardown_square_wave_generator();
+
 void square_wave_generator_start();

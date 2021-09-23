@@ -168,6 +168,12 @@ char* setupDMAcontrollers(struct probe_controls* controls, const volatile uint32
     return NULL;
 }
 
+void teardown_dma() {
+    disable_all_dma_interrupts();
+    dma_channel_abort(TRANSFER_DMA_CHANNEL);
+    dma_channel_abort(CONTROL_DMA_CHANNEL);
+}
+
 void dma_start() {
     dma_channel_set_irq0_enabled(CONTROL_DMA_CHANNEL,true);
     irq_set_exclusive_handler(DMA_IRQ_0, dma_irq0_handler);

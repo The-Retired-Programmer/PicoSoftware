@@ -103,6 +103,10 @@ char *square_wave_generator_init(uint pinbase, float frequency) {
     return NULL;
 }
 
+void teardown_square_wave_generator() {
+    // teardown_ppb();
+}
+
 void square_wave_generator_start() {
     ppb_start();
 }

@@ -20,6 +20,7 @@
 
 #include <stdlib.h>
 #include "pico/stdlib.h"
+#include "hardware/timer.h"
 #include "../src/square_wave_generator.h"
 #include "ptest.h"
 
@@ -28,6 +29,8 @@
 static void test_square_wave_generator() {
     square_wave_generator_init(19,0.25);
     square_wave_generator_start();
+    busy_wait_us_32(12*1000000); // allow 12 secs to view
+    teardown_square_wave_generator();
 }
 
 // =============================================================================
@@ -37,5 +40,5 @@ static void test_square_wave_generator() {
 // =============================================================================
 
 void test_square_wave_generator_init() {
-    add_test("square_wave_generator", "u", test_square_wave_generator);
+    add_test("square_wave_generator", "q", test_square_wave_generator);
 }

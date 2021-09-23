@@ -41,6 +41,7 @@ static void test_gpio_probe_event_trigger_on_fall() {
     pass_if_false_with_message("before trigger", has_event_triggered(), "event should not have triggered");
     gpio_put(pin, false);
     pass_if_true_with_message("after trigger", has_event_triggered(), "event should have triggered");
+    teardown_gpio_probe_event();
 }
 
 static void test_gpio_probe_event_trigger_on_rise() {
@@ -58,6 +59,7 @@ static void test_gpio_probe_event_trigger_on_rise() {
     pass_if_false_with_message("before trigger", has_event_triggered(), "event should not have triggered");
     gpio_put(pin, true);
     pass_if_true_with_message("after trigger", has_event_triggered(), "event should have triggered");
+    teardown_gpio_probe_event();
 }
 
 static void test_gpio_probe_event_trigger_on_low() {
@@ -73,6 +75,7 @@ static void test_gpio_probe_event_trigger_on_low() {
     gpio_put(pin, false);
     gpio_probe_event_start();
     pass_if_true_with_message("is low", has_event_triggered(), "event should have triggered");
+    teardown_gpio_probe_event();
 }
 
 static void test_gpio_probe_event_trigger_on_high() {
@@ -88,6 +91,7 @@ static void test_gpio_probe_event_trigger_on_high() {
     gpio_put(pin, true);
     gpio_probe_event_start();
     pass_if_true_with_message("is high", has_event_triggered(), "event should have triggered");
+    teardown_gpio_probe_event();
 }
 
 static void test_gpio_probe_event_notenabled() {
@@ -105,6 +109,7 @@ static void test_gpio_probe_event_notenabled() {
     pass_if_false_with_message("before trigger", has_event_triggered(), "event should not have triggered");
     gpio_put(pin, false);
     pass_if_false_with_message("after trigger", has_event_triggered(), "event should not have triggered");
+    teardown_gpio_probe_event();
 }
 
 static uint callbackcount = 0;
@@ -135,6 +140,7 @@ static void test_gpio_probe_event_trigger_callback() {
     gpio_put(pin, false);
     gpio_put(pin, true);
     pass_if_equal_uint("callbackcount after 2nd trigger", 1, callbackcount);
+    teardown_gpio_probe_event();
 }
 
 // =============================================================================

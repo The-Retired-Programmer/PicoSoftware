@@ -24,6 +24,8 @@
 
 char* setupDMAcontrollers(struct probe_controls* controls, const volatile uint32_t *readaddress, uint dreq);
 
+void teardown_dma();
+
 void dma_start();
 
 void dma_stop();

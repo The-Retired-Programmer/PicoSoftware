@@ -72,6 +72,10 @@ void gpio_probe_event_init(struct probe_controls* controls) {
     }
 }
 
+void teardown_gpio_probe_event() {
+    gpio_set_irq_enabled(pin, gpioirq, false);
+}
+
 void gpio_set_trigger_listener(void (*listener)()) {
     on_callback = listener;
     callbacklistener = true;

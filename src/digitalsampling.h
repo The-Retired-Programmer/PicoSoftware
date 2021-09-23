@@ -21,6 +21,8 @@
 
 char* digitalsampling_start(struct probe_controls* probecontrols);
 
+void digitalsampling_teardown();
+
 void digitalsampling_stop();
 
 bool is_digitalsampling_finished();
@@ -39,6 +41,8 @@ struct sample_buffers *getsamplebuffers();
 #ifdef TESTINGBUILD
 
 char* setuptransferbuffers(struct probe_controls* controls);
+
+void teardowntransferbuffers();
 
 #endif
 
