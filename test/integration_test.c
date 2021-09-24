@@ -156,6 +156,7 @@ static void run_to_completion(char *gcommand, uint expectedstartbuffer, uint exp
     setup_and_start(gcommand);
     wait_and_completion(expectedstartbuffer, expectedbuffercount);
     check_buffer_content_on_completion(data_pin, expectedbuffercount);
+    teardown_square_wave_generator();
 }
 
 static void run_with_stop_command(char *gcommand, uint expectedstartbuffer, uint expectedbuffercount, uint32_t waitusec, uint data_pin) {
@@ -168,6 +169,7 @@ static void run_with_stop_command(char *gcommand, uint expectedstartbuffer, uint
     pass_if_equal_uint("after s", STATE_STOPPING_SAMPLING,  getprobestate());
     wait_and_completion(expectedstartbuffer, expectedbuffercount);
     check_buffer_content_on_stop(data_pin, expectedbuffercount);
+    teardown_square_wave_generator();
 }
 
 static void run_with_stop_on_event(char *gcommand, uint expectedstartbuffer, uint expectedbuffercount, uint32_t eventwait, uint event_pin) {
@@ -183,6 +185,7 @@ static void run_with_stop_on_event(char *gcommand, uint expectedstartbuffer, uin
     pass_if_equal_uint("after event", STATE_STOPPING_SAMPLING,  getprobestate());
     wait_and_completion(expectedstartbuffer, expectedbuffercount);
     check_buffer_content_on_event(event_pin, expectedbuffercount);
+    teardown_square_wave_generator();
 }
 
 static void to_buffer_full() {

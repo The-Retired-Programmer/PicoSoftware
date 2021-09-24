@@ -15,7 +15,7 @@
  */
 
 //
-// PIO Programming - dynamic programs built
+// PIO Programming - dynamic programs builder
 //
 
 #include <stdlib.h>
@@ -24,141 +24,85 @@
 #include "hardware/clocks.h"
 #include "pio_program.h"
 
-#define MAX_PROGRAM_SIZE 32
-static uint16_t program_instructions[MAX_PROGRAM_SIZE];
-static uint16_t *nextinstructioninsertpoint = program_instructions;
-static int emptyinstructions = MAX_PROGRAM_SIZE;
-static int wraptarget = -1;
-static int wrap = -1;
-//
-static struct pio_program program = {
-    .instructions = program_instructions,
-    .length = 0,
-    .origin = -1
-};
-static uint offset;
-static PIO pio;
-static uint sm;
-
-static void ppb_init(uint smnum) {
-    sm = smnum;
-    nextinstructioninsertpoint = program_instructions;
-    emptyinstructions = MAX_PROGRAM_SIZE;
-    wraptarget = -1;
-    wrap = -1;
-    program.instructions = program_instructions;
-    program.length = 0;
-    program.origin = -1;
-}
-
 // =============================================================================
 //
 // module API
 //
 // =============================================================================
 
-void ppb_init_pio0_sm(uint smnum) {
-    pio = pio0;
-    ppb_init(smnum);
+struct ppb_config *ppb_init(PIO pio, uint sm) {
+    struct ppb_config *config= malloc( sizeof (struct ppb_config)); 
+    config->sm = sm;
+    config->pio = pio;
+    config->nextinstructioninsertpoint = config->program_instructions;
+    config->emptyinstructions = MAX_PROGRAM_SIZE;
+    config->wraptarget = -1;
+    config->wrap = -1;
+    config->program.instructions = config->program_instructions;
+    config->program.length = 0;
+    config->program.origin = -1;
+    return config;
 }
 
-void ppb_init_pio1_sm(uint smnum) {
-    pio = pio1;
-    ppb_init(smnum);
+void teardown_ppb(struct ppb_config *config) {
+    pio_sm_set_enabled(config->pio, config->sm, false);
+    free(config);
 }
 
-void ppb_init_pio0() {
-    pio = pio0;
-    ppb_init(0);
+uint ppb_here(struct ppb_config *config) {
+    return MAX_PROGRAM_SIZE - config->emptyinstructions;
 }
 
-void ppb_init_pio1() {
-    pio = pio1;
-    ppb_init(0);
+void ppb_set_wraptarget(struct ppb_config *config) {
+    config->wraptarget = ppb_here(config);
 }
 
-void teardown_ppb() {
-    pio_sm_set_enabled(pio, sm, false);
+void ppb_set_wrap(struct ppb_config *config) {
+    config->wrap = ppb_here(config) -1;
 }
 
-uint ppb_here() {
-    return MAX_PROGRAM_SIZE - emptyinstructions;
-}
-
-void ppb_set_wraptarget() {
-    wraptarget = ppb_here();
-}
-
-void ppb_set_wrap() {
-    wrap = ppb_here() -1;
-}
-
-void ppb_add_instruction(uint16_t instruction) {
-    if ( --emptyinstructions < 0 ) {
+void ppb_add_instruction(struct ppb_config *config, uint16_t instruction) {
+    if ( --(config->emptyinstructions) < 0 ) {
         return;
     }
-    *nextinstructioninsertpoint++=instruction;
-    program.length++;
+    *(config->nextinstructioninsertpoint++)=instruction;
+    config->program.length++;
 }
 
-char *ppb_build() {
-    if (emptyinstructions < 0) {
+char *ppb_build(struct ppb_config *config) {
+    if (config->emptyinstructions < 0) {
         return "too many instructions defined";
     }
-    if (wraptarget == -1) {
-        wraptarget = 0;
+    if (config->wraptarget == -1) {
+        config->wraptarget = 0;
     }
-    if (wrap == -1) {
-        wrap = program.length - 1;
+    if (config->wrap == -1) {
+        config->wrap = config->program.length - 1;
     }
     return NULL;
 }
 
-pio_sm_config ppb_load(float piofrequency) {
-    offset = pio_add_program(pio, &program);
+pio_sm_config ppb_load(struct ppb_config *config, float piofrequency) {
+    config->offset = pio_add_program(config->pio, &(config->program));
     pio_sm_config c = pio_get_default_sm_config();
-    sm_config_set_wrap(&c, offset + wraptarget, offset + wrap);
+    sm_config_set_wrap(&c, config->offset + config->wraptarget, config->offset + config->wrap);
     float sysfreq= (float) clock_get_hz(clk_sys);
     sm_config_set_clkdiv(&c, sysfreq/piofrequency);
     return c;
 }
 
-pio_sm_config ppb_clear_and_load(float piofrequency) {
-    pio_clear_instruction_memory(pio);
-    return ppb_load(piofrequency);
+pio_sm_config ppb_clear_and_load(struct ppb_config *config, float piofrequency) {
+    pio_clear_instruction_memory(config->pio);
+    return ppb_load(config, piofrequency);
 }
 
-void ppb_configure(pio_sm_config *c) {
-    pio_sm_init(pio, sm, offset, c);
-    pio_sm_set_enabled(pio, sm, false);
-    pio_sm_clear_fifos(pio, sm);
-    pio_sm_restart(pio, sm); // to clear OSR/ISR
+void ppb_configure(struct ppb_config *config, pio_sm_config *c) {
+    pio_sm_init(config->pio, config->sm, config->offset, c);
+    pio_sm_set_enabled(config->pio, config->sm, false);
+    pio_sm_clear_fifos(config->pio, config->sm);
+    pio_sm_restart(config->pio, config->sm); // to clear OSR/ISR
 }
 
-void ppb_start() {
-    pio_sm_set_enabled(pio, sm, true);
+void ppb_start(struct ppb_config *config) {
+    pio_sm_set_enabled(config->pio, config->sm, true);
 }
-
-#ifdef TESTINGBUILD
-
-int ppb_get_wraptarget() {
-    return wraptarget;
-}
-
-int ppb_get_wrap() {
-    return wrap;
-}
-
-uint16_t *ppb_getprograminstructions() {
-    return program_instructions;
-}
-
-uint ppb_getprogramsize() {
-    return program.length;
-}
-
-uint ppb_getprogramoffset() {
-    return offset;
-}
-
-#endif

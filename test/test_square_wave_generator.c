@@ -26,11 +26,23 @@
 
 // no pass or fail - it needs a visual check on GPIO pins with a scope or leds
 
-static void test_square_wave_generator() {
+static void test_swg(uint32_t usecs) {
     square_wave_generator_init(19,0.25);
     square_wave_generator_start();
-    busy_wait_us_32(12*1000000); // allow 12 secs to view
+    busy_wait_us_32(usecs);
     teardown_square_wave_generator();
+}
+
+static void test_square_wave_generator_odd() {
+    test_swg(9000000);
+}
+
+static void test_square_wave_generator_even() {
+    test_swg(6000000);
+}
+
+static void test_square_wave_generator_half() {
+    test_swg(4500000);
 }
 
 // =============================================================================
@@ -40,5 +52,7 @@ static void test_square_wave_generator() {
 // =============================================================================
 
 void test_square_wave_generator_init() {
-    add_test("square_wave_generator", "q", test_square_wave_generator);
+    add_test("square_wave_generator - 6 secs", "q", test_square_wave_generator_even);
+    add_test("square_wave_generator - 9 secs", "q", test_square_wave_generator_odd);
+    add_test("square_wave_generator - 4.5 secs", "q", test_square_wave_generator_half);
 }

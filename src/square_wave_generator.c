@@ -41,72 +41,84 @@
 #include "pico/stdlib.h"
 #include "pio_program.h"
 
+static struct ppb_config *ppb;
+static uint pinbase;
+
 // =============================================================================
 //
 // module API
 //
 // =============================================================================
 
-char *square_wave_generator_init(uint pinbase, float frequency) {
+char *square_wave_generator_init(uint _pinbase, float frequency) {
     uint wrap_program_cycles;
-    ppb_init_pio1();
+    pinbase = _pinbase;
+    ppb = ppb_init(pio1,0);
     if (frequency > 1000) {
-        ppb_set_wraptarget();
-        ppb_add_instruction(pio_encode_set(pio_pins,7));
-        ppb_add_instruction(pio_encode_set(pio_pins,3));
-        ppb_add_instruction(pio_encode_set(pio_pins,5));
-        ppb_add_instruction(pio_encode_set(pio_pins,1));
-        ppb_add_instruction(pio_encode_set(pio_pins,6));
-        ppb_add_instruction(pio_encode_set(pio_pins,2));
-        ppb_add_instruction(pio_encode_set(pio_pins,4));
-        ppb_add_instruction(pio_encode_set(pio_pins,0));
-        ppb_set_wrap();
+        ppb_set_wraptarget(ppb);
+        ppb_add_instruction(ppb, pio_encode_set(pio_pins,7));
+        ppb_add_instruction(ppb, pio_encode_set(pio_pins,3));
+        ppb_add_instruction(ppb, pio_encode_set(pio_pins,5));
+        ppb_add_instruction(ppb, pio_encode_set(pio_pins,1));
+        ppb_add_instruction(ppb, pio_encode_set(pio_pins,6));
+        ppb_add_instruction(ppb, pio_encode_set(pio_pins,2));
+        ppb_add_instruction(ppb, pio_encode_set(pio_pins,4));
+        ppb_add_instruction(ppb, pio_encode_set(pio_pins,0));
+        ppb_set_wrap(ppb);
         wrap_program_cycles = 8;
     } else {
-        ppb_set_wraptarget();
-        ppb_add_instruction(pio_encode_set(pio_pins,7)|pio_encode_delay(31));
-        ppb_add_instruction(pio_encode_set(pio_x, 31)|pio_encode_delay(31));
-        ppb_add_instruction(pio_encode_jmp_condition(piojmp_Xnot0_minus,ppb_here())|pio_encode_delay(31));
-        ppb_add_instruction(pio_encode_set(pio_pins,3)|pio_encode_delay(31));
-        ppb_add_instruction(pio_encode_set(pio_x, 31)|pio_encode_delay(31));
-        ppb_add_instruction(pio_encode_jmp_condition(piojmp_Xnot0_minus,ppb_here())|pio_encode_delay(31));
-        ppb_add_instruction(pio_encode_set(pio_pins,5)|pio_encode_delay(31));
-        ppb_add_instruction(pio_encode_set(pio_x, 31)|pio_encode_delay(31));
-        ppb_add_instruction(pio_encode_jmp_condition(piojmp_Xnot0_minus,ppb_here())|pio_encode_delay(31));
-        ppb_add_instruction(pio_encode_set(pio_pins,1)|pio_encode_delay(31));
-        ppb_add_instruction(pio_encode_set(pio_x, 31)|pio_encode_delay(31));
-        ppb_add_instruction(pio_encode_jmp_condition(piojmp_Xnot0_minus,ppb_here())|pio_encode_delay(31));
-        ppb_add_instruction(pio_encode_set(pio_pins,6)|pio_encode_delay(31));
-        ppb_add_instruction(pio_encode_set(pio_x, 31)|pio_encode_delay(31));
-        ppb_add_instruction(pio_encode_jmp_condition(piojmp_Xnot0_minus,ppb_here())|pio_encode_delay(31));
-        ppb_add_instruction(pio_encode_set(pio_pins,2)|pio_encode_delay(31));
-        ppb_add_instruction(pio_encode_set(pio_x, 31)|pio_encode_delay(31));
-        ppb_add_instruction(pio_encode_jmp_condition(piojmp_Xnot0_minus,ppb_here())|pio_encode_delay(31));
-        ppb_add_instruction(pio_encode_set(pio_pins,4)|pio_encode_delay(31));
-        ppb_add_instruction(pio_encode_set(pio_x, 31)|pio_encode_delay(31));
-        ppb_add_instruction(pio_encode_jmp_condition(piojmp_Xnot0_minus,ppb_here())|pio_encode_delay(31));
-        ppb_add_instruction(pio_encode_set(pio_pins,0)|pio_encode_delay(31));
-        ppb_add_instruction(pio_encode_set(pio_x, 31)|pio_encode_delay(31));
-        ppb_add_instruction(pio_encode_jmp_condition(piojmp_Xnot0_minus,ppb_here())|pio_encode_delay(31));
-        ppb_set_wrap();
+        ppb_set_wraptarget(ppb);
+        ppb_add_instruction(ppb, pio_encode_set(pio_pins,7)|pio_encode_delay(31));
+        ppb_add_instruction(ppb, pio_encode_set(pio_x, 31)|pio_encode_delay(31));
+        ppb_add_instruction(ppb, pio_encode_jmp_condition(piojmp_Xnot0_minus,ppb_here(ppb))|pio_encode_delay(31));
+        ppb_add_instruction(ppb, pio_encode_set(pio_pins,3)|pio_encode_delay(31));
+        ppb_add_instruction(ppb, pio_encode_set(pio_x, 31)|pio_encode_delay(31));
+        ppb_add_instruction(ppb, pio_encode_jmp_condition(piojmp_Xnot0_minus,ppb_here(ppb))|pio_encode_delay(31));
+        ppb_add_instruction(ppb, pio_encode_set(pio_pins,5)|pio_encode_delay(31));
+        ppb_add_instruction(ppb, pio_encode_set(pio_x, 31)|pio_encode_delay(31));
+        ppb_add_instruction(ppb, pio_encode_jmp_condition(piojmp_Xnot0_minus,ppb_here(ppb))|pio_encode_delay(31));
+        ppb_add_instruction(ppb, pio_encode_set(pio_pins,1)|pio_encode_delay(31));
+        ppb_add_instruction(ppb, pio_encode_set(pio_x, 31)|pio_encode_delay(31));
+        ppb_add_instruction(ppb, pio_encode_jmp_condition(piojmp_Xnot0_minus,ppb_here(ppb))|pio_encode_delay(31));
+        ppb_add_instruction(ppb, pio_encode_set(pio_pins,6)|pio_encode_delay(31));
+        ppb_add_instruction(ppb, pio_encode_set(pio_x, 31)|pio_encode_delay(31));
+        ppb_add_instruction(ppb, pio_encode_jmp_condition(piojmp_Xnot0_minus,ppb_here(ppb))|pio_encode_delay(31));
+        ppb_add_instruction(ppb, pio_encode_set(pio_pins,2)|pio_encode_delay(31));
+        ppb_add_instruction(ppb, pio_encode_set(pio_x, 31)|pio_encode_delay(31));
+        ppb_add_instruction(ppb, pio_encode_jmp_condition(piojmp_Xnot0_minus,ppb_here(ppb))|pio_encode_delay(31));
+        ppb_add_instruction(ppb, pio_encode_set(pio_pins,4)|pio_encode_delay(31));
+        ppb_add_instruction(ppb, pio_encode_set(pio_x, 31)|pio_encode_delay(31));
+        ppb_add_instruction(ppb, pio_encode_jmp_condition(piojmp_Xnot0_minus,ppb_here(ppb))|pio_encode_delay(31));
+        ppb_add_instruction(ppb, pio_encode_set(pio_pins,0)|pio_encode_delay(31));
+        ppb_add_instruction(ppb, pio_encode_set(pio_x, 31)|pio_encode_delay(31));
+        ppb_add_instruction(ppb, pio_encode_jmp_condition(piojmp_Xnot0_minus,ppb_here(ppb))|pio_encode_delay(31));
+        ppb_set_wrap(ppb);
         wrap_program_cycles = 8704;
     }
-    char *errormessage = ppb_build();
+    char *errormessage = ppb_build(ppb);
     if (errormessage != NULL) return errormessage;
-    pio_sm_config c = ppb_clear_and_load(wrap_program_cycles*frequency);
+    pio_sm_config c = ppb_clear_and_load(ppb, wrap_program_cycles*frequency);
     sm_config_set_set_pins(&c, pinbase, 3);
     pio_gpio_init(pio1, pinbase);
     pio_gpio_init(pio1, pinbase+1);
     pio_gpio_init(pio1, pinbase+2);
     pio_sm_set_consecutive_pindirs(pio1, 0, pinbase, 3, true);
-    ppb_configure(&c);
+    ppb_configure(ppb, &c);
     return NULL;
 }
 
+void force_clr_pin(uint pin) {
+    gpio_set_function(pin, GPIO_FUNC_SIO);
+    gpio_put(pin, false);
+}
+
 void teardown_square_wave_generator() {
-    // teardown_ppb();
+    teardown_ppb(ppb);
+    force_clr_pin(pinbase);
+    force_clr_pin(pinbase + 1);
+    force_clr_pin(pinbase + 2);
 }
 
 void square_wave_generator_start() {
-    ppb_start();
+    ppb_start(ppb);
 }

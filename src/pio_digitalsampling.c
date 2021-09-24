@@ -38,6 +38,8 @@
 #include "pio_program.h"
 #include "probe_controls.h"
 
+static struct ppb_config *ppb;
+
 // =============================================================================
 //
 // module API
@@ -45,65 +47,63 @@
 // =============================================================================
 
 void piodigitalsampling_init(struct probe_controls* controls) {
-    PIO pio = pio0;
-    uint sm = 0;
     uint pin = controls->pinbase;
     uint pinwidth = controls->pinwidth;
     float frequency = controls->frequency;
     uint wrap_program_cycles;
-    ppb_init_pio0();
+    ppb = ppb_init(pio0,0);
     if (controls->st_enabled) {
         switch (controls->st_trigger) {
         case TRIGGER_ON_LOW:
-            ppb_add_instruction(pio_encode_wait_gpio(false,controls->st_pin));
+            ppb_add_instruction(ppb, pio_encode_wait_gpio(false,controls->st_pin));
             break;
         case TRIGGER_ON_HIGH:
-            ppb_add_instruction(pio_encode_wait_gpio(true,controls->st_pin));
+            ppb_add_instruction(ppb, pio_encode_wait_gpio(true,controls->st_pin));
             break;
         case TRIGGER_ON_FALL:
-            ppb_add_instruction(pio_encode_wait_gpio(true,controls->st_pin));
-            ppb_add_instruction(pio_encode_wait_gpio(false,controls->st_pin));
+            ppb_add_instruction(ppb, pio_encode_wait_gpio(true,controls->st_pin));
+            ppb_add_instruction(ppb, pio_encode_wait_gpio(false,controls->st_pin));
             break;
         case TRIGGER_ON_RISE:
-            ppb_add_instruction(pio_encode_wait_gpio(false,controls->st_pin));
-            ppb_add_instruction(pio_encode_wait_gpio(true,controls->st_pin));
+            ppb_add_instruction(ppb, pio_encode_wait_gpio(false,controls->st_pin));
+            ppb_add_instruction(ppb, pio_encode_wait_gpio(true,controls->st_pin));
             break;
         }
     }
-    ppb_set_wraptarget();
+    ppb_set_wraptarget(ppb);
     if (frequency > 10000) {
-        ppb_add_instruction(pio_encode_in(pio_pins,pinwidth));
+        ppb_add_instruction(ppb, pio_encode_in(pio_pins,pinwidth));
         wrap_program_cycles = 1;
     } else {
-        ppb_add_instruction(pio_encode_in(pio_pins,pinwidth));
-        ppb_add_instruction(pio_encode_set(pio_y,1)|pio_encode_delay(22));
-        uint ylabel = ppb_here();
-        ppb_add_instruction(pio_encode_set(pio_x, 31)|pio_encode_delay(31));
-        ppb_add_instruction(pio_encode_jmp_condition(piojmp_Xnot0_minus,ppb_here())|pio_encode_delay(31));
-        ppb_add_instruction(pio_encode_jmp_condition(piojmp_Ynot0_minus,ylabel)|pio_encode_delay(31));
+        ppb_add_instruction(ppb, pio_encode_in(pio_pins,pinwidth));
+        ppb_add_instruction(ppb, pio_encode_set(pio_y,1)|pio_encode_delay(22));
+        uint ylabel = ppb_here(ppb);
+        ppb_add_instruction(ppb, pio_encode_set(pio_x, 31)|pio_encode_delay(31));
+        ppb_add_instruction(ppb, pio_encode_jmp_condition(piojmp_Xnot0_minus,ppb_here(ppb))|pio_encode_delay(31));
+        ppb_add_instruction(ppb, pio_encode_jmp_condition(piojmp_Ynot0_minus,ylabel)|pio_encode_delay(31));
         wrap_program_cycles = 2200;
     }
-    ppb_set_wrap();
-    ppb_build();
-    pio_sm_config c = ppb_clear_and_load(wrap_program_cycles*frequency);
+    ppb_set_wrap(ppb);
+    ppb_build(ppb);
+    pio_sm_config c = ppb_clear_and_load(ppb, wrap_program_cycles*frequency);
     sm_config_set_in_pins(&c, pin);
     sm_config_set_in_shift(&c, false, true, usedbitsperword(controls));
     sm_config_set_fifo_join(&c, PIO_FIFO_JOIN_RX);
-    ppb_configure(&c);
+    ppb_configure(ppb, &c);
 }
 
 void teardown_piodigitalsampling() {
-    teardown_ppb();
+    teardown_ppb(ppb);
 }
 
 void piodigitalsampling_start() {
-    ppb_start();
+    ppb_start(ppb);
 }
 
 #ifdef TESTINGBUILD
 
 uint32_t piodigitalsampling_read() {
-    return  pio_sm_get_blocking(pio0, 0);
+    return  pio_sm_get_blocking(ppb->pio, ppb->sm);
 }
 
 #endif

@@ -20,30 +20,41 @@
 #include <stdlib.h>
 #include "hardware/pio.h"
 
-void ppb_init_pio0();
-void ppb_init_pio1();
-void ppb_init_pio0_sm(uint smnum);
-void ppb_init_pio1_sm(uint smnum);
+#define MAX_PROGRAM_SIZE 32
 
-void teardown_ppb();
+struct ppb_config {
+    PIO pio;
+    uint sm;
+    uint offset;
+    uint16_t program_instructions[MAX_PROGRAM_SIZE];
+    uint16_t *nextinstructioninsertpoint;
+    int emptyinstructions;
+    int wraptarget;
+    int wrap;
+    struct pio_program program;
+};
 
-void ppb_set_wraptarget();
+struct ppb_config *ppb_init(PIO pioval, uint smnum);
 
-void ppb_set_wrap();
+void teardown_ppb(struct ppb_config *config);
 
-uint ppb_here();
+void ppb_set_wraptarget(struct ppb_config *config);
 
-void ppb_add_instruction(uint16_t instruction);
+void ppb_set_wrap(struct ppb_config *config);
 
-char *ppb_build();
+uint ppb_here(struct ppb_config *config);
 
-pio_sm_config ppb_load(float piofrequency);
+void ppb_add_instruction(struct ppb_config *config, uint16_t instruction);
 
-pio_sm_config ppb_clear_and_load(float piofrequency);
+char *ppb_build(struct ppb_config *config);
 
-void ppb_configure(pio_sm_config *c);
+pio_sm_config ppb_load(struct ppb_config *config, float piofrequency);
 
-void ppb_start();
+pio_sm_config ppb_clear_and_load(struct ppb_config *config, float piofrequency);
+
+void ppb_configure(struct ppb_config *config, pio_sm_config *c);
+
+void ppb_start(struct ppb_config *config);
 
 enum pico_jmp_condition {
     piojmp_always = 0u,
@@ -59,19 +70,5 @@ enum pico_jmp_condition {
 inline static uint pio_encode_jmp_condition(enum pico_jmp_condition jmp_condition, uint addr) {
     return _pio_encode_instr_and_args(pio_instr_bits_jmp, jmp_condition, addr);
 }
-
-#ifdef TESTINGBUILD
-
-int ppb_get_wraptarget();
-
-int ppb_get_wrap();
-
-uint16_t *ppb_getprograminstructions();
-
-uint ppb_getprogramsize();
-
-uint ppb_getprogramoffset();
-
-#endif
 
 #endif
