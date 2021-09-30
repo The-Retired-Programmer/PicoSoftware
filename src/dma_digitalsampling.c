@@ -237,12 +237,3 @@ void dma_stop_where_now_is_in_window(uint logicalwindow) {
     }
     commandlist[stop_offset] = NULL;
 }
-
-char *print_now_debug() {
-    if (dma_commands_issued > number_of_buffers) {
-        printf("first_window_offset = %i; clr_offset = %i; stop offset = %i\n",first_window_offset, stop_offset);
-        printf("commandlist = %i; commandlist_read = %i\n", commandlist, commandlist_read);  
-    } else {
-        printf("full rotation not occurred");
-    }
-}

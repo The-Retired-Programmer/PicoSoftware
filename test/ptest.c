@@ -115,7 +115,6 @@ static void execute_test(int selectionid) {
     printf("RUNNING (%i) %s\n",selectionid, current_tcb->name);
     trace_init();
     current_tcb->testfunction();
-    trace_print();
 }
 
 static int *select_all_tests() {
@@ -198,13 +197,19 @@ static int *getselectionid() {
 
 #define TRACEBUFFERSIZE 1000
 #define PRINTTRACELINESIZE 100
-static char tracebuffer[TRACEBUFFERSIZE];
+static char tracebuffer[TRACEBUFFERSIZE+1];
+static char logicaltracebuffer[TRACEBUFFERSIZE+1];
 static uint insertpoint;
 static bool rotated;
 
-static void trace_print_segment(uint frompoint, uint size) {
-    for (uint i = frompoint; i < frompoint+ size; i++) {
-        putchar(tracebuffer[i]);
+static char *get_tracestring() {
+    if (rotated) {
+        char* section1 = &tracebuffer[insertpoint];
+        strcpy(logicaltracebuffer, section1);
+        *section1='\0';
+        return strcat(logicaltracebuffer, tracebuffer);
+    } else {
+        return tracebuffer;
     }
 }
 
@@ -260,8 +265,8 @@ void ptest_execute() {
 //
 
 void trace_init() {
-    for (uint i = 0; i < TRACEBUFFERSIZE; i++) {
-        tracebuffer[i] = ' ';
+    for (uint i = 0; i < TRACEBUFFERSIZE+1; i++) {
+        tracebuffer[i] = '\0';
     }
     insertpoint = 0;
     rotated = false;
@@ -275,32 +280,19 @@ void trace(char tracechar) {
     tracebuffer[insertpoint++] = tracechar;
 }
 
-void trace_print() {
-    if (!rotated && insertpoint==0) return;
-    uint startpoint = rotated ? insertpoint+1 : 0;
-    uint size = rotated ? TRACEBUFFERSIZE : insertpoint;
-    puts("Trace:");
-    if (rotated) puts(".....");
-    while (size > 0) {
-        uint printsize = size < PRINTTRACELINESIZE? size: PRINTTRACELINESIZE;
-        if (startpoint + printsize > TRACEBUFFERSIZE) {
-            uint segsize = TRACEBUFFERSIZE - startpoint;
-            trace_print_segment(startpoint, segsize);
-            startpoint = 0;
-            segsize = printsize - segsize;
-            trace_print_segment(startpoint, segsize);
-        } else {
-            trace_print_segment(startpoint, printsize);
-        }
-        putchar('\n');
-        size -= printsize;
-        startpoint += printsize;
-    }
-}
-
 //
 //      PASS / FAIL TESTS
 //
+
+void pass_if_trace_equal(char* expected) {
+    char* tracestring = get_tracestring();
+    if (strcmp(expected, tracestring) == 0) {
+        current_tcb->passcount++;
+    } else {
+        current_tcb->failcount++;
+        printf("    Check 'trace' failed - expected %s, was %s\n", expected, tracestring);
+    }
+}
 
 void pass_if_null(char* id, char* value){
     if (NULL == value) {

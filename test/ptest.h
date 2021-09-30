@@ -42,9 +42,9 @@ void trace_init();
 
 void trace(char tracechar);
 
-void trace_print();
-
 //      PASS / FAIL TESTS
+
+void pass_if_trace_equal(char* expected);
 
 void pass_if_null(char* id, char* value);
 
