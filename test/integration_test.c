@@ -22,7 +22,6 @@
 #include "../src/probe_controls.h"
 #include "../src/frontend_commands.h"
 #include "../src/digitalsampling.h"
-#include "../src/square_wave_generator.h"
 #include "../src/gpio_probe_event.h"
 
 
@@ -142,40 +141,29 @@ static void wait_and_completion(uint expectedstartbuffer, uint expectedbuffercou
     while (!is_probe_stop_complete());
     run_commands(postsamplecommands, postsamplestates, postsamplechecknames, postsampleexpectedresponse);
     struct sample_buffers *samplebuffers = getsamplebuffers();
-    printf("Sample Buffers: start at %i; count is %i\n",
-        samplebuffers->earliest_valid_buffer,
-        samplebuffers->valid_buffer_count);
     pass_if_equal_uint("start buffer", expectedstartbuffer, samplebuffers->earliest_valid_buffer);
     pass_if_equal_uint("buffer count", expectedbuffercount, samplebuffers->valid_buffer_count);
 }
 
 static void run_to_completion(char *gcommand, uint expectedstartbuffer, uint expectedbuffercount, uint data_pin) {
     probe_init(it_response_puts, it_ack_puts, it_nak_puts); // as per src/main.c
-    square_wave_generator_init(19,125000);
-    square_wave_generator_start();
     setup_and_start(gcommand);
     wait_and_completion(expectedstartbuffer, expectedbuffercount);
     check_buffer_content_on_completion(data_pin, expectedbuffercount);
-    teardown_square_wave_generator();
 }
 
 static void run_with_stop_command(char *gcommand, uint expectedstartbuffer, uint expectedbuffercount, uint32_t waitusec, uint data_pin) {
     probe_init(it_response_puts, it_ack_puts, it_nak_puts);
-    square_wave_generator_init(19,125000);
-    square_wave_generator_start();
     setup_and_start(gcommand);
     if (waitusec > 0) busy_wait_us_32(waitusec);
     action_command("s");
     pass_if_equal_uint("after s", STATE_STOPPING_SAMPLING,  getprobestate());
     wait_and_completion(expectedstartbuffer, expectedbuffercount);
     check_buffer_content_on_stop(data_pin, expectedbuffercount);
-    teardown_square_wave_generator();
 }
 
 static void run_with_stop_on_event(char *gcommand, uint expectedstartbuffer, uint expectedbuffercount, uint32_t eventwait, uint event_pin) {
     probe_init(it_response_puts, it_ack_puts, it_nak_puts); // as per src/main.c
-    square_wave_generator_init(19,125000);
-    square_wave_generator_start();
     setup_and_start(gcommand);
     gpio_set_dir(event_pin,true);
     gpio_put(event_pin, false);
@@ -185,7 +173,6 @@ static void run_with_stop_on_event(char *gcommand, uint expectedstartbuffer, uin
     pass_if_equal_uint("after event", STATE_STOPPING_SAMPLING,  getprobestate());
     wait_and_completion(expectedstartbuffer, expectedbuffercount);
     check_buffer_content_on_event(event_pin, expectedbuffercount);
-    teardown_square_wave_generator();
 }
 
 static void to_buffer_full() {

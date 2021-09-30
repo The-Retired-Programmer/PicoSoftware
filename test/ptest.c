@@ -307,8 +307,7 @@ void pass_if_null(char* id, char* value){
         current_tcb->passcount++;
     } else {
         current_tcb->failcount++;
-        printf("Test %s - Check %s failed", current_tcb->name, id);
-        printf("    expected NULL, was %s\n",   value);
+        printf("    Check '%s' failed - expected NULL, was %s\n", id, value);
     }
 }
 
@@ -317,8 +316,7 @@ void pass_if_equal_string(char* id, char* expected, char* value) {
         current_tcb->passcount++;
     } else {
         current_tcb->failcount++;
-        printf("Test %s - Check %s failed\n", current_tcb->name, id);
-        printf("    expected %s, was %s\n", expected, value);
+        printf("    Check '%s' failed - expected %s, was %s\n", id, expected, value);
     }
 }
 
@@ -327,8 +325,7 @@ void pass_if_equal_int(char* id, int expected, int value) {
         current_tcb->passcount++;
     } else {
         current_tcb->failcount++;
-        printf("Test %s - Check %s failed\n", current_tcb->name, id);
-        printf("    expected %i, was %i\n", expected, value);
+        printf("    Check '%s' failed - expected %i, was %i\n", id, expected, value);
     }
 }
 
@@ -337,8 +334,7 @@ void pass_if_equal_uint(char* id, uint expected, uint value) {
         current_tcb->passcount++;
     } else {
         current_tcb->failcount++;
-        printf("Test %s - Check %s failed\n", current_tcb->name, id);
-        printf("    expected %i, was %i\n", expected, value);
+        printf("    Check '%s' failed - expected %i, was %i\n", id, expected, value);
     }
 }
 
@@ -347,8 +343,7 @@ void pass_if_equal_uintx(char* id, uint expected, uint value) {
         current_tcb->passcount++;
     } else {
         current_tcb->failcount++;
-        printf("Test %s - Check %s failed\n", current_tcb->name, id);
-        printf("    expected %x, was %x\n", expected, value);
+        printf("    Check %s failed - expected %x, was %x\n", id, expected, value);
     }
 }
 
@@ -357,8 +352,7 @@ void pass_if_equal_uint32(char* id, uint32_t expected, uint32_t value) {
         current_tcb->passcount++;
     } else {
         current_tcb->failcount++;
-        printf("Test %s - Check %s failed\n", current_tcb->name, id);
-        printf("    expected %i, was %i\n", expected, value);
+        printf("    Check '%s' failed - expected %i, was %i\n", id, expected, value);
     }
 }
 
@@ -367,18 +361,16 @@ void pass_if_equal_uint32x(char* id, uint32_t expected, uint32_t value) {
         current_tcb->passcount++;
     } else {
         current_tcb->failcount++;
-        printf("Test %s - Check %s failed\n", current_tcb->name, id);
-        printf("    expected %x, was %x\n", expected, value);
+        printf("    Check %s failed - expected %x, was %x\n", id, expected, value);
     }
 }
 
-void pass_if_greaterthan_uint(char* id, uint expected, uint value) {
+void pass_if_greaterthan_uintx(char* id, uint expected, uint value) {
     if (expected < value) {
         current_tcb->passcount++;
     } else {
         current_tcb->failcount++;
-        printf("Test %s - Check %s failed\n", current_tcb->name, id);
-        printf("    expected %x, was %x\n", expected, value);
+        printf("    Check %s failed - expected %x, was %x\n", id, expected, value);
     }
 }
 
@@ -387,8 +379,7 @@ void pass_if_true_with_message(char* id, bool value, char* message) {
         current_tcb->passcount++;
     } else {
         current_tcb->failcount++;
-        printf("Test %s - Check %s failed\n", current_tcb->name, id);
-        printf("    expected true, was false - %s\n", message);
+        printf("    Check %s failed - expected true, was false - %s\n", id, message);
     }
 }
 
@@ -397,8 +388,7 @@ void pass_if_true(char* id, bool value) {
         current_tcb->passcount++;
     } else {
         current_tcb->failcount++;
-        printf("Test %s - Check %s failed\n", current_tcb->name, id);
-        puts("    expected true, was false");
+        printf("    Check %s failed - expected true, was false\n", id);
     }
 }
 
@@ -407,8 +397,7 @@ void pass_if_false_with_message(char* id, bool value, char* message) {
         current_tcb->passcount++;
     } else {
         current_tcb->failcount++;
-        printf("Test %s - Check %s failed\n", current_tcb->name, id);
-        printf("    expected false, was true - %s\n", message);
+        printf("    Check %s failed - expected false, was true - %s\n", id, message);
     }
 }
 
@@ -417,15 +406,13 @@ void pass_if_false(char* id, bool value) {
         current_tcb->passcount++;
     } else {
         current_tcb->failcount++;
-        printf("Test %s - Check %s failed\n", current_tcb->name, id);
-        puts("    expected false, was true");
+        printf("    Check %s failed - expected false, was true\n", id);
     }
 }
 
 void fail(char* id) {
     current_tcb->failcount++;
-    printf("Test %s - Check %s failed\n", current_tcb->name, id);
-    puts("    fail");
+    printf("    Check %s failed\n", id);
 }
 
 void pass(char* id) {

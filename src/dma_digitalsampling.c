@@ -43,6 +43,10 @@
 #include "dma_digitalsampling.h"
 #include "digitalsampling.h"
 
+#ifdef TESTINGBUILD
+#include "../test/ptest.h"
+#endif
+
 #define CONTROL_DMA_CHANNEL 0
 #define TRANSFER_DMA_CHANNEL 1
 
@@ -87,13 +91,23 @@ static void set_valid_sample_values() {
 
 static void dma_irq0_handler() {
     dma_commands_issued++;
-    if (dma_commands_issued > number_of_buffers+1) disable_dma_irq0_interrupt();
+    if (dma_commands_issued > number_of_buffers+1) {
+        disable_dma_irq0_interrupt();
+#ifdef TESTINGBUILD
+        trace('c');
+    } else {
+        trace('C');
+#endif
+    }
     dma_channel_acknowledge_irq0(CONTROL_DMA_CHANNEL);
 }
 
 static void dma_irq1_handler() {
     disable_all_dma_interrupts();
     set_valid_sample_values();
+#ifdef TESTINGBUILD
+    trace('T');
+#endif
     dma_channel_acknowledge_irq1(TRANSFER_DMA_CHANNEL);
 }
 
@@ -172,6 +186,7 @@ void teardown_dma() {
     disable_all_dma_interrupts();
     dma_channel_abort(TRANSFER_DMA_CHANNEL);
     dma_channel_abort(CONTROL_DMA_CHANNEL);
+
 }
 
 void dma_start() {
@@ -186,22 +201,48 @@ void dma_start() {
 
 // stop at end of this buffer
 void dma_stop() {
+#ifdef TESTINGBUILD
+    trace('S');
+#endif
     uint32_t **commandlistinsert = commandlist;
     for (int i = 0; i< number_of_buffers; i++) {
         *commandlistinsert++ = NULL;
     }    
 }
 
+int stop_offset;
+uint first_window_offset;
+uint clr_offset;
+uint32_t **commandlist_read;
+
 void dma_stop_where_now_is_in_window(uint logicalwindow) {
-    int stop_offset;
     if (dma_commands_issued > number_of_buffers) {
-        uint first_window_offset = number_of_buffers - logicalwindow;
-        uint32_t **commandlist_read = dma_channel_get_read_addr(CONTROL_DMA_CHANNEL);
-        uint clr_offset = commandlist_read - commandlist;
-        stop_offset = (clr_offset + first_window_offset) % number_of_buffers;   
+        first_window_offset = number_of_buffers - logicalwindow;
+        commandlist_read = dma_channel_get_read_addr(CONTROL_DMA_CHANNEL);
+        clr_offset = commandlist_read - commandlist;
+        stop_offset = (clr_offset + first_window_offset) % number_of_buffers;
+#ifdef TESTINGBUILD
+        trace('W');
+        trace('0'+ logicalwindow);
+#endif 
     } else {
         stop_offset = dma_commands_issued - logicalwindow ;
-        if (stop_offset < 0) stop_offset = 0;
+        if (stop_offset < 0) {
+            stop_offset = 0;
+#ifdef TESTINGBUILD
+            trace('w');
+            trace('0'+ logicalwindow);
+#endif
+            }
     }
     commandlist[stop_offset] = NULL;
+}
+
+char *print_now_debug() {
+    if (dma_commands_issued > number_of_buffers) {
+        printf("first_window_offset = %i; clr_offset = %i; stop offset = %i\n",first_window_offset, stop_offset);
+        printf("commandlist = %i; commandlist_read = %i\n", commandlist, commandlist_read);  
+    } else {
+        printf("full rotation not occurred");
+    }
 }

@@ -55,7 +55,7 @@ void pass_if_equal_uintx(char* id, uint expected, uint value);
 void pass_if_equal_uint32(char* id, uint32_t expected, uint32_t value);
 void pass_if_equal_uint32x(char* id, uint32_t expected, uint32_t value);
 
-void pass_if_greaterthan_uint(char* id, uint expected, uint value);
+void pass_if_greaterthan_uintx(char* id, uint expected, uint value);
 
 void pass_if_true_with_message(char* id, bool value, char* message);
 void pass_if_true(char* id, bool value);
