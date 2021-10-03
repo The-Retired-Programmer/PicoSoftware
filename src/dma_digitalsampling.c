@@ -91,14 +91,14 @@ static void set_valid_sample_values() {
 
 static void dma_irq0_handler() {
     dma_commands_issued++;
-    if (dma_commands_issued > number_of_buffers+1) {
-        disable_dma_irq0_interrupt();
+  //  if (dma_commands_issued > number_of_buffers+1) {
+  //      disable_dma_irq0_interrupt();
 #ifdef TESTINGBUILD
-        trace('c');
-    } else {
+  //      trace('c');
+ //   } else {
         trace('C');
 #endif
-    }
+  //  }
     dma_channel_acknowledge_irq0(CONTROL_DMA_CHANNEL);
 }
 
@@ -186,7 +186,6 @@ void teardown_dma() {
     disable_all_dma_interrupts();
     dma_channel_abort(TRANSFER_DMA_CHANNEL);
     dma_channel_abort(CONTROL_DMA_CHANNEL);
-
 }
 
 void dma_start() {
@@ -221,19 +220,13 @@ void dma_stop_where_now_is_in_window(uint logicalwindow) {
         commandlist_read = dma_channel_get_read_addr(CONTROL_DMA_CHANNEL);
         clr_offset = commandlist_read - commandlist;
         stop_offset = (clr_offset + first_window_offset) % number_of_buffers;
+    } else {
+        stop_offset = dma_commands_issued - logicalwindow ;
+        if (stop_offset < 0) stop_offset = 0;
+    }
 #ifdef TESTINGBUILD
         trace('W');
         trace('0'+ logicalwindow);
-#endif 
-    } else {
-        stop_offset = dma_commands_issued - logicalwindow ;
-        if (stop_offset < 0) {
-            stop_offset = 0;
-#ifdef TESTINGBUILD
-            trace('w');
-            trace('0'+ logicalwindow);
 #endif
-            }
-    }
     commandlist[stop_offset] = NULL;
 }
