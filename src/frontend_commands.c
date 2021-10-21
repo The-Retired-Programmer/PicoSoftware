@@ -23,11 +23,17 @@
 #include <stdlib.h>
 #include "pico/stdlib.h"
 #include "logic_probe.h"
+#include "hardware/watchdog.h"
 
 char linebuffer[200];
 char *insertchar;
 
 char messagebuffer[256];
+
+static void force_reset() {
+    watchdog_enable(10, true);
+    while(1);
+}
 
 static int ack_puts() {
     puts("Y");
@@ -38,27 +44,28 @@ static int nak_puts(char *response) {
 }
 
 static void _action_command(char *line) {
-    if (strchr(line,'!') == NULL) {
-        switch (line[0]) {
-        case 'p': 
-            probe_ping();
-            break;
-        case '?': 
-            probe_getstate();
-            break;
-        case 'g':
-            probe_go(line);
-            break;
-        case 's': 
-            probe_stop();
-            break;
-        case 'd':
-            probe_getsample();
-            break;
-        default: // unknown command
-            sprintf(messagebuffer, "Unknown command %s\n",line);
-            nak_puts(messagebuffer);
-        }
+    switch (line[0]) {
+    case 'p': 
+        probe_ping();
+        break;
+    case 'f': 
+        probe_flash(line);
+        break;
+    case '?': 
+        probe_getstate();
+        break;
+    case 'g':
+        probe_go(line);
+        break;
+    case 's': 
+        probe_stop();
+        break;
+    case 'd':
+        probe_getsample();
+        break;
+    default: // unknown command
+        sprintf(messagebuffer, "Unknown command %s\n",line);
+        nak_puts(messagebuffer);
     }
 }
 
@@ -69,10 +76,14 @@ static bool linebuilder() {
             return false;
         }
         char ch = (char) rawch;
+        if (ch == '!' ) {
+            force_reset();
+        }
         if (ch == '\n' || ch == '\r') {
             *insertchar='\0';
             return true;
-        } else if (ch>= '\x20' && ch <= '\x7e') {
+        }
+        if (ch>= '\x20' && ch <= '\x7e') {
             *insertchar++ = ch;
         }
     }

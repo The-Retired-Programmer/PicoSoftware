@@ -18,6 +18,7 @@
 // LOGIC ANALYSER PROBE - command actions
 //
 
+#include "hardware/gpio.h"
 #include "digitalsampling.h"
 #include "gpio_probe_event.h"
 #include "run_length_encoder.h"
@@ -51,11 +52,24 @@ void probe_init(int (*responsewriter)(const char* response), int (*ack_responsew
     _responsewriter = responsewriter;
     _ack_responsewriter = ack_responsewriter;
     _nak_responsewriter = nak_responsewriter;
+    gpio_init(PICO_DEFAULT_LED_PIN);
+    gpio_set_dir(PICO_DEFAULT_LED_PIN, GPIO_OUT);
 }
 
 void probe_ping() {
     _responsewriter("PICO-1");
     _ack_responsewriter();
+}
+
+void probe_flash(char* cmdbuffer) {
+    int fparam;
+    if (sscanf(cmdbuffer, "f-%d", &fparam) == 1) {
+        gpio_put(PICO_DEFAULT_LED_PIN, fparam);
+        _ack_responsewriter();
+    } else {
+        sprintf(response_buffer, "parse failure (f command) - %s", cmdbuffer);
+        probe_pass_reset(response_buffer);
+    }
 }
 
 void probe_getstate() {

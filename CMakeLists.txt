@@ -19,7 +19,7 @@ add_executable(app)
 pico_set_program_name(app "logic_analyser")
 pico_set_program_version(app "0.4")
 
-pico_enable_stdio_uart(app 1)
+pico_enable_stdio_uart(app 0)
 pico_enable_stdio_usb(app 1)
 
 target_sources(app PUBLIC
@@ -46,6 +46,9 @@ add_executable(tests)
 
 pico_set_program_name(tests "logic_analyser tests")
 pico_set_program_version(tests "0.4")
+
+pico_enable_stdio_uart(tests 1)
+pico_enable_stdio_usb(tests 1)
 
 target_compile_definitions(tests PUBLIC TESTINGBUILD)
 
