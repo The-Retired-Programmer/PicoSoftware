@@ -23,6 +23,7 @@ void probe_stop();
 volatile bool is_probe_stop_complete();
 void probe_getsample();
 void probe_flash(char* cmdbuffer);
+void probe_waveform(char* cmdbuffer);
 
 #ifdef TESTINGBUILD
 

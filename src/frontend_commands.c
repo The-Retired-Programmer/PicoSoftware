@@ -51,6 +51,9 @@ static void _action_command(char *line) {
     case 'f': 
         probe_flash(line);
         break;
+    case 'w': 
+        probe_waveform(line);
+        break;
     case '?': 
         probe_getstate();
         break;

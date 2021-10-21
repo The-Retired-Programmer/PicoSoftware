@@ -22,6 +22,7 @@
 #include "digitalsampling.h"
 #include "gpio_probe_event.h"
 #include "run_length_encoder.h"
+#include "square_wave_generator.h"
 #include "probe_controls.h"
 #include <stdio.h>
 
@@ -68,6 +69,29 @@ void probe_flash(char* cmdbuffer) {
         _ack_responsewriter();
     } else {
         sprintf(response_buffer, "parse failure (f command) - %s", cmdbuffer);
+        probe_pass_reset(response_buffer);
+    }
+}
+
+void probe_waveform(char* cmdbuffer) {
+    int enable;
+    int pin_base;
+    float frequency;
+    if (sscanf(cmdbuffer, "w-%d-%d-%f", &enable, &pin_base, &frequency) == 3) {
+        if (enable) {
+            char* errmsg = square_wave_generator_init(pin_base, frequency);
+            if (errmsg != NULL) {
+                sprintf(response_buffer, "initiation failure - %s",errmsg);
+                probe_pass_reset(response_buffer);
+                return;
+            }
+            square_wave_generator_start();
+            _ack_responsewriter();
+        } else {
+            teardown_square_wave_generator();
+        }
+    } else {
+        sprintf(response_buffer, "parse failure (w command) - %s", cmdbuffer);
         probe_pass_reset(response_buffer);
     }
 }

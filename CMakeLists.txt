@@ -33,6 +33,7 @@ target_sources(app PUBLIC
     src/pio_program.c
     src/gpio_probe_event.c
     src/frontend_commands.c
+    src/square_wave_generator.c
 )
 
 target_link_libraries(app pico_stdlib hardware_pio hardware_dma hardware_gpio )
