@@ -24,9 +24,8 @@
 #include "run_length_encoder.h"
 #include "square_wave_generator.h"
 #include "probe_controls.h"
+#include "logic_probe.h"
 #include <stdio.h>
-
-#define PROBETYPE "PICO-1"
 
 struct probe_controls probecontrols;
 int (*_responsewriter)(const char* response);

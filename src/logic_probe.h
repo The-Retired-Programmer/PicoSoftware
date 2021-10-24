@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+#define PROBETYPE "PICO-1"
+
 void probe_init();
 
 void probe_ping();

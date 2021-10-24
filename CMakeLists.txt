@@ -47,8 +47,8 @@ pico_add_extra_outputs(app)
 add_executable(tests)
 
 pico_set_program_name(tests "logic_analyser tests")
-pico_set_program_version(tests "0.5-test")
-target_compile_definitions(tests PUBLIC VERSION="0.5-test")
+pico_set_program_version(tests "0.5-tests")
+target_compile_definitions(tests PUBLIC VERSION="0.5-tests")
 
 pico_enable_stdio_uart(tests 1)
 pico_enable_stdio_usb(tests 1)

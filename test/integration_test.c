@@ -118,7 +118,7 @@ static void check_buffer_content_on_completion(uint pin, uint expectedbuffercoun
 static char *presamplecommands[] = { "p", "?", "g-command", "?", NULL};
 static enum probestate presamplestates[] = {STATE_IDLE, STATE_IDLE, STATE_SAMPLING, STATE_SAMPLING};
 static char *presamplechecknames[] ={"after p", "after p/?", "after g", "after g/?"};
-static char *presampleexpectedresponse[] = {"PICO-1", "0", "", "1"};
+static char *presampleexpectedresponse[] = {"p-response", "0", "", "1"};
 
 static char *postsamplecommands[] = {"?", "d", "?" , NULL};
 static enum probestate postsamplestates[] = {STATE_SAMPLING_DONE, STATE_IDLE, STATE_IDLE};
@@ -131,8 +131,12 @@ static void run_commands(char **commands, enum probestate *states, char **checkn
     }
 }
 
+static char expectedPresponse[100];
+
 static void setup_and_start(char *gcommand) {
     presamplecommands[2] = gcommand;
+    sprintf(expectedPresponse, "%s (version: %s)", PROBETYPE, VERSION);
+    presampleexpectedresponse[0] = expectedPresponse;
     pass_if_equal_uint("initialstate", STATE_IDLE,  getprobestate());
     run_commands(presamplecommands, presamplestates, presamplechecknames, presampleexpectedresponse);
 }
