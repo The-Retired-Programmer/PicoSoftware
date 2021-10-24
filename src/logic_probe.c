@@ -26,6 +26,8 @@
 #include "probe_controls.h"
 #include <stdio.h>
 
+#define PROBETYPE "PICO-1"
+
 struct probe_controls probecontrols;
 int (*_responsewriter)(const char* response);
 int (*_ack_responsewriter)();
@@ -57,8 +59,10 @@ void probe_init(int (*responsewriter)(const char* response), int (*ack_responsew
     gpio_set_dir(PICO_DEFAULT_LED_PIN, GPIO_OUT);
 }
 
+
 void probe_ping() {
-    _responsewriter("PICO-1");
+    sprintf(response_buffer, "%s (version: %s)", PROBETYPE, VERSION);
+    _responsewriter(response_buffer);
     _ack_responsewriter();
 }
 
@@ -133,7 +137,7 @@ void probe_stop() {
     }
     digitalsampling_stop();
     probecontrols.state = STATE_STOPPING_SAMPLING;
-    _ack_responsewriter();
+    _ack_responsewriter();                               
 }
 
 volatile bool is_probe_stop_complete() {
