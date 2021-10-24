@@ -89,6 +89,7 @@ void probe_waveform(char* cmdbuffer) {
             _ack_responsewriter();
         } else {
             teardown_square_wave_generator();
+            _ack_responsewriter();
         }
     } else {
         sprintf(response_buffer, "parse failure (w command) - %s", cmdbuffer);
