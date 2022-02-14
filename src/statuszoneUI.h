@@ -13,23 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+#ifndef _SZUI_H
+#define _SZUI_H
 
-//
-// Race Officers Friend
-//
+void statuszoneBegin();
 
-#include <stdlib.h>
-#include "pico/stdlib.h"
-#include <stdio.h>
-#include "controller.h"
+void statuszoneWrite(char* text);
 
-// =============================================================================
-//
-// module API  - the main function
-//
-// =============================================================================
+void statuszoneEnd();
 
-int main() {
-    stdio_init_all();
-    controllerRun();
-}
+#ifdef TESTINGBUILD
+
+#endif
+
+#endif

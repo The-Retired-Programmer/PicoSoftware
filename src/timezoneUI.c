@@ -13,23 +13,37 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-//
-// Race Officers Friend
-//
-
 #include <stdlib.h>
 #include "pico/stdlib.h"
 #include <stdio.h>
-#include "controller.h"
+#include <string.h>
+#include "screen.h"
+#include "zonelayout.h"
 
-// =============================================================================
-//
-// module API  - the main function
-//
-// =============================================================================
+#define clearZone drawFilledBox(0, ZONETIME_TOP,WIDTH,ZONETIME_BOTTOM,BLUE)
 
-int main() {
-    stdio_init_all();
-    controllerRun();
+void refresh(char* text) {
+    clearZone;
+    setFont(FONT24PT);
+    setTextColour(RED);
+    setTextPos(10,33);
+    screenWrite(text);
+}
+
+//
+//   API
+//
+
+void timezoneBegin() {
+    refresh(" --:--");
+}
+
+void timezoneTick(uint32_t time) {
+    char buffer[10];
+    sprintf(buffer,"%i",time);
+    refresh(buffer);
+}
+
+void timezoneEnd() {
+    clearZone;
 }

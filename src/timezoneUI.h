@@ -13,23 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+#ifndef _TZUI_H
+#define _TZUI_H
 
-//
-// Race Officers Friend
-//
+void timezoneBegin();
 
-#include <stdlib.h>
-#include "pico/stdlib.h"
-#include <stdio.h>
-#include "controller.h"
+void timezoneEnd();
 
-// =============================================================================
-//
-// module API  - the main function
-//
-// =============================================================================
+void timezoneTick(uint32_t time);
 
-int main() {
-    stdio_init_all();
-    controllerRun();
-}
+#ifdef TESTINGBUILD
+
+#endif
+
+#endif

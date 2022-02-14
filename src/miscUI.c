@@ -13,23 +13,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-//
-// Race Officers Friend
-//
-
 #include <stdlib.h>
 #include "pico/stdlib.h"
-#include <stdio.h>
-#include "controller.h"
+#include "screen.h"
 
-// =============================================================================
-//
-// module API  - the main function
-//
-// =============================================================================
 
-int main() {
-    stdio_init_all();
-    controllerRun();
+void drawSplashScreen() {
+    clearScreen(BLUE,FONT9PT);
+    // border
+    drawFilledBox(0,0,128,5,RED);
+    drawFilledBox(0,155,128,160,RED);
+    drawFilledBox(0,0,5,160,RED);
+    drawFilledBox(123,0,128,160,RED);
+    // text
+    setTextColour(WHITE);
+    setTextPos(10,50);
+    screenWrite("Race");
+    setTextPos(10,80);
+    screenWrite("Officer's");
+    setTextPos(10,110);
+    screenWrite("Friend");
 }
+

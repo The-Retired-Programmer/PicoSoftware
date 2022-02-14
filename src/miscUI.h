@@ -13,23 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+#ifndef _MISCUI_H
+#define _MISCUI_H
 
-//
-// Race Officers Friend
-//
+void drawSplashScreen();
 
-#include <stdlib.h>
-#include "pico/stdlib.h"
-#include <stdio.h>
-#include "controller.h"
+#ifdef TESTINGBUILD
 
-// =============================================================================
-//
-// module API  - the main function
-//
-// =============================================================================
+#endif
 
-int main() {
-    stdio_init_all();
-    controllerRun();
-}
+#endif

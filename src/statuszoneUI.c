@@ -13,23 +13,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-//
-// Race Officers Friend
-//
-
 #include <stdlib.h>
 #include "pico/stdlib.h"
 #include <stdio.h>
-#include "controller.h"
+#include <string.h>
+#include "screen.h"
+#include "zonelayout.h"
 
-// =============================================================================
-//
-// module API  - the main function
-//
-// =============================================================================
+#define clearZone drawFilledBox(0,ZONESTATUS_TOP,WIDTH,ZONESTATUS_BOTTOM,GREEN)
 
-int main() {
-    stdio_init_all();
-    controllerRun();
+void statuszoneBegin() {
+    clearZone;
+}
+
+void statuszoneWrite(char* text) {
+    clearZone;
+    setFont(FONT9PT);
+    setTextColour(BLACK);
+    setTextPos(0,ZONESTATUS_TOP+14);
+    screenWrite(text);
+}
+
+void statuszoneEnd() {
+    clearZone;
 }

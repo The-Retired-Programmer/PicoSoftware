@@ -13,23 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+#ifndef _GZUI_H
+#define _GZUI_H
 
-//
-// Race Officers Friend
-//
+void graphiczoneBegin();
 
-#include <stdlib.h>
-#include "pico/stdlib.h"
-#include <stdio.h>
-#include "controller.h"
+void graphiczoneEnd();
 
-// =============================================================================
-//
-// module API  - the main function
-//
-// =============================================================================
+#ifdef TESTINGBUILD
 
-int main() {
-    stdio_init_all();
-    controllerRun();
-}
+#endif
+
+#endif

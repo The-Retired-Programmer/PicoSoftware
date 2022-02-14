@@ -20,12 +20,17 @@ pico_set_program_name(app "race_officers_friend")
 pico_set_program_version(app "0.1")
 target_compile_definitions(app PUBLIC VERSION="0.1" )
 
-pico_enable_stdio_uart(app 0)
-pico_enable_stdio_usb(app 1)
+pico_enable_stdio_uart(app 1)
+pico_enable_stdio_usb(app 0)
 
 target_sources(app PUBLIC
     src/main.c
-   
+    src/screen.c
+    src/controller.c
+    src/graphiczoneUI.c
+    src/statuszoneUI.c
+    src/timezoneUI.c
+    src/miscUI.c
 )
 
 target_link_libraries(app pico_stdlib hardware_pio hardware_dma hardware_gpio )
@@ -42,7 +47,7 @@ pico_set_program_version(tests "0.1-tests")
 target_compile_definitions(tests PUBLIC VERSION="0.1-tests")
 
 pico_enable_stdio_uart(tests 1)
-pico_enable_stdio_usb(tests 1)
+pico_enable_stdio_usb(tests 0)
 
 target_compile_definitions(tests PUBLIC TESTINGBUILD)
 
