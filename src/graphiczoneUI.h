@@ -18,6 +18,24 @@
 
 void graphiczoneBegin();
 
+void graphiczoneInit();
+
+void warningFlagUpWarning(int16_t secs);
+void warningFlagUpWarningFlash();
+void warningFlagUp();
+
+void warningFlagDownWarning(int16_t secs);
+void warningFlagDownWarningFlash();
+void warningFlagDown();
+
+void prepFlagUpWarning(int16_t secs);
+void prepFlagUpWarningFlash();
+void prepFlagUp();
+
+void prepFlagDownWarning(int16_t secs);
+void prepFlagDownWarningFlash();
+void prepFlagDown();
+
 void graphiczoneEnd();
 
 #ifdef TESTINGBUILD

@@ -16,49 +16,63 @@
 #ifndef _ZONELAYOUT_H
 #define _ZONELAYOUT_H
 //
-//                    SCREEN LAYOUT DEFINITIONS
+#include "screen.h";
+//
 // SCREEN
 #define HEIGHT 160
 #define WIDTH 128
-// ZONES (vertical stacked areas)
-// LARGE TIME DISPLAY - ZONETIME
-#define ZONETIME_HEIGHT 50
-#define ZONETIME_TOP 0
-#define ZONETIME_BOTTOM ZONETIME_TOP+ZONETIME_HEIGHT-1
-// STATUS LINE - ZONESTATUS
-#define ZONESTATUS_HEIGHT 20
-#define ZONESTATUS_TOP ZONETIME_BOTTOM+1
-#define ZONESTATUS_BOTTOM ZONESTATUS_TOP+ZONESTATUS_HEIGHT-1
-// GRAPHIC DISPLAY - ZONEGRAPHIC - (remainder of stack)
-#define ZONEGRAPHIC_TOP ZONESTATUS_BOTTOM+1
-#define ZONEGRAPHIC_BOTTOM HEIGHT-1
-#define ZONEGRAPHIC_HEIGHT HEIGHT-ZONEGRAPHIC_TOP
-// SUBZONES - GRAPHIC spilt into two AREAS  - horizontal split (relative to parent)
-// ZONELEFTGRAPHIC
-#define ZONELEFTGRAPHIC_OFFSET_HORIZONTAL 0
-#define ZONELEFTGRAPHIC_WIDTH WIDTH/2
-// ZONERIGHTGRAPHIC
-#define ZONERIGHTGRAPHIC_OFFSET_HORIZONTAL WIDTH/2
-#define ZONERIGHTGRAPHIC_WIDTH WIDTH/2;
-// NOW SUBZONE WITHIN LEFTGRAPHIC and RIGHTGRAPHIC FOR FLAGS (the same for both)
+#define THIRDHEIGHT (HEIGHT - 70)/3
 #define POLEMARGIN 10
-#define ZONEFLAG_OFFSET_HORIZONTAL POLEMARGIN
-#define ZONEFLAG_WIDTH  ZONELEFTGRAPHIC_WIDTH-POLEMARGIN
-// NOW SUBZONES - within FLAG ZONE - Relative to FLAG ZONE
-#define THIRDHEIGHT ZONEGRAPHIC_HEIGHT/3
-// three vertically stacked zones
-#define ZONEFLAGHIGH_TOP 0
-#define ZONEFLAGHIGH_HEIGHT THIRDHEIGHT
-#define ZONEFLAGHIGH_BOTTOM ZONEFLAGHIGH_TOP+ZONEFLAGHIGH_HEIGHT-1
-#define ZONEFLAGMIDDLE_TOP ZONEFLAGHIGH_BOTTOM+1
-#define ZONEFLAGMIDDLE_HEIGHT THIRDHEIGHT
-#define ZONEFLAGMIDDLE_BOTTOM ZONEFLAGMIDDLE_TOP+ZONEFLAGMIDDLE_HEIGHT-1
-#define ZONEFLAGLOW_TOP ZONEFLAGMIDDLE_BOTTOM+1
-#define ZONEFLAGLOW_HEIGHT THIRDHEIGHT
-#define ZONEFLAGLOW_BOTTOM ZONEFLAGLOW_TOP+ZONEFLAGLOW_HEIGHT-1
-// dimensions for flags
+#define POLEWIDTH 2
 #define FLAGWIDTH ZONEFLAG_WIDTH-5
 #define FLAGDEPTH THIRDHEIGHT
+
+struct Point {
+    uint16_t x;
+    uint16_t y;
+};
+
+struct Font {
+    uint16_t font;
+    uint16_t baselineoffset;
+}
+
+struct Font font24 = {FONT24PT, 35};
+struct Font font9 = {FONT9PT, 14};
+    
+struct ZoneArea {
+    struct Point topleft;
+    struct Point bottomleft;
+    Font fontinfo;
+};
+
+typedef struct ZoneArea Zone;
+
+Zone screen = {{0,0},{WIDTH-1, HEIGHT-1}, null};
+Zone largeTimeZone = {{0,0}, {WIDTH-1,49}, font24};
+Zone statusZone = {(0,50}, {WIDTH-1,69}, font9};
+Zone graphicsZone = {{0,70}, {WIDTH-1,HEIGHT-1}, null};
+Zone graphicsLeftZone = {{0,70}, {WIDTH/2-1,HEIGHT-1}, null};
+Zone graphicsLeftFlagZone = {{POLEMARGIN,70}, {WIDTH/2-1,HEIGHT-1}, null};
+Zone grahicsLeftFlagHighZone = {{POLEMARGIN,70}, {WIDTH/2-1,70+THIRDHEIGHT-1}, font24};
+Zone grahicsLeftFlagMiddleZone = {{POLEMARGIN,70+THIRDHEIGHT}, {WIDTH/2-1,70+THIRDHEIGHT*2 -1}, font24};
+Zone grahicsLeftFlagLowZone = {{POLEMARGIN,70+THIRDHEIGHT*2}, {WIDTH/2-1,HEIGHT-1}, font24};
+Zone graphicsRightZone = {{WIDTH/2,70}, {WIDTH-1,HEIGHT-1}, null};
+Zone graphicsRightFlagZone = {{WIDTH/2+POLEMARGIN,70}, {WIDTH-1,HEIGHT-1}, null};
+Zone grahicsRightFlagHighZone = {{WIDTH/2+POLEMARGIN,70}, {WIDTH-1,70+THIRDHEIGHT-1}, font24};
+Zone grahicsRightFlagMiddleZone = {{WIDTH/2+POLEMARGIN,70+THIRDHEIGHT}, {WIDTH-1,70+THIRDHEIGHT*2-1}, font24};
+Zone grahicsRightFlagLowZone = {{WIDTH/2+POLEMARGIN,70+THIRDHEIGHT*2}, {WIDTH-1,HEIGHT-1}, font24};
+
+void clear(Zone zone, uint16_t colour) {
+    drawFilledBox(zone.topleft.X, zone.topleft.Y, zone.bottomright.X, zone.bottomright.Y, colour);
+}
+
+void clearForWrite(Zone zone, uint16_t backgroundcolour, Font fontinfo, uint16_t textcolour) {
+    clear(zone,backgroundcolour);
+    setFont(fontinfo.font);
+    setTextColour(textcolour);
+    setTextPos(zone.topleft.X, zone.topleft.Y + fontinfo.baselineoffset);
+}
 
 #ifdef TESTINGBUILD
 

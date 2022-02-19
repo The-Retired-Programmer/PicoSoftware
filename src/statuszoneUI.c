@@ -20,20 +20,15 @@
 #include "screen.h"
 #include "zonelayout.h"
 
-#define clearZone drawFilledBox(0,ZONESTATUS_TOP,WIDTH,ZONESTATUS_BOTTOM,GREEN)
-
 void statuszoneBegin() {
-    clearZone;
+    clear(statusZone,GREEN);
 }
 
 void statuszoneWrite(char* text) {
-    clearZone;
-    setFont(FONT9PT);
-    setTextColour(BLACK);
-    setTextPos(0,ZONESTATUS_TOP+14);
+    clearForWrite(statusZone,GREEN,font9, BLACK);
     screenWrite(text);
 }
 
 void statuszoneEnd() {
-    clearZone;
+    clear(statusZone,GREEN);
 }

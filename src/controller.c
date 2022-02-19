@@ -123,30 +123,197 @@ void setup_buttons() {
 }
 
 //----------------------------------------------------------
-enum State {INIT, STOP, COUNTDOWN, COUNTUP};
+enum State {INIT, STOP, COUNTDOWN6, COUNTDOWN515,COUNTDOWN5, COUNTDOWN415, COUNTDOWN4,
+        COUNTDOWN115, COUNTDOWN1, COUNTDOWN015, COUNTUP};
 typedef struct action {
     void (*action)();
 } SM_action;
 
-void sm_ignore();
-void sm_panic(); 
-void sm_init_b1();
-void sm_init_b2();
-void sm_countdown_b2();
-void sm_countup_b3();
-void sm_ignoretick();
-void sm_tickdown();
-void sm_tickup();
 
-SM_action statetable[4][4] = {
+// time management routines
+
+uint16_t tickcounter; //0.5sec time counter - 9+ hours capacity
+
+uint16t time(uint16_t mins, uint16_t secs) {
+    return (mins*60 + secs)*2;
+}
+
+void settime(uint16_t mins, uint16_t secs) {
+    tickcounter = time(mins, secs);
+
+boolean timeEquals(uint16_t mins, uint16_t secs) {
+    return tickcounter == time(mins, secs);
+}
+
+boolean onSecondTick() {
+    return tickcounter&0x1;
+}
+
+boolean onHalfSecondTick() {
+    return onSecondTick() == false;
+
+uint16f mins() {
+    return tickcounter/(60*2);
+}
+
+uint16f secs() {
+    return (tickcounter>>1)%60;
+}
+
+//  state machine actions
+
+void sm_ignore() {}
+
+void sm_panic() {
+    printf("STATE MACHINE PANIC - state = %i; event = %i; STOP", state,event);
+    state = STOP;
+}
+
+void sm_init_tick() {
+    state = COUTDOWN6;
+    tickcounter = time(6,0);
+    timezoneTickdown(6,0);
+    graphiczoneInit();
+}
+
+void sm_tickdownTimerto515() {
+    tickcounter--;
+    if (OnSecondTick()) {
+        timeZoneTickdown(mins(), secs());
+    }
+    if (timeEquals(5,16)) {
+        state = COUNTDOWN515;
+    }
+}
+
+void sm_tickdownTimerWarningUp() {
+    tickcounter--;
+    if (timeEquals(5,0)) {
+        state = COUNTDOWN5;
+        warningFlagUp();
+        timeZoneTickdown(mins(), secs());
+    } else {
+        if (OnSecondTick()) {
+            timeZoneTickdown(mins(), secs());
+            warningFlagUpWarning(secs());
+        }
+        if (onHalfSecondTick()) {
+            warningFlagUpWarningFlash();
+        }
+    }
+}
+
+void sm_tickdownTimerto415() {
+    tickcounter--;
+    if (OnSecondTick()) {
+        timeZoneTickdown(mins(), secs());
+    }
+    if (timeEquals(4,16)) {
+        state = COUNTDOWN415;
+    }
+}
+
+void sm_tickdownTimerPrepUp() {
+    tickcounter--;
+    if (timeEquals(4,0)) {
+        state = COUNTDOWN4;
+        prepFlagUp();
+        timeZoneTickdown(mins(), secs());
+    } else {
+        if (OnSecondTick()) {
+            timeZoneTickdown(mins(), secs());
+            prepFlagUpWarning(secs());
+        }
+        if (onHalfSecondTick()) {
+            prepFlagUpWarningFlash();
+        }
+    }
+}
+
+void sm_tickdownTimerto115() {
+    tickcounter--;
+    if (OnSecondTick()) {
+        timeZoneTickdown(mins(), secs());
+    }
+    if (timeEquals(1,16)) {
+        state = COUNTDOWN115;
+    }
+}
+
+void sm_tickdownTimerPrepDown() {
+    tickcounter--;
+    if (timeEquals(1,0)) {
+        state = COUNTDOWN1;
+        prepFlagDown();
+        timeZoneTickdown(mins(), secs());
+    } else {
+        if (OnSecondTick()) {
+            timeZoneTickdown(mins(), secs());
+            prepFlagDownWarning(secs());
+        }
+        if (onHalfSecondTick()) {
+            prepFlagDownWarningFlash();
+        }
+    }
+}
+
+void sm_tickdownTimerto015() {
+    tickcounter--;
+    if (OnSecondTick()) {
+        timeZoneTickdown(mins(), secs());
+    }
+    if (timeEquals(0,16)) {
+        state = COUNTDOWN015;
+    }
+}
+
+void sm_tickdownTimerWarningDown() {
+    tickcounter--;
+    if (timeEquals(0,0)) {
+        state = COUNTUP;
+        warningFlagDown();
+        timeZoneTickup(0,0);
+    } else {
+        if (OnSecondTick()) {
+            timeZoneTickdown(mins(), secs());
+            warningFlagDownWarning(secs());
+        }
+        if (onHalfSecondTick()) {
+            warningFlagDownWarningFlash();
+        }
+    }
+}
+
+void sm_tickup(){
+    tickcounter++;
+    if (tickcounter&0x1) {
+        timezoneTickup(tickcounter/120, tickcounter>>1%120);
+    }
+}
+
+SM_action statetable[11][4] = {
     // INIT
-    { sm_ignoretick,sm_init_b1,sm_init_b2,sm_ignore},
+    { sm_ignore,sm_init_tick,sm_ignore,sm_ignore},
     // STOP
     { sm_panic,sm_panic,sm_panic,sm_panic},
-    // COUNTDOWN
-    { sm_tickdown,sm_ignore,sm_countdown_b2,sm_ignore},
+    // COUNTDOWN6
+    { sm_tickdownTimerto515,sm_ignore,sm_ignore,sm_ignore},
+    // COUNTDOWN515
+    { sm_tickdownTimerWarningUp,sm_ignore,sm_ignore,sm_ignore},
+    // COUNTDOWN5
+    { sm_tickdownTimerto415,sm_ignore,sm_ignore,sm_ignore},
+    // COUNTDOWN415
+    { sm_tickdownTimerPrepUp,sm_ignore,sm_ignore,sm_ignore},
+    // COUNTDOWN4
+    { sm_tickdownTimerto115,sm_ignore,sm_ignore,sm_ignore},
+    // COUNTDOWN115
+    { sm_tickdownTimerPrepDown,sm_ignore,sm_ignore,sm_ignore},
+    // COUNTDOWN1
+    { sm_tickdownTimerto015,sm_ignore,sm_ignore,sm_ignore},
+    // COUNTDOWN15
+    { sm_tickdownTimerWarningDown,sm_ignore,sm_ignore,sm_ignore},
     // COUNTUP
-    { sm_tickup,sm_ignore,sm_ignore,sm_countup_b3}
+    { sm_tickup,sm_ignore,sm_ignore,sm_ignore}
 };
 
 /* ----------------------------------------------------------
@@ -167,27 +334,3 @@ void controllerRun() {
     }
     onExit();
 }
-
-//  state machine actions
-
-void sm_ignore() {}
-
-void sm_panic() {
-    printf("STATE MACHINE PANIC - state = %i; event = %i; STOP", state,event);
-    state = STOP;
-}
-
-void sm_init_b1(){ state = COUNTDOWN;}
-
-void sm_init_b2(){ state = STOP;}
-
-void sm_countdown_b2(){ state = COUNTUP;}
-
-void sm_countup_b3() {state = INIT;}
-
-void sm_ignoretick() {}
-
-void sm_tickdown() {printf("tickdown\n");}
-
-void sm_tickup(){ printf("tickup\n");}
-    

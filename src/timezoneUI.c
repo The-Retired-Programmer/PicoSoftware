@@ -23,24 +23,26 @@
 #define clearZone drawFilledBox(0, ZONETIME_TOP,WIDTH,ZONETIME_BOTTOM,BLUE)
 
 void refresh(char* text) {
-    clearZone;
-    setFont(FONT24PT);
-    setTextColour(RED);
-    setTextPos(10,33);
+    clearForWrite(largeTimeZone,BLUE,font24, RED);
     screenWrite(text);
 }
 
 //
 //   API
 //
-
 void timezoneBegin() {
     refresh(" --:--");
 }
 
-void timezoneTick(uint32_t time) {
+void timezoneTickdown(uint16_t mins, uint16_t secs) {
     char buffer[10];
-    sprintf(buffer,"%i",time);
+    sprintf(buffer,"-%i:%i", mins, secs);
+    refresh(buffer);
+}
+
+void timezoneTickup(uint16_t mins, uint16_t secs) {
+    char buffer[10];
+    sprintf(buffer," %i:%i", mins, secs);
     refresh(buffer);
 }
 

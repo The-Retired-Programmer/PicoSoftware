@@ -20,7 +20,9 @@ void timezoneBegin();
 
 void timezoneEnd();
 
-void timezoneTick(uint32_t time);
+void timezoneTickdown(uint16_t mins, uint16_t secs);
+
+void timezoneTickup(uint16_t mins, uint16_t secs);
 
 #ifdef TESTINGBUILD
 
