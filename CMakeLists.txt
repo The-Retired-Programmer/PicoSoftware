@@ -31,6 +31,7 @@ target_sources(app PUBLIC
     src/statuszoneUI.c
     src/timezoneUI.c
     src/miscUI.c
+    src/zonelayout.c
 )
 
 target_link_libraries(app pico_stdlib hardware_pio hardware_dma hardware_gpio )

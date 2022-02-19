@@ -47,25 +47,25 @@ void putCommand(char* commandtext) {
     wait_for_response();
 }
 
-void putCommand1(char* commandtext, uint p1) {
+void putCommand1(char* commandtext, uint16_t p1) {
     wrapcommandwithbrackets(sprintf(buffer+1,commandtext,p1));
     writestring(buffer);
     wait_for_response();
 }
 
-void putCommand2(char* commandtext, uint p1, uint p2) {
+void putCommand2(char* commandtext, uint16_t p1, uint16_t p2) {
     wrapcommandwithbrackets(sprintf(buffer+1,commandtext,p1,p2));
     writestring(buffer);
     wait_for_response();
 }
 
-void putCommand4(char* commandtext, uint p1, uint p2, uint p3, uint p4) {
+void putCommand4(char* commandtext, uint16_t p1, uint16_t p2, uint16_t p3, uint16_t p4) {
     wrapcommandwithbrackets(sprintf(buffer+1, commandtext,p1, p2, p3, p4));
     writestring(buffer);
     wait_for_response();
 }
 
-void putCommand5(char* commandtext, uint p1, uint p2, uint p3, uint p4, uint p5) {
+void putCommand5(char* commandtext, uint16_t p1, uint16_t p2, uint16_t p3, uint16_t p4, uint16_t p5) {
     wrapcommandwithbrackets(sprintf(buffer+1, commandtext,p1, p2, p3, p4, p5));
     writestring(buffer);
     wait_for_response();
@@ -89,42 +89,42 @@ void screenBegin(){
     gpio_set_function(5, GPIO_FUNC_UART);
 }
 
-void clearScreen(uint backgroundcolour, uint fontselection) {
+void clearScreen(uint16_t backgroundcolour, uint16_t fontselection) {
     putCommand1("background-colour,%i",backgroundcolour);
     putCommand("clear-screen");
     putCommand1("font,%i",fontselection);
     putCommand1("goto-pixel,0,%i",fontselection == FONT24PT?33:12);
 }
 
-void setFont(uint fontselection) {
+void setFont(uint16_t fontselection) {
     putCommand1("font,%i",fontselection);
 }
 
-void setTextColour(uint colour) {
+void setTextColour(uint16_t colour) {
     putCommand1("text-colour,%i",colour);
 }
 
-void drawLine(uint startX, uint startY, uint endX, uint endY, uint colour){
+void drawLine(uint16_t startX, uint16_t startY, uint16_t endX, uint16_t endY, uint16_t colour){
     putCommand5("line,%i,%i,%i,%i,%i",startX,startY,endX,endY,colour);
 }
 
-void drawBox(uint topleftX, uint topleftY, uint bottomrightX, uint bottomrightY, uint colour){
+void drawBox(uint16_t topleftX, uint16_t topleftY, uint16_t bottomrightX, uint16_t bottomrightY, uint16_t colour){
     putCommand5("box,%i,%i,%i,%i,%i",topleftX,topleftY,bottomrightX,bottomrightY,colour);
 }
 
-void drawFilledBox(uint topleftX, uint topleftY, uint bottomrightX, uint bottomrightY, uint colour){
+void drawFilledBox(uint16_t topleftX, uint16_t topleftY, uint16_t bottomrightX, uint16_t bottomrightY, uint16_t colour){
     putCommand5("filled-box,%i,%i,%i,%i,%i",topleftX,topleftY,bottomrightX,bottomrightY,colour);
 }
 
-void drawCircle(uint centreX, uint centreY, uint radius, uint colour){
+void drawCircle(uint16_t centreX, uint16_t centreY, uint16_t radius, uint16_t colour){
     putCommand4("circle,%i,%i,%i,%i",centreX,centreY,radius,colour);
 }
 
-void drawFilledCircle(uint centreX, uint centreY, uint radius, uint colour) {
+void drawFilledCircle(uint16_t centreX, uint16_t centreY, uint16_t radius, uint16_t colour) {
     putCommand4("filled-circle,%i,%i,%i,%i",centreX,centreY,radius,colour);
 }
 
-void setTextPos(uint x, uint y) {
+void setTextPos(uint16_t x, uint16_t y) {
     putCommand2("goto-pixel,%i,%i",x,y);
 }
 

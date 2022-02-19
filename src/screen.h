@@ -16,6 +16,9 @@
 #ifndef _SCREEN_H
 #define _SCREEN_H
 
+#include <stdlib.h>
+#include "pico/stdlib.h"
+
 #define FONTTOMTHUMB 1
 #define FONTPICOPIXEL 2
 #define FONT9PT 3
@@ -31,23 +34,23 @@
 
 void screenBegin();
 
-void clearScreen(uint backgroundcolour, uint fontselection);
+void clearScreen(uint16_t backgroundcolour, uint16_t fontselection);
 
-void setFont(uint fontselection);
+void setFont(uint16_t fontselection);
 
-void setTextColour(uint colour);
+void setTextColour(uint16_t colour);
 
-void drawLine(uint startx, uint startY, uint endX, uint endY, uint colour);
+void drawLine(uint16_t startx, uint16_t startY, uint16_t endX, uint16_t endY, uint16_t colour);
 
-void drawBox(uint topleftX, uint topleftY, uint bottomrightX, uint bottomrightY, uint colour);
+void drawBox(uint16_t topleftX, uint16_t topleftY, uint16_t bottomrightX, uint16_t bottomrightY, uint16_t colour);
 
-void drawFilledBox(uint topleftX, uint topleftY, uint bottomrightX, uint bottomrightY, uint colour);
+void drawFilledBox(uint16_t topleftX, uint16_t topleftY, uint16_t bottomrightX, uint16_t bottomrightY, uint16_t colour);
 
-void drawCircle(uint centreX, uint centreY, uint radius, uint colour);
+void drawCircle(uint16_t centreX, uint16_t centreY, uint16_t radius, uint16_t colour);
 
-void drawFilledCircle(uint centreX, uint centreY, uint radius, uint colour);
+void drawFilledCircle(uint16_t centreX, uint16_t centreY, uint16_t radius, uint16_t colour);
 
-void setTextPos(uint x, uint y);
+void setTextPos(uint16_t x, uint16_t y);
 
 void screenWrite(char* text);
 

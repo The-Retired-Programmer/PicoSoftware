@@ -15,10 +15,10 @@
  */
 #ifndef _ZONELAYOUT_H
 #define _ZONELAYOUT_H
-//
-#include "screen.h";
-//
-// SCREEN
+
+#include <stdlib.h>
+#include "screen.h"
+
 #define HEIGHT 160
 #define WIDTH 128
 #define THIRDHEIGHT (HEIGHT - 70)/3
@@ -32,47 +32,41 @@ struct Point {
     uint16_t y;
 };
 
-struct Font {
+typedef struct {
     uint16_t font;
     uint16_t baselineoffset;
-}
+} Font;
 
-struct Font font24 = {FONT24PT, 35};
-struct Font font9 = {FONT9PT, 14};
+#define font24 (Font){FONT24PT,35}
+#define font9 (Font){FONT9PT,14}
     
-struct ZoneArea {
+typedef struct {
     struct Point topleft;
-    struct Point bottomleft;
-    Font fontinfo;
-};
+    struct Point bottomright;
+} Zone;
 
-typedef struct ZoneArea Zone;
+#define screen (Zone){{0,0},{WIDTH-1,HEIGHT-1}}
+#define largeTimeZone (Zone){{0,0},{WIDTH-1,49}}
+#define statusZone (Zone){{0,50},{WIDTH-1,69}}
+#define graphicsZone (Zone){{0,70},{WIDTH-1,HEIGHT-1}}
+#define graphicsLeftZone (Zone){{0,70},{WIDTH/2-1,HEIGHT-1}}
+#define graphicsLeftMastZone (Zone){{POLEMARGIN-POLEWIDTH,70},{POLEMARGIN-1,HEIGHT-1}}
+#define graphicsLeftFlagZone (Zone){{POLEMARGIN,70},{WIDTH/2-1,HEIGHT-1}}
+#define graphicsLeftFlagHighZone (Zone){{POLEMARGIN,70},{WIDTH/2-1,70+THIRDHEIGHT-1}}
+#define graphicsLeftFlagMiddleZone (Zone){{POLEMARGIN,70+THIRDHEIGHT},{WIDTH/2-1,70+THIRDHEIGHT*2 -1}}
+#define graphicsLeftFlagLowZone (Zone){{POLEMARGIN,70+THIRDHEIGHT*2},{WIDTH/2-1,HEIGHT-1}}
+#define graphicsRightZone (Zone){{WIDTH/2,70},{WIDTH-1,HEIGHT-1}}
+#define graphicsRightMastZone (Zone){{WIDTH/2+POLEMARGIN-POLEWIDTH,70},{WIDTH/2+POLEMARGIN-1,HEIGHT-1}}
+#define graphicsRightFlagZone (Zone){{WIDTH/2+POLEMARGIN,70}, {WIDTH-1,HEIGHT-1}}
+#define graphicsRightFlagHighZone (Zone){{WIDTH/2+POLEMARGIN,70},{WIDTH-1,70+THIRDHEIGHT-1}}
+#define graphicsRightFlagMiddleZone (Zone){{WIDTH/2+POLEMARGIN,70+THIRDHEIGHT},{WIDTH-1,70+THIRDHEIGHT*2-1}}
+#define graphicsRightFlagLowZone (Zone){{WIDTH/2+POLEMARGIN,70+THIRDHEIGHT*2},{WIDTH-1,HEIGHT-1}}
 
-Zone screen = {{0,0},{WIDTH-1, HEIGHT-1}, null};
-Zone largeTimeZone = {{0,0}, {WIDTH-1,49}, font24};
-Zone statusZone = {(0,50}, {WIDTH-1,69}, font9};
-Zone graphicsZone = {{0,70}, {WIDTH-1,HEIGHT-1}, null};
-Zone graphicsLeftZone = {{0,70}, {WIDTH/2-1,HEIGHT-1}, null};
-Zone graphicsLeftFlagZone = {{POLEMARGIN,70}, {WIDTH/2-1,HEIGHT-1}, null};
-Zone grahicsLeftFlagHighZone = {{POLEMARGIN,70}, {WIDTH/2-1,70+THIRDHEIGHT-1}, font24};
-Zone grahicsLeftFlagMiddleZone = {{POLEMARGIN,70+THIRDHEIGHT}, {WIDTH/2-1,70+THIRDHEIGHT*2 -1}, font24};
-Zone grahicsLeftFlagLowZone = {{POLEMARGIN,70+THIRDHEIGHT*2}, {WIDTH/2-1,HEIGHT-1}, font24};
-Zone graphicsRightZone = {{WIDTH/2,70}, {WIDTH-1,HEIGHT-1}, null};
-Zone graphicsRightFlagZone = {{WIDTH/2+POLEMARGIN,70}, {WIDTH-1,HEIGHT-1}, null};
-Zone grahicsRightFlagHighZone = {{WIDTH/2+POLEMARGIN,70}, {WIDTH-1,70+THIRDHEIGHT-1}, font24};
-Zone grahicsRightFlagMiddleZone = {{WIDTH/2+POLEMARGIN,70+THIRDHEIGHT}, {WIDTH-1,70+THIRDHEIGHT*2-1}, font24};
-Zone grahicsRightFlagLowZone = {{WIDTH/2+POLEMARGIN,70+THIRDHEIGHT*2}, {WIDTH-1,HEIGHT-1}, font24};
-
-void clear(Zone zone, uint16_t colour) {
-    drawFilledBox(zone.topleft.X, zone.topleft.Y, zone.bottomright.X, zone.bottomright.Y, colour);
-}
-
-void clearForWrite(Zone zone, uint16_t backgroundcolour, Font fontinfo, uint16_t textcolour) {
-    clear(zone,backgroundcolour);
-    setFont(fontinfo.font);
-    setTextColour(textcolour);
-    setTextPos(zone.topleft.X, zone.topleft.Y + fontinfo.baselineoffset);
-}
+void clear(Zone zone, uint16_t colour);
+void clearForWrite(Zone zone, uint16_t backgroundcolour, Font fontinfo, uint16_t textcolour);
+void paint(Zone zone, uint16_t colour);
+void paintinsert(Zone zone, uint16_t colour);
+void paintinsertcircle(Zone zone, uint16_t colour);
 
 #ifdef TESTINGBUILD
 

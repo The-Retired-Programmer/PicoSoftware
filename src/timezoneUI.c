@@ -20,8 +20,6 @@
 #include "screen.h"
 #include "zonelayout.h"
 
-#define clearZone drawFilledBox(0, ZONETIME_TOP,WIDTH,ZONETIME_BOTTOM,BLUE)
-
 void refresh(char* text) {
     clearForWrite(largeTimeZone,BLUE,font24, RED);
     screenWrite(text);
@@ -36,16 +34,16 @@ void timezoneBegin() {
 
 void timezoneTickdown(uint16_t mins, uint16_t secs) {
     char buffer[10];
-    sprintf(buffer,"-%i:%i", mins, secs);
+    sprintf(buffer," -%01i:%02i", mins, secs);
     refresh(buffer);
 }
 
 void timezoneTickup(uint16_t mins, uint16_t secs) {
     char buffer[10];
-    sprintf(buffer," %i:%i", mins, secs);
+    sprintf(buffer,"%02i:%02i", mins, secs);
     refresh(buffer);
 }
 
 void timezoneEnd() {
-    clearZone;
+    clear(largeTimeZone,BLUE);
 }

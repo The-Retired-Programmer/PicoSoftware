@@ -22,12 +22,9 @@
 #include "miscUI.h"
 #include "screen.h"
 
-uint32_t tickcounter; //0.5sec time counter
-
 void onInit() {
     printf("Race Officer's friend - running\n");
     screenBegin();
-    tickcounter = 0;
     drawSplashScreen();
 }
 
@@ -134,33 +131,38 @@ typedef struct action {
 
 uint16_t tickcounter; //0.5sec time counter - 9+ hours capacity
 
-uint16t time(uint16_t mins, uint16_t secs) {
+uint16_t time(uint16_t mins, uint16_t secs) {
     return (mins*60 + secs)*2;
 }
 
-void settime(uint16_t mins, uint16_t secs) {
+int settime(uint16_t mins, uint16_t secs) {
     tickcounter = time(mins, secs);
+}
 
-boolean timeEquals(uint16_t mins, uint16_t secs) {
+int timeEquals(uint16_t mins, uint16_t secs) {
     return tickcounter == time(mins, secs);
 }
 
-boolean onSecondTick() {
+int onSecondTick() {
     return tickcounter&0x1;
 }
 
-boolean onHalfSecondTick() {
+int onHalfSecondTick() {
     return onSecondTick() == false;
+}
 
-uint16f mins() {
+uint16_t mins() {
     return tickcounter/(60*2);
 }
 
-uint16f secs() {
+uint16_t secs() {
     return (tickcounter>>1)%60;
 }
 
 //  state machine actions
+
+enum State state = INIT;
+enum Event event;
 
 void sm_ignore() {}
 
@@ -170,7 +172,7 @@ void sm_panic() {
 }
 
 void sm_init_tick() {
-    state = COUTDOWN6;
+    state = COUNTDOWN6;
     tickcounter = time(6,0);
     timezoneTickdown(6,0);
     graphiczoneInit();
@@ -178,8 +180,8 @@ void sm_init_tick() {
 
 void sm_tickdownTimerto515() {
     tickcounter--;
-    if (OnSecondTick()) {
-        timeZoneTickdown(mins(), secs());
+    if (onSecondTick()) {
+        timezoneTickdown(mins(), secs());
     }
     if (timeEquals(5,16)) {
         state = COUNTDOWN515;
@@ -191,10 +193,10 @@ void sm_tickdownTimerWarningUp() {
     if (timeEquals(5,0)) {
         state = COUNTDOWN5;
         warningFlagUp();
-        timeZoneTickdown(mins(), secs());
+        timezoneTickdown(mins(), secs());
     } else {
-        if (OnSecondTick()) {
-            timeZoneTickdown(mins(), secs());
+        if (onSecondTick()) {
+            timezoneTickdown(mins(), secs());
             warningFlagUpWarning(secs());
         }
         if (onHalfSecondTick()) {
@@ -205,8 +207,8 @@ void sm_tickdownTimerWarningUp() {
 
 void sm_tickdownTimerto415() {
     tickcounter--;
-    if (OnSecondTick()) {
-        timeZoneTickdown(mins(), secs());
+    if (onSecondTick()) {
+        timezoneTickdown(mins(), secs());
     }
     if (timeEquals(4,16)) {
         state = COUNTDOWN415;
@@ -218,10 +220,10 @@ void sm_tickdownTimerPrepUp() {
     if (timeEquals(4,0)) {
         state = COUNTDOWN4;
         prepFlagUp();
-        timeZoneTickdown(mins(), secs());
+        timezoneTickdown(mins(), secs());
     } else {
-        if (OnSecondTick()) {
-            timeZoneTickdown(mins(), secs());
+        if (onSecondTick()) {
+            timezoneTickdown(mins(), secs());
             prepFlagUpWarning(secs());
         }
         if (onHalfSecondTick()) {
@@ -232,8 +234,8 @@ void sm_tickdownTimerPrepUp() {
 
 void sm_tickdownTimerto115() {
     tickcounter--;
-    if (OnSecondTick()) {
-        timeZoneTickdown(mins(), secs());
+    if (onSecondTick()) {
+        timezoneTickdown(mins(), secs());
     }
     if (timeEquals(1,16)) {
         state = COUNTDOWN115;
@@ -245,10 +247,10 @@ void sm_tickdownTimerPrepDown() {
     if (timeEquals(1,0)) {
         state = COUNTDOWN1;
         prepFlagDown();
-        timeZoneTickdown(mins(), secs());
+        timezoneTickdown(mins(), secs());
     } else {
-        if (OnSecondTick()) {
-            timeZoneTickdown(mins(), secs());
+        if (onSecondTick()) {
+            timezoneTickdown(mins(), secs());
             prepFlagDownWarning(secs());
         }
         if (onHalfSecondTick()) {
@@ -259,8 +261,8 @@ void sm_tickdownTimerPrepDown() {
 
 void sm_tickdownTimerto015() {
     tickcounter--;
-    if (OnSecondTick()) {
-        timeZoneTickdown(mins(), secs());
+    if (onSecondTick()) {
+        timezoneTickdown(mins(), secs());
     }
     if (timeEquals(0,16)) {
         state = COUNTDOWN015;
@@ -272,10 +274,10 @@ void sm_tickdownTimerWarningDown() {
     if (timeEquals(0,0)) {
         state = COUNTUP;
         warningFlagDown();
-        timeZoneTickup(0,0);
+        timezoneTickup(0,0);
     } else {
-        if (OnSecondTick()) {
-            timeZoneTickdown(mins(), secs());
+        if (onSecondTick()) {
+            timezoneTickdown(mins(), secs());
             warningFlagDownWarning(secs());
         }
         if (onHalfSecondTick()) {
@@ -286,8 +288,8 @@ void sm_tickdownTimerWarningDown() {
 
 void sm_tickup(){
     tickcounter++;
-    if (tickcounter&0x1) {
-        timezoneTickup(tickcounter/120, tickcounter>>1%120);
+    if (onSecondTick()) {
+        timezoneTickup(tickcounter/120, tickcounter>>1%60);
     }
 }
 
@@ -319,8 +321,6 @@ SM_action statetable[11][4] = {
 /* ----------------------------------------------------------
  *   API 
  */
-enum State state = INIT;
-enum Event event;
 
 void controllerRun() {
     onInit();
