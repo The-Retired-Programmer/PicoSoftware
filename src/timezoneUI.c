@@ -29,7 +29,7 @@ void refresh(char* text) {
 //   API
 //
 void timezoneBegin() {
-    refresh(" --:--");
+    refresh(" -6:20");
 }
 
 void timezoneTickdown(uint16_t mins, uint16_t secs) {

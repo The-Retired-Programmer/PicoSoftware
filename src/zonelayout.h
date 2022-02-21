@@ -53,13 +53,15 @@ typedef struct {
 #define graphicsLeftMastZone (Zone){{POLEMARGIN-POLEWIDTH,70},{POLEMARGIN-1,HEIGHT-1}}
 #define graphicsLeftFlagZone (Zone){{POLEMARGIN,70},{WIDTH/2-1,HEIGHT-1}}
 #define graphicsLeftFlagHighZone (Zone){{POLEMARGIN,70},{WIDTH/2-1,70+THIRDHEIGHT-1}}
-#define graphicsLeftFlagMiddleZone (Zone){{POLEMARGIN,70+THIRDHEIGHT},{WIDTH/2-1,70+THIRDHEIGHT*2 -1}}
+#define graphicsLeftFlagHighMiddleZone (Zone){{POLEMARGIN,70},{WIDTH/2-1,70+THIRDHEIGHT*2 -1}}
+#define graphicsLeftFlagMiddleLowZone (Zone){{POLEMARGIN,70+THIRDHEIGHT},{WIDTH/2-1,HEIGHT-1}}
 #define graphicsLeftFlagLowZone (Zone){{POLEMARGIN,70+THIRDHEIGHT*2},{WIDTH/2-1,HEIGHT-1}}
 #define graphicsRightZone (Zone){{WIDTH/2,70},{WIDTH-1,HEIGHT-1}}
 #define graphicsRightMastZone (Zone){{WIDTH/2+POLEMARGIN-POLEWIDTH,70},{WIDTH/2+POLEMARGIN-1,HEIGHT-1}}
 #define graphicsRightFlagZone (Zone){{WIDTH/2+POLEMARGIN,70}, {WIDTH-1,HEIGHT-1}}
 #define graphicsRightFlagHighZone (Zone){{WIDTH/2+POLEMARGIN,70},{WIDTH-1,70+THIRDHEIGHT-1}}
-#define graphicsRightFlagMiddleZone (Zone){{WIDTH/2+POLEMARGIN,70+THIRDHEIGHT},{WIDTH-1,70+THIRDHEIGHT*2-1}}
+#define graphicsRightFlagHighMiddleZone (Zone){{WIDTH/2+POLEMARGIN,70},{WIDTH-1,70+THIRDHEIGHT*2-1}}
+#define graphicsRightFlagMiddleLowZone (Zone){{WIDTH/2+POLEMARGIN,70+THIRDHEIGHT},{WIDTH-1,HEIGHT-1}}
 #define graphicsRightFlagLowZone (Zone){{WIDTH/2+POLEMARGIN,70+THIRDHEIGHT*2},{WIDTH-1,HEIGHT-1}}
 
 void clear(Zone zone, uint16_t colour);

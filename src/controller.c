@@ -33,7 +33,7 @@ void onStart() {
     timezoneBegin();
     statuszoneBegin();
     graphiczoneBegin();
-    statuszoneWrite("[left] to start");
+    statuszoneWrite("[left] start");
 }
 
 void onExit() {
@@ -120,7 +120,7 @@ void setup_buttons() {
 }
 
 //----------------------------------------------------------
-enum State {INIT, STOP, COUNTDOWN6, COUNTDOWN515,COUNTDOWN5, COUNTDOWN415, COUNTDOWN4,
+enum State {INIT, STOP, WAITTORESTART, COUNTDOWN6, COUNTDOWN515,COUNTDOWN5, COUNTDOWN415, COUNTDOWN4,
         COUNTDOWN115, COUNTDOWN1, COUNTDOWN015, COUNTUP};
 typedef struct action {
     void (*action)();
@@ -143,12 +143,8 @@ int timeEquals(uint16_t mins, uint16_t secs) {
     return tickcounter == time(mins, secs);
 }
 
-int onSecondTick() {
-    return tickcounter&0x1;
-}
-
-int onHalfSecondTick() {
-    return onSecondTick() == false;
+bool onSecondTick() {
+    return (tickcounter&0x1) == 0;
 }
 
 uint16_t mins() {
@@ -173,9 +169,29 @@ void sm_panic() {
 
 void sm_init_tick() {
     state = COUNTDOWN6;
-    tickcounter = time(6,0);
-    timezoneTickdown(6,0);
+    tickcounter = time(5,20);
+    timezoneTickdown(5,20);
     graphiczoneInit();
+    statuszoneWrite("[right] postpone");
+}
+
+void sm_postpone() {
+    // beep twice
+    state = WAITTORESTART;
+    timezoneTickdown(6,20);
+    graphiczoneBegin();
+    graphiczoneInit();
+    statuszoneWrite("[left] restart");
+}
+
+void sm_init_restart() {
+    // beep once
+    onStart();
+    state = COUNTDOWN6;
+    tickcounter = time(6,20);
+    timezoneTickdown(6,20);
+    graphiczoneInit();
+    statuszoneWrite("[right] postpone");
 }
 
 void sm_tickdownTimerto515() {
@@ -198,9 +214,6 @@ void sm_tickdownTimerWarningUp() {
         if (onSecondTick()) {
             timezoneTickdown(mins(), secs());
             warningFlagUpWarning(secs());
-        }
-        if (onHalfSecondTick()) {
-            warningFlagUpWarningFlash();
         }
     }
 }
@@ -226,9 +239,6 @@ void sm_tickdownTimerPrepUp() {
             timezoneTickdown(mins(), secs());
             prepFlagUpWarning(secs());
         }
-        if (onHalfSecondTick()) {
-            prepFlagUpWarningFlash();
-        }
     }
 }
 
@@ -252,9 +262,6 @@ void sm_tickdownTimerPrepDown() {
         if (onSecondTick()) {
             timezoneTickdown(mins(), secs());
             prepFlagDownWarning(secs());
-        }
-        if (onHalfSecondTick()) {
-            prepFlagDownWarningFlash();
         }
     }
 }
@@ -280,40 +287,39 @@ void sm_tickdownTimerWarningDown() {
             timezoneTickdown(mins(), secs());
             warningFlagDownWarning(secs());
         }
-        if (onHalfSecondTick()) {
-            warningFlagDownWarningFlash();
-        }
     }
 }
 
 void sm_tickup(){
     tickcounter++;
     if (onSecondTick()) {
-        timezoneTickup(tickcounter/120, tickcounter>>1%60);
+        timezoneTickup(mins(), secs());
     }
 }
 
-SM_action statetable[11][4] = {
+SM_action statetable[12][4] = {
     // INIT
-    { sm_ignore,sm_init_tick,sm_ignore,sm_ignore},
+    { sm_ignore,sm_init_tick,sm_ignore,sm_postpone},
     // STOP
     { sm_panic,sm_panic,sm_panic,sm_panic},
+    // WAITINGTORESTART
+    { sm_ignore,sm_init_restart,sm_ignore,sm_ignore},
     // COUNTDOWN6
-    { sm_tickdownTimerto515,sm_ignore,sm_ignore,sm_ignore},
+    { sm_tickdownTimerto515,sm_ignore,sm_ignore,sm_postpone},
     // COUNTDOWN515
-    { sm_tickdownTimerWarningUp,sm_ignore,sm_ignore,sm_ignore},
+    { sm_tickdownTimerWarningUp,sm_ignore,sm_ignore,sm_postpone},
     // COUNTDOWN5
-    { sm_tickdownTimerto415,sm_ignore,sm_ignore,sm_ignore},
+    { sm_tickdownTimerto415,sm_ignore,sm_ignore,sm_postpone},
     // COUNTDOWN415
-    { sm_tickdownTimerPrepUp,sm_ignore,sm_ignore,sm_ignore},
+    { sm_tickdownTimerPrepUp,sm_ignore,sm_ignore,sm_postpone},
     // COUNTDOWN4
-    { sm_tickdownTimerto115,sm_ignore,sm_ignore,sm_ignore},
+    { sm_tickdownTimerto115,sm_ignore,sm_ignore,sm_postpone},
     // COUNTDOWN115
-    { sm_tickdownTimerPrepDown,sm_ignore,sm_ignore,sm_ignore},
+    { sm_tickdownTimerPrepDown,sm_ignore,sm_ignore,sm_postpone},
     // COUNTDOWN1
-    { sm_tickdownTimerto015,sm_ignore,sm_ignore,sm_ignore},
+    { sm_tickdownTimerto015,sm_ignore,sm_ignore,sm_postpone},
     // COUNTDOWN15
-    { sm_tickdownTimerWarningDown,sm_ignore,sm_ignore,sm_ignore},
+    { sm_tickdownTimerWarningDown,sm_ignore,sm_ignore,sm_postpone},
     // COUNTUP
     { sm_tickup,sm_ignore,sm_ignore,sm_ignore}
 };

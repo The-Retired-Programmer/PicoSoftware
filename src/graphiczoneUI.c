@@ -49,51 +49,31 @@ void drawPrepMast() {
 }
 
 void writeWarningUpCountdownSecs(uint16_t secs) {
-    clearForWrite(graphicsLeftFlagHighZone, GREEN, font9, RED);
+    clearForWrite(graphicsLeftFlagHighMiddleZone, GREEN, font24, RED);
     char buffer[10];
-    sprintf(buffer,"%i", secs);
+    sprintf(buffer,"%02i", secs);
     screenWrite(buffer);
 }
 
 void writeWarningDownCountdownSecs(uint16_t secs) {
-    clearForWrite(graphicsLeftFlagLowZone, GREEN, font9, RED);
+    clearForWrite(graphicsLeftFlagMiddleLowZone, GREEN, font24, RED);
     char buffer[10];
-    sprintf(buffer,"%i", secs);
+    sprintf(buffer,"%02i", secs);
     screenWrite(buffer);
 }
 
 void writePrepUpCountdownSecs(uint16_t secs) {
-    clearForWrite(graphicsRightFlagHighZone, GREEN, font9, RED);
+    clearForWrite(graphicsRightFlagHighMiddleZone, GREEN, font24, RED);
     char buffer[10];
-    sprintf(buffer,"%i", secs);
+    sprintf(buffer,"%02i", secs);
     screenWrite(buffer);
 }
 
 void writePrepDownCountdownSecs(uint16_t secs) {
-    clearForWrite(graphicsRightFlagLowZone, GREEN, font9, RED);
+    clearForWrite(graphicsRightFlagMiddleLowZone, GREEN, font24, RED);
     char buffer[10];
-    sprintf(buffer,"%i", secs);
+    sprintf(buffer,"%02i", secs);
     screenWrite(buffer);
-}
-
-void writeWarningFlagUpFlash() {
-    clearForWrite(graphicsLeftFlagMiddleZone, GREEN, font9, RED);    
-    screenWrite("^^");
-}
-
-void writeWarningFlagDownFlash() {
-    clearForWrite(graphicsLeftFlagMiddleZone, GREEN, font9, RED); 
-    screenWrite("vv");
-}
-
-void writePrepFlagUpFlash() {
-    clearForWrite(graphicsRightFlagMiddleZone, GREEN, font9, RED); 
-    screenWrite("^^");
-}
-
-void writePrepFlagDownFlash() {
-    clearForWrite(graphicsRightFlagMiddleZone, GREEN, font9, RED); 
-    screenWrite("vv");
 }
 //
 //   API
@@ -111,11 +91,6 @@ void graphiczoneInit() {
 
 void warningFlagUpWarning(int16_t secs){
     writeWarningUpCountdownSecs(secs);
-    writeWarningFlagUpFlash();
-}
-
-void warningFlagUpWarningFlash(){
-    clear(graphicsLeftFlagMiddleZone,GREEN);
 }
 
 void warningFlagUp(){
@@ -125,11 +100,6 @@ void warningFlagUp(){
 
 void warningFlagDownWarning(int16_t secs){
     writeWarningDownCountdownSecs(secs);
-    writeWarningFlagDownFlash();
-}
-
-void warningFlagDownWarningFlash(){
-    clear(graphicsLeftFlagMiddleZone,GREEN);
 }
 
 void warningFlagDown(){
@@ -139,11 +109,6 @@ void warningFlagDown(){
 
 void prepFlagUpWarning(int16_t secs){
     writePrepUpCountdownSecs(secs);
-    writePrepFlagUpFlash();
-}
-
-void prepFlagUpWarningFlash(){
-    clear(graphicsRightFlagMiddleZone,GREEN);
 }
 
 void prepFlagUp(){
@@ -153,11 +118,6 @@ void prepFlagUp(){
 
 void prepFlagDownWarning(int16_t secs){
     writePrepDownCountdownSecs(secs);
-    writePrepFlagDownFlash();
-}
-
-void prepFlagDownWarningFlash(){
-    clear(graphicsRightFlagMiddleZone,GREEN);
 }
 
 void prepFlagDown(){
