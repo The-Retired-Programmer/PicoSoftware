@@ -19,7 +19,9 @@
 #include "timezoneUI.h"
 #include "statuszoneUI.h"
 #include "graphiczoneUI.h"
+#include "racingscreenUI.h"
 #include "miscUI.h"
+#include "zonelayout.h"
 #include "screen.h"
 
 void onInit() {
@@ -31,14 +33,14 @@ void onInit() {
 void onStart() {
     clearScreen(BLACK,FONT24PT);
     timezoneBegin();
-    statuszoneBegin();
+    statuszoneBegin(statusZone);
     graphiczoneBegin();
     statuszoneWrite("[left] start");
 }
 
 void onExit() {
     timezoneEnd();
-    statuszoneEnd();
+    statuszoneEnd(statusZone);
     graphiczoneEnd();
     sleep_ms(1000);
     screenEnd();
@@ -280,8 +282,10 @@ void sm_tickdownTimerWarningDown() {
     tickcounter--;
     if (timeEquals(0,0)) {
         state = COUNTUP;
-        warningFlagDown();
-        timezoneTickup(0,0);
+        racingscreenBegin();
+        racingscreenTickup(0,0);
+        statuszoneBegin(racingStatusZone);
+        statuszoneWrite("[right] general recall");
     } else {
         if (onSecondTick()) {
             timezoneTickdown(mins(), secs());
@@ -293,7 +297,7 @@ void sm_tickdownTimerWarningDown() {
 void sm_tickup(){
     tickcounter++;
     if (onSecondTick()) {
-        timezoneTickup(mins(), secs());
+        racingscreenTickup(mins(), secs());
     }
 }
 

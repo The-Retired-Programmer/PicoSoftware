@@ -22,8 +22,6 @@ void timezoneEnd();
 
 void timezoneTickdown(uint16_t mins, uint16_t secs);
 
-void timezoneTickup(uint16_t mins, uint16_t secs);
-
 #ifdef TESTINGBUILD
 
 #endif

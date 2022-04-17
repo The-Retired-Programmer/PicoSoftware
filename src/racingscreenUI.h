@@ -13,31 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#include <stdlib.h>
-#include "pico/stdlib.h"
-#include <stdio.h>
-#include <string.h>
-#include "screen.h"
-#include "zonelayout.h"
+#ifndef _RSUI_H
+#define _RSUI_H
 
-void refresh(char* text) {
-    clearForWrite(largeTimeZone,BLUE,font24, RED);
-    screenWrite(text);
-}
+void racingscreenBegin();
 
-//
-//   API
-//
-void timezoneBegin() {
-    clear(largeTimeZone,BLUE);
-}
+void racingscreenTickup(uint16_t mins, uint16_t secs);
 
-void timezoneTickdown(uint16_t mins, uint16_t secs) {
-    char buffer[10];
-    sprintf(buffer," -%01i:%02i", mins, secs);
-    refresh(buffer);
-}
+void racingscreenEnd();
 
-void timezoneEnd() {
-    clear(largeTimeZone,BLUE);
-}
+#ifdef TESTINGBUILD
+
+#endif
+
+#endif

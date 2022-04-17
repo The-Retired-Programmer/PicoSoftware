@@ -21,11 +21,6 @@
 
 #define HEIGHT 160
 #define WIDTH 128
-#define THIRDHEIGHT (HEIGHT - 70)/3
-#define POLEMARGIN 10
-#define POLEWIDTH 2
-#define FLAGWIDTH ZONEFLAG_WIDTH-5
-#define FLAGDEPTH THIRDHEIGHT
 
 struct Point {
     uint16_t x;
@@ -46,6 +41,15 @@ typedef struct {
 } Zone;
 
 #define screen (Zone){{0,0},{WIDTH-1,HEIGHT-1}}
+
+//layouts for pre start screen
+
+#define THIRDHEIGHT (HEIGHT - 70)/3
+#define POLEMARGIN 10
+#define POLEWIDTH 2
+#define FLAGWIDTH ZONEFLAG_WIDTH-5
+#define FLAGDEPTH THIRDHEIGHT
+
 #define largeTimeZone (Zone){{0,0},{WIDTH-1,49}}
 #define statusZone (Zone){{0,50},{WIDTH-1,69}}
 #define graphicsZone (Zone){{0,70},{WIDTH-1,HEIGHT-1}}
@@ -63,6 +67,13 @@ typedef struct {
 #define graphicsRightFlagHighMiddleZone (Zone){{WIDTH/2+POLEMARGIN,70},{WIDTH-1,70+THIRDHEIGHT*2-1}}
 #define graphicsRightFlagMiddleLowZone (Zone){{WIDTH/2+POLEMARGIN,70+THIRDHEIGHT},{WIDTH-1,HEIGHT-1}}
 #define graphicsRightFlagLowZone (Zone){{WIDTH/2+POLEMARGIN,70+THIRDHEIGHT*2},{WIDTH-1,HEIGHT-1}}
+
+// layout for post start screen
+
+#define largeMinsTimeZone (Zone){{0,0},{WIDTH-1,49}}
+#define largeSecsTimeZone (Zone){{0,50},{WIDTH-1,99}}
+
+#define racingStatusZone (Zone){{0,HEIGHT-20},{WIDTH-1,HEIGHT-1}}
 
 void clear(Zone zone, uint16_t colour);
 void clearForWrite(Zone zone, uint16_t backgroundcolour, Font fontinfo, uint16_t textcolour);

@@ -20,24 +20,26 @@
 #include "screen.h"
 #include "zonelayout.h"
 
-void refresh(char* text) {
-    clearForWrite(largeTimeZone,BLUE,font24, RED);
+void racingscreenRefresh(Zone zone, char* text) {
+    clearForWrite(zone,BLUE,font24, RED);
     screenWrite(text);
 }
 
 //
 //   API
 //
-void timezoneBegin() {
-    clear(largeTimeZone,BLUE);
+void racingscreenBegin() {
+   clear(screen, BLUE);
 }
 
-void timezoneTickdown(uint16_t mins, uint16_t secs) {
+void racingscreenTickup(uint16_t mins, uint16_t secs) {
     char buffer[10];
-    sprintf(buffer," -%01i:%02i", mins, secs);
-    refresh(buffer);
+    sprintf(buffer,"% 3im", mins);
+    racingscreenRefresh(largeMinsTimeZone, buffer);
+    sprintf(buffer,"% 3is", secs);
+    racingscreenRefresh(largeSecsTimeZone, buffer);
 }
 
-void timezoneEnd() {
-    clear(largeTimeZone,BLUE);
+void racingscreenEnd() {
+    clear(screen,BLUE);
 }

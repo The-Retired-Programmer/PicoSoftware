@@ -20,15 +20,18 @@
 #include "screen.h"
 #include "zonelayout.h"
 
-void statuszoneBegin() {
-    clear(statusZone,GREEN);
+Zone zone;
+
+void statuszoneBegin(Zone statuszone) {
+    zone = statuszone;
+    clear(zone,GREEN);
 }
 
 void statuszoneWrite(char* text) {
-    clearForWrite(statusZone,GREEN,font9, BLACK);
+    clearForWrite(zone,GREEN,font9, BLACK);
     screenWrite(text);
 }
 
 void statuszoneEnd() {
-    clear(statusZone,GREEN);
+    clear(zone,GREEN);
 }
