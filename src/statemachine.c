@@ -16,6 +16,7 @@
 #include <stdlib.h>
 #include "pico/stdlib.h"
 #include <stdio.h>
+#include "statemachine.h"
 #include "timezoneUI.h"
 #include "statuszoneUI.h"
 #include "graphiczoneUI.h"
@@ -24,6 +25,7 @@
 #include "zonelayout.h"
 #include "screen.h"
 
+/*
 void onInit() {
     printf("Race Officer's friend - running\n");
     screenBegin();
@@ -47,83 +49,14 @@ void onExit() {
     printf("Race Officer's friend - shut down\n");
 }
 
-enum Event { TICK, BUTTON1, BUTTON2, BUTTON3 };
+enum StateMachineEvent { TICK, BUTTON1, BUTTON2, BUTTON3 };
 
-#define EVENTQSIZE 20
-enum Event eventq[EVENTQSIZE];
-uint eventinsert = 0;
-uint eventextract = 0;
-
-void insertEvent(enum Event event) {
-    if (eventinsert == eventextract) {
-        eventinsert = eventextract = 0;
-    }
-    if (eventinsert == EVENTQSIZE) {
-        printf("FAIL - Event Buffer Overflow\n");
-        printf("eventinsert=%i; eventextract=%i\n",eventinsert,eventextract);
-        for(int i = 0; i < EVENTQSIZE; i++) {
-            printf("%i;",eventq[i]);
-        }
-        printf("\n");
-        exit(1);
-    }
-    eventq[eventinsert++] = event;
-}
-
-enum Event getNextEvent() {
-    while (true) {
-        if (eventinsert > eventextract) {
-            enum Event ev = eventq[eventextract++];
-            if (eventinsert == eventextract) {
-                eventinsert = eventextract = 0;
-            }
-            return ev;
-        }
-        sleep_ms(100); 
-    }
-}
-
-enum Event tickevent = TICK;
-struct repeating_timer out;
-
-bool timer_irqhandler(repeating_timer_t *rt) {
-    insertEvent(TICK);
-    return true; // to enable repeating
-}
-    
-void setup_timer() {
-    // need a 0.5 second regular "heart beat"
-    if (!add_repeating_timer_ms(-500, timer_irqhandler, &tickevent, &out)) {
-        printf("FAIL - unable to setup a repeating timer");
-        exit(1);
-    }
-}
-
-#define BUTTON_GPIOBASE 10
-#define BUTTON_NUMBER 3
-
-void gpio_irqhandler(uint gpio, uint32_t event) {
-    insertEvent(gpio - BUTTON_GPIOBASE +1);
-    gpio_acknowledge_irq(gpio, event);
-}
-
-void setupGPIO(uint gpio) {
-    gpio_set_function(gpio,GPIO_FUNC_SIO);
-    gpio_set_dir(gpio, false);
-    gpio_pull_up(gpio);
-    gpio_set_input_enabled(gpio, true);
-    gpio_set_irq_enabled_with_callback(gpio, GPIO_IRQ_EDGE_FALL,true,gpio_irqhandler);
-};
-
-void setup_buttons() {
-    for (uint i = 0; i < BUTTON_NUMBER; i++) {
-        setupGPIO(BUTTON_GPIOBASE+i);
-    }
-}
+*/
 
 //----------------------------------------------------------
 enum State {INIT, STOP, WAITTORESTART, COUNTDOWN6, COUNTDOWN515,COUNTDOWN5, COUNTDOWN415, COUNTDOWN4,
         COUNTDOWN115, COUNTDOWN1, COUNTDOWN015, COUNTUP};
+
 typedef struct action {
     void (*action)();
 } SM_action;
@@ -160,7 +93,7 @@ uint16_t secs() {
 //  state machine actions
 
 enum State state = INIT;
-enum Event event;
+StateMachineEvent event;
 
 void sm_ignore() {}
 
@@ -188,7 +121,7 @@ void sm_postpone() {
 
 void sm_init_restart() {
     // beep once
-    onStart();
+    drawStartScreen();
     state = COUNTDOWN6;
     tickcounter = time(6,20);
     timezoneTickdown(6,20);
@@ -332,15 +265,7 @@ SM_action statetable[12][4] = {
  *   API 
  */
 
-void controllerRun() {
-    onInit();
-    setup_buttons();
-    sleep_ms(5*1000);
-    onStart();
-    setup_timer();
-    while (state != STOP) {
-        event = getNextEvent();
-        (*statetable[state][event].action)();
-    }
-    onExit();
+void statemachineAction(StateMachineEvent evt) {
+    event = evt;
+    (*statetable[state][evt].action)();
 }

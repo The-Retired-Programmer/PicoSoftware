@@ -16,9 +16,14 @@
 #include <stdlib.h>
 #include "pico/stdlib.h"
 #include "screen.h"
+#include "timezoneUI.h"
+#include "statuszoneUI.h"
+#include "graphiczoneUI.h"
+#include "zonelayout.h"
 
 
 void drawSplashScreen() {
+    screenBegin();
     clearScreen(BLUE,FONT9PT);
     // border
     drawFilledBox(0,0,128,5,RED);
@@ -35,3 +40,18 @@ void drawSplashScreen() {
     screenWrite("Friend");
 }
 
+void drawStartScreen() {
+    clearScreen(BLACK,FONT24PT);
+    timezoneBegin();
+    statuszoneBegin(statusZone);
+    graphiczoneBegin();
+    statuszoneWrite("[left] start");
+}
+
+void drawEndScreen() {
+    timezoneEnd();
+    statuszoneEnd(statusZone);
+    graphiczoneEnd();
+    sleep_ms(1000);
+    screenEnd();
+}

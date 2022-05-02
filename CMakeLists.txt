@@ -1,12 +1,16 @@
 cmake_minimum_required(VERSION 3.13)
 
+set(APPNAME raceofficersfriend)
+set(PROGNAME "Race Officers Friend")
+set(VERSION 0.1)
+
 set(CMAKE_C_STANDARD 11)
 set(CMAKE_CXX_STANDARD 17)
+set(PICO_SDK_PATH "$ENV{HOME}/pico/pico-sdk")
+include("$ENV{HOME}/pico/pico-sdk/external/pico_sdk_import.cmake")
+set(PICO-LIB_CURRENT_LIST_DIR "${CMAKE_CURRENT_LIST_DIR}/../Pico-Lib" )
 
-set(PICO_SDK_PATH "/home/pi/pico/pico-sdk")
-include(/home/pi/pico/pico-sdk/external/pico_sdk_import.cmake)
-
-project(raceofficersfriend C CXX ASM)
+project(${APPNAME} C CXX ASM)
 
 pico_sdk_init()
 
@@ -16,48 +20,38 @@ pico_sdk_init()
 
 add_executable(app)
 
-pico_set_program_name(app "race_officers_friend")
-pico_set_program_version(app "0.1")
-target_compile_definitions(app PUBLIC VERSION="0.1" )
+pico_set_program_name(app "${PROGNAME}")
+pico_set_program_version(app "${VERSION}")
+target_compile_definitions(app PUBLIC VERSION="${VERSION}" )
 
 pico_enable_stdio_uart(app 1)
 pico_enable_stdio_usb(app 0)
 
+pico_generate_pio_header(app ${PICO-LIB_CURRENT_LIST_DIR}/src/events/debounce.pio)
+
+include_directories(
+    ${PICO-LIB_CURRENT_LIST_DIR}/src/events/
+)
+
 target_sources(app PUBLIC
     src/main.c
+    src/buttonactions.c
+    src/timeractions.c
+    src/statemachine.c
+
     src/screen.c
-    src/controller.c
     src/graphiczoneUI.c
     src/statuszoneUI.c
     src/timezoneUI.c
     src/miscUI.c
     src/zonelayout.c
     src/racingscreenUI.c
+
+    ${PICO-LIB_CURRENT_LIST_DIR}/src/events/gpio_events.c
+    ${PICO-LIB_CURRENT_LIST_DIR}/src/events/timer_events.c
+    ${PICO-LIB_CURRENT_LIST_DIR}/src/events/eventhandler.c
 )
 
-target_link_libraries(app pico_stdlib hardware_pio hardware_dma hardware_gpio )
+target_link_libraries(app pico_stdlib hardware_pio hardware_gpio )
 
 pico_add_extra_outputs(app)
-
-#
-#     build the testing image
-#
-add_executable(tests)
-
-pico_set_program_name(tests "race_officers_friend tests")
-pico_set_program_version(tests "0.1-tests")
-target_compile_definitions(tests PUBLIC VERSION="0.1-tests")
-
-pico_enable_stdio_uart(tests 1)
-pico_enable_stdio_usb(tests 0)
-
-target_compile_definitions(tests PUBLIC TESTINGBUILD)
-
-target_sources(tests PUBLIC
-    test/main.c
-    test/ptest.c
-)
-
-target_link_libraries(tests pico_stdlib hardware_pio hardware_dma hardware_gpio )
-
-pico_add_extra_outputs(tests)

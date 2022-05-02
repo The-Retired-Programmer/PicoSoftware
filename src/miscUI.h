@@ -18,6 +18,10 @@
 
 void drawSplashScreen();
 
+void drawStartScreen();
+
+void drawEndScreen();
+
 #ifdef TESTINGBUILD
 
 #endif

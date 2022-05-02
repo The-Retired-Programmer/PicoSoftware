@@ -13,10 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef _CONTROLLER_H
-#define _CONTROLLER_H
+#ifndef _SM_H
+#define _SM_H
 
-void controllerRun();
+typedef enum STATEMACHINEEVENT { TICK, BUTTON1, BUTTON2, BUTTON3 } StateMachineEvent;
+
+void statemachineAction(StateMachineEvent evt);
 
 #ifdef TESTINGBUILD
 
