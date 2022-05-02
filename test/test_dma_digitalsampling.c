@@ -18,8 +18,8 @@
 #include "hardware/clocks.h"
 #include "hardware/timer.h"
 #include "ptest.h"
-#include "../src/digitalsampling.h"
-#include "../src/dma_digitalsampling.h"
+#include "digitalsampling.h"
+#include "dma_digitalsampling.h"
 
 #define DMA_SPEED_DIVIDER 250
 // dma word transfer speed is 125Mhz / 250  => 500 K words/sec

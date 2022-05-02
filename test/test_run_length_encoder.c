@@ -20,7 +20,7 @@
 
 #include <stdlib.h>
 #include "ptest.h"
-#include "../src/run_length_encoder.h"
+#include "run_length_encoder.h"
 
 static int rlelinereceiver(const char *line) {
     pass_if_equal_string("small line receiver", "2H2L2H2L", get_rle_linebuffer());

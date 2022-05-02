@@ -21,7 +21,7 @@
 #include <stdlib.h>
 #include "pico/stdlib.h"
 #include "hardware/timer.h"
-#include "../src/square_wave_generator.h"
+#include "square_wave_generator.h"
 #include "ptest.h"
 
 // no pass or fail - it needs a visual check on GPIO pins with a scope or leds

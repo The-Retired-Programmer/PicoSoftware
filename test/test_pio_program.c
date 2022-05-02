@@ -21,7 +21,7 @@
 #include <stdlib.h>
 #include "pico/stdlib.h"
 #include "ptest.h"
-#include "../src/pio_program.h"
+#include "pio_program.h"
 
 static void test_pio_program() {
     struct ppb_config *ppb;

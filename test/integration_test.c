@@ -18,11 +18,11 @@
 #include <string.h>
 #include "hardware/timer.h"
 #include "ptest.h"
-#include "../src/logic_probe.h"
-#include "../src/probe_controls.h"
-#include "../src/frontend_commands.h"
-#include "../src/digitalsampling.h"
-#include "../src/gpio_probe_event.h"
+#include "logic_probe.h"
+#include "probe_controls.h"
+#include "frontend_commands.h"
+#include "digitalsampling.h"
+#include "gpio_probe_event.h"
 
 
 //  assuming sample size 32000, sample rate = 1M/s, sample width = 1

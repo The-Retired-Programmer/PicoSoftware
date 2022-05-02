@@ -22,7 +22,7 @@
 #include <string.h>
 #include "pico/stdlib.h"
 #include "ptest.h"
-#include "../src/probe_controls.h"
+#include "probe_controls.h"
 
 static void test_probe_controls() {
     char cmdbuffer[255]; 

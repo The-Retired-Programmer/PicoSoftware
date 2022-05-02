@@ -22,9 +22,9 @@
 #include <string.h>
 #include "pico/stdlib.h"
 #include "ptest.h"
-#include "../src/gpio_probe_event.h"
+#include "gpio_probe_event.h"
 #include "test_gpio_probe_event.h"
-#include "../src/probe_controls.h"
+#include "probe_controls.h"
 
 static void test_gpio_probe_event_trigger_on_fall() {
     struct probe_controls controls;

@@ -20,8 +20,8 @@
 
 #include <stdlib.h>
 #include "ptest.h"
-#include "../src/square_wave_generator.h"
-#include "../src/pio_digitalsampling.h"
+#include "square_wave_generator.h"
+#include "pio_digitalsampling.h"
 
 static void test_digitalsampling_pio_internals() {
     struct probe_controls controls;

@@ -44,7 +44,7 @@
 #include "digitalsampling.h"
 
 #ifdef TESTINGBUILD
-#include "../test/ptest.h"
+#include "ptest.h"
 #endif
 
 #define CONTROL_DMA_CHANNEL 0
