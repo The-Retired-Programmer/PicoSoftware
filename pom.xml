@@ -26,7 +26,7 @@
     </modules>
     
     <url>https://www.theretiredprogrammer.uk/racetrainingdemonstrator/index.html</url>
-    
+<!--    
     <scm>
         <connection>scm:git:git://github.com/The-Retired-Programmer/racetrainingdemonstrator.git</connection>
         <developerConnection>scm:git:ssh://github.com:The-Retired-Programmer/racetrainingdemonstrator.git</developerConnection>
@@ -54,36 +54,22 @@
         </license>
     </licenses>
 
-    
-    <repositories>
-        <repository>
-            <id>netbeans</id>
-            <name>NetBeans</name>
-            <url>http://bits.netbeans.org/nexus/content/groups/netbeans</url>
-            <releases>
-                <enabled>true</enabled>
-            </releases>
-            <snapshots>
-                <enabled>false</enabled>
-            </snapshots>
-        </repository>
-    </repositories>
-    
     <distributionManagement>
         <repository>
             <id>ossrh</id>
             <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
         </repository>
     </distributionManagement>
-    
+ -->   
     <properties>
-        <netbeans.version>RELEASE82</netbeans.version>
+        <netbeans.version>RELEASE111</netbeans.version>
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <nbpcglibrary.version>4.0.1-SNAPSHOT</nbpcglibrary.version>
     </properties>
-    
+   
+    <!-- 
     <build>
         <pluginManagement>
             <plugins>
@@ -130,7 +116,44 @@
             </plugin>
         </plugins>
     </build>
+    -->
     
+    <build>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>org.apache.netbeans.utilities</groupId>
+                    <artifactId>nbm-maven-plugin</artifactId>
+                    <version>4.3</version>
+                    <extensions>true</extensions>
+                    <configuration>
+                        <cluster>racetrainingdemonstrator</cluster>
+                        <homePageUrl>${project.url}</homePageUrl>
+                        <licenseFile>../LICENSE</licenseFile>
+                        <licenseName>The Apache License, Version 2.0</licenseName>
+                        <brandingToken>racetrainingdemonstrator</brandingToken>
+                    </configuration>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-jar-plugin</artifactId>
+                    <version>3.1.2</version>
+                    <configuration>
+                        <archive>
+                                <manifestFile>${project.build.outputDirectory}/META-INF/MANIFEST.MF</manifestFile>
+                        </archive>
+                    </configuration>
+                </plugin>
+            </plugins>
+        </pluginManagement>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.netbeans.utilities</groupId>
+                <artifactId>nbm-maven-plugin</artifactId>
+            </plugin>
+        </plugins>
+    </build>
+<!--    
     <profiles>
         <profile>
             <id>release</id>
@@ -186,4 +209,5 @@
             </build>
         </profile>
     </profiles>
+        -->
 </project>
