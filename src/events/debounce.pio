@@ -5,7 +5,7 @@
 iszero:
     set pins 1
     wait 1 pin 0    ; the gpio is 0, wait for it to become 1
-    set x 31        ; prepare to test the gpio for 31 * 2 clocik cycles
+    set x 31        ; prepare to test the gpio for 31 * 2 clock cycles
 checkzero:
     jmp pin stillone; check if the gpio is still 1
     jmp iszero      ; if the gpio has returned to 0, start over
