@@ -1,0 +1,7 @@
+Manifest-Version: 1.0
+OpenIDE-Module-Localizing-Bundle: uk/theretiredprogrammer/racetrainingdemonstrator/swingingflow/Bundle.properties
+OpenIDE-Module-Display-Category: Application Optional
+AutoUpdate-Essential-Module: false
+AutoUpdate-Show-In-Client: true
+OpenIDE-Module-Long-Description: A flow which swings about a mean direction - used for wind or water flows
+OpenIDE-Module-Name: Swinging Flow

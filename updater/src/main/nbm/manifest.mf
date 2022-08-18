@@ -1,0 +1,8 @@
+Manifest-Version: 1.0
+OpenIDE-Module-Layer: uk/theretiredprogrammer/racetrainingdemonstrator/updater/layer.xml
+OpenIDE-Module-Localizing-Bundle: uk/theretiredprogrammer/racetrainingdemonstrator/updater/Bundle.properties
+AutoUpdate-Essential-Module: true
+AutoUpdate-Show-In-Client: true
+OpenIDE-Module-Display-Category: Application
+OpenIDE-Module-Name: Race Training Demonstrator
+OpenIDE-Module-Long-Description: A Sail Racing Modelling and Display Application
