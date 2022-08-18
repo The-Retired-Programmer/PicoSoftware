@@ -1,5 +1,0 @@
-Manifest-Version: 1.0
-OpenIDE-Module-Localizing-Bundle: uk/theretiredprogrammer/racetrainingdemonstrator/branding/Bundle.properties
-OpenIDE-Module-Display-Category: Application
-AutoUpdate-Essential-Module: true
-AutoUpdate-Show-In-Client: false

@@ -1,7 +1,0 @@
-Manifest-Version: 1.0
-OpenIDE-Module-Localizing-Bundle: uk/theretiredprogrammer/racetrainingdemonstrator/eastwestgradientflow/Bundle.properties
-OpenIDE-Module-Display-Category: Application Optional
-AutoUpdate-Essential-Module: false
-AutoUpdate-Show-In-Client: true
-OpenIDE-Module-Long-Description: A flow which has a speed and/or direction gradient in East-West direction
-OpenIDE-Module-Name: East-West Gradient Flow
